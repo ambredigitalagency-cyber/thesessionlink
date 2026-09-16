@@ -3,6 +3,7 @@ import { getMessages, getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { AuthForm } from "@/components/auth/auth-form";
+import { GoogleButton } from "@/components/auth/google-button";
 import { Logo } from "@/components/brand/logo";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { safeNextPath } from "@/lib/safe-redirect";
@@ -17,6 +18,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const intent = params.intent === "signup" ? "signup" : "login";
   const next = safeNextPath(typeof params.next === "string" ? params.next : null);
   const linkError = params.error === "invalid_link";
+  const oauthError = params.error === "oauth_failed";
   const t = await getTranslations("auth");
   const messages = pickMessages(await getMessages(), [...BASE_NAMESPACES, "auth"]);
 
@@ -47,6 +49,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </p>
 
           <NextIntlClientProvider messages={messages}>
+            <GoogleButton next={next} oauthError={oauthError} />
             <AuthForm intent={intent} next={next} linkError={linkError} />
           </NextIntlClientProvider>
         </div>
