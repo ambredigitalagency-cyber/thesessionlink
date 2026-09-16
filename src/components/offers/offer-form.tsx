@@ -7,7 +7,7 @@ import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { createOffer, updateOffer } from "@/actions/offers";
-import { CoverUpload } from "@/components/media/image-upload";
+import { OfferPhotosUpload } from "@/components/media/offer-photos-upload";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
 import { ToggleRow } from "@/components/ui/primitives";
@@ -31,7 +31,7 @@ export type OfferInitialValues = {
   description: string | null;
   price: number | null;
   price_type: "fixed" | "from" | "free" | "on_request";
-  main_photo_url: string | null;
+  photos: string[];
   action_type: ActionType;
   action_config: unknown;
   custom_fields: OfferField[];
@@ -47,6 +47,8 @@ type Props = {
   currency: string;
   locale: string;
   profileWhatsapp?: string | null;
+  /** From the pro's plan; null = unlimited. Re-checked in the server action. */
+  maxPhotos: number | null;
   initial?: OfferInitialValues;
   submitLabel?: string;
   onSaved?: (offerId: string) => void;
@@ -61,6 +63,7 @@ export function OfferForm({
   currency,
   locale,
   profileWhatsapp,
+  maxPhotos,
   initial,
   submitLabel,
   onSaved,
@@ -68,6 +71,7 @@ export function OfferForm({
 }: Props) {
   const t = useTranslations("offers.form");
   const tError = useTranslations("errors");
+  const tPlans = useTranslations("plans");
 
   const startingActionType =
     initial?.action_type ?? suggestedActionType ?? ("calendar_booking" as ActionType);
@@ -77,7 +81,7 @@ export function OfferForm({
   const [description, setDescription] = useState(initial?.description ?? "");
   const [priceType, setPriceType] = useState(initial?.price_type ?? "fixed");
   const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : "");
-  const [photo, setPhoto] = useState<string | null>(initial?.main_photo_url ?? null);
+  const [photos, setPhotos] = useState<string[]>(initial?.photos ?? []);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [actionType, setActionType] = useState<ActionType>(startingActionType);
 
@@ -137,7 +141,7 @@ export function OfferForm({
       price:
         priceType === "free" || priceType === "on_request" || price === "" ? null : Number(price),
       price_type: priceType,
-      main_photo_url: photo,
+      photos,
       action_type: actionType,
       action_config: config,
       custom_fields: fields,
@@ -221,8 +225,13 @@ export function OfferForm({
         </Field>
       </div>
 
-      <Field label={t("photo")} hint={t("photoHint")} optional>
-        <CoverUpload value={photo} onChange={setPhoto} className="max-w-sm" />
+      <Field label={t("photos")} hint={t("photosHint")} optional>
+        <OfferPhotosUpload
+          value={photos}
+          onChange={setPhotos}
+          max={maxPhotos}
+          upgradeHint={maxPhotos === null ? "" : tPlans("photoLimit", { max: maxPhotos })}
+        />
       </Field>
 
       <Field label={t("actionType")} hint={t("actionTypeHint")}>

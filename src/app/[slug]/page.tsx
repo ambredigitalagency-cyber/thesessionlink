@@ -27,7 +27,7 @@ async function loadProfile(slug: string) {
     supabase
       .from("offers")
       .select(
-        "id, title, description, price, price_type, main_photo_url, action_type, action_config, custom_fields",
+        "id, title, description, price, price_type, main_photo_url, photos, action_type, action_config, custom_fields",
       )
       .eq("profile_id", profile.id)
       .eq("is_active", true)
@@ -124,6 +124,7 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     price: offer.price,
     price_type: offer.price_type as PublicOffer["price_type"],
     main_photo_url: offer.main_photo_url,
+    photos: (offer.photos as string[] | null) ?? [],
     action_type: offer.action_type,
     action_config: offer.action_config,
     custom_fields: parseOfferFields(offer.custom_fields),

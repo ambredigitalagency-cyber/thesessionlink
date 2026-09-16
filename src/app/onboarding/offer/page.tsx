@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { FirstOfferForm } from "@/components/onboarding/first-offer-form";
 import { OnboardingSteps } from "@/components/onboarding/steps";
 import { getCurrentProfile, requireUser } from "@/lib/auth";
+import { planLimits } from "@/lib/plans/config";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -40,6 +41,7 @@ export default async function OnboardingOfferPage() {
           currency={profile.currency}
           locale={profile.locale}
           profileWhatsapp={profile.whatsapp_number}
+          maxPhotos={planLimits(profile).maxPhotosPerOffer}
         />
       </div>
     </>

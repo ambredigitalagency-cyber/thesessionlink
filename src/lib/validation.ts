@@ -164,6 +164,9 @@ export const settingsSchema = z.object({
 /* Offers                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/** Hard ceiling, whatever the plan allows — keeps a payload from ballooning. */
+export const ABSOLUTE_MAX_PHOTOS = 20;
+
 export const offerInputSchema = z.object({
   title: z.string().trim().min(2, "too_short").max(120),
   description: optionalText(5000),
@@ -174,7 +177,10 @@ export const offerInputSchema = z.object({
     .nullish()
     .transform((value) => (value === undefined ? null : value)),
   price_type: z.enum(["fixed", "from", "free", "on_request"]).default("fixed"),
-  main_photo_url: optionalText(500),
+  // Ordered; the first entry is the main photo. main_photo_url is derived from
+  // photos[0] by a database trigger, so it is never accepted from the client. The per-plan cap is applied in
+  // the server action, which is the only place that knows the pro's plan.
+  photos: z.array(z.string().trim().min(1).max(500)).max(ABSOLUTE_MAX_PHOTOS).default([]),
   action_type: actionTypeSchema,
   action_config: z.unknown().default({}),
   custom_fields: offerFieldsSchema.default([]),

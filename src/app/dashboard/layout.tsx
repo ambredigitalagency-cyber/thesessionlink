@@ -31,6 +31,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
     "dashboard",
     "offers",
     "media",
+    "plans",
     "share",
     "bookingStatus",
   ]);

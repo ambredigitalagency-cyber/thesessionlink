@@ -269,6 +269,7 @@ export type Database = {
           id: string;
           is_active: boolean;
           main_photo_url: string | null;
+          photos: Json;
           position: number;
           price: number | null;
           price_type: string;
@@ -285,6 +286,7 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           main_photo_url?: string | null;
+          photos?: Json;
           position?: number;
           price?: number | null;
           price_type?: string;
@@ -301,6 +303,7 @@ export type Database = {
           id?: string;
           is_active?: boolean;
           main_photo_url?: string | null;
+          photos?: Json;
           position?: number;
           price?: number | null;
           price_type?: string;
@@ -345,11 +348,14 @@ export type Database = {
           onboarding_completed_at: string | null;
           payment_method: string | null;
           phone_number: string | null;
+          plan_type: Database["public"]["Enums"]["plan_type"];
           reminder_hours_before: number;
           slug: string;
           social_links: Json;
+          subscription_active: boolean;
           theme: Json;
           timezone: string;
+          trial_ends_at: string;
           updated_at: string;
           user_id: string;
           whatsapp_number: string | null;
@@ -373,11 +379,14 @@ export type Database = {
           onboarding_completed_at?: string | null;
           payment_method?: string | null;
           phone_number?: string | null;
+          plan_type?: Database["public"]["Enums"]["plan_type"];
           reminder_hours_before?: number;
           slug: string;
           social_links?: Json;
+          subscription_active?: boolean;
           theme?: Json;
           timezone?: string;
+          trial_ends_at?: string;
           updated_at?: string;
           user_id: string;
           whatsapp_number?: string | null;
@@ -401,11 +410,14 @@ export type Database = {
           onboarding_completed_at?: string | null;
           payment_method?: string | null;
           phone_number?: string | null;
+          plan_type?: Database["public"]["Enums"]["plan_type"];
           reminder_hours_before?: number;
           slug?: string;
           social_links?: Json;
+          subscription_active?: boolean;
           theme?: Json;
           timezone?: string;
+          trial_ends_at?: string;
           updated_at?: string;
           user_id?: string;
           whatsapp_number?: string | null;
@@ -629,6 +641,11 @@ export type Database = {
       };
       current_profile_id: { Args: never; Returns: string };
       dispatch_reminders: { Args: never; Returns: undefined };
+      effective_plan: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] };
+        Returns: Database["public"]["Enums"]["plan_type"];
+      };
+      expire_trials: { Args: never; Returns: number };
       is_public_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_reserved_slug: { Args: { p_slug: string }; Returns: boolean };
       is_slug_available: { Args: { p_slug: string }; Returns: boolean };
@@ -645,6 +662,7 @@ export type Database = {
         | "whatsapp_direct"
         | "quote_request";
       booking_status: "pending" | "confirmed" | "cancelled";
+      plan_type: "free" | "base" | "premium";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -774,6 +792,7 @@ export const Constants = {
         "quote_request",
       ],
       booking_status: ["pending", "confirmed", "cancelled"],
+      plan_type: ["free", "base", "premium"],
     },
   },
 } as const;

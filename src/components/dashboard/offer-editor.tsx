@@ -13,6 +13,7 @@ export function DashboardOfferForm({
   currency,
   locale,
   profileWhatsapp,
+  maxPhotos,
   initial,
 }: {
   mode: "create" | "edit";
@@ -21,6 +22,7 @@ export function DashboardOfferForm({
   currency: string;
   locale: string;
   profileWhatsapp: string | null;
+  maxPhotos: number | null;
   initial?: OfferInitialValues;
 }) {
   const router = useRouter();
@@ -34,6 +36,7 @@ export function DashboardOfferForm({
       currency={currency}
       locale={locale}
       profileWhatsapp={profileWhatsapp}
+      maxPhotos={maxPhotos}
       initial={initial}
       onSaved={() => {
         router.push("/dashboard/offers");

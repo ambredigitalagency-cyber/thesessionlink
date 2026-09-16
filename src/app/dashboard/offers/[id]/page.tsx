@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
 import { OfferAvailability } from "@/components/dashboard/offer-availability";
 import { requireOnboardedProfile } from "@/lib/auth";
+import { planLimits } from "@/lib/plans/config";
 import { parseCategoryConfig, parseOfferFields } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -60,13 +61,14 @@ export default async function EditOfferPage({ params }: PageProps<"/dashboard/of
           currency={profile.currency}
           locale={profile.locale}
           profileWhatsapp={profile.whatsapp_number}
+          maxPhotos={planLimits(profile).maxPhotosPerOffer}
           initial={{
             id: offer.id,
             title: offer.title,
             description: offer.description,
             price: offer.price,
             price_type: offer.price_type as "fixed" | "from" | "free" | "on_request",
-            main_photo_url: offer.main_photo_url,
+            photos: (offer.photos as string[] | null) ?? [],
             action_type: offer.action_type,
             action_config: offer.action_config,
             custom_fields: parseOfferFields(offer.custom_fields),

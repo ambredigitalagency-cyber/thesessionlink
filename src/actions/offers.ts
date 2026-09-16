@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireProfileForAction } from "@/lib/auth";
+import { requireProfileForAction, type Profile } from "@/lib/auth";
 import { parseActionConfig } from "@/lib/offers/schema";
+import { isWithinLimit, planLimits } from "@/lib/plans/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom, offerInputSchema, type ActionResult } from "@/lib/validation";
 
@@ -12,19 +13,33 @@ function revalidateOffers(slug: string) {
   revalidatePath(`/${slug}`);
 }
 
-/** Validates the payload and normalises action_config for the chosen action. */
-function prepare(input: unknown) {
+/**
+ * Validates the payload, normalises action_config and applies the plan's photo
+ * cap. main_photo_url is not part of the input: a trigger derives it from
+ * photos[0].
+ */
+function prepare(input: unknown, profile: Profile) {
   const parsed = offerInputSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false as const, fieldErrors: fieldErrorsFrom(parsed.error) };
+    return {
+      ok: false as const,
+      error: "invalid_input" as const,
+      fieldErrors: fieldErrorsFrom(parsed.error),
+    };
   }
 
-  const { action_config, price, price_type, ...rest } = parsed.data;
+  const { action_config, price, price_type, photos, ...rest } = parsed.data;
+  const { maxPhotosPerOffer } = planLimits(profile);
+
+  if (!isWithinLimit(photos.length, maxPhotosPerOffer)) {
+    return { ok: false as const, error: "plan_photo_limit" as const, fieldErrors: undefined };
+  }
 
   return {
     ok: true as const,
     values: {
       ...rest,
+      photos,
       price_type,
       // "free" and "on_request" never carry an amount.
       price: price_type === "free" || price_type === "on_request" ? null : price,
@@ -35,10 +50,20 @@ function prepare(input: unknown) {
 
 export async function createOffer(input: unknown): Promise<ActionResult<{ id: string }>> {
   const profile = await requireProfileForAction();
-  const prepared = prepare(input);
-  if (!prepared.ok) return { ok: false, error: "invalid_input", fieldErrors: prepared.fieldErrors };
+  const prepared = prepare(input, profile);
+  if (!prepared.ok) return { ok: false, error: prepared.error, fieldErrors: prepared.fieldErrors };
 
   const supabase = await createSupabaseServerClient();
+
+  const { maxOffers } = planLimits(profile);
+  if (maxOffers !== null) {
+    const { count } = await supabase
+      .from("offers")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id);
+
+    if ((count ?? 0) >= maxOffers) return { ok: false, error: "plan_offer_limit" };
+  }
 
   const { data: last } = await supabase
     .from("offers")
@@ -69,8 +94,8 @@ export async function createOffer(input: unknown): Promise<ActionResult<{ id: st
 
 export async function updateOffer(id: string, input: unknown): Promise<ActionResult> {
   const profile = await requireProfileForAction();
-  const prepared = prepare(input);
-  if (!prepared.ok) return { ok: false, error: "invalid_input", fieldErrors: prepared.fieldErrors };
+  const prepared = prepare(input, profile);
+  if (!prepared.ok) return { ok: false, error: prepared.error, fieldErrors: prepared.fieldErrors };
 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase
@@ -136,6 +161,16 @@ export async function duplicateOffer(id: string): Promise<ActionResult<{ id: str
   const profile = await requireProfileForAction();
   const supabase = await createSupabaseServerClient();
 
+  const { maxOffers } = planLimits(profile);
+  if (maxOffers !== null) {
+    const { count } = await supabase
+      .from("offers")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id);
+
+    if ((count ?? 0) >= maxOffers) return { ok: false, error: "plan_offer_limit" };
+  }
+
   const { data: source } = await supabase
     .from("offers")
     .select("*")
@@ -153,7 +188,7 @@ export async function duplicateOffer(id: string): Promise<ActionResult<{ id: str
       description: source.description,
       price: source.price,
       price_type: source.price_type,
-      main_photo_url: source.main_photo_url,
+      photos: source.photos,
       action_type: source.action_type,
       action_config: source.action_config,
       custom_fields: source.custom_fields,

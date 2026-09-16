@@ -384,6 +384,9 @@
     "oauth_failed": "La connexion avec Google n'a pas abouti. Réessayez ou utilisez votre e-mail.",
     "offer_unavailable": "Cette offre n'est plus disponible.",
     "overlapping_rules": "Deux plages se chevauchent le même jour.",
+    "plan_crm_locked": "Les notes clients sont réservées aux plans payants.",
+    "plan_offer_limit": "Ton plan ne permet qu'une seule offre. Passe au plan Base pour en publier plus.",
+    "plan_photo_limit": "Tu as atteint la limite de photos de ton plan. Passe au plan Premium pour en ajouter plus.",
     "quantity_too_high": "C'est au-delà du maximum par réservation.",
     "required": "Ce champ est obligatoire.",
     "send_failed": "Impossible d'envoyer l'e-mail. Réessayez.",
@@ -687,26 +690,26 @@
     },
     "pricing": {
       "cta": "Démarrer mon essai gratuit",
+      "ctaFree": "Commencer gratuitement",
       "eyebrow": "Tarif",
-      "included": {
-        "actions": "Les cinq types d'action",
-        "branding": "Profil public illimité",
-        "calendar": "Toggle visibilité calendrier",
+      "feature": {
         "crm": "Mini CRM (fiches clients, historique, notes)",
-        "emails": "Rappels automatiques par email",
-        "languages": "Français et anglais",
-        "offers": "Offres illimitées",
-        "support": "Support par e-mail"
+        "offers": "{count, plural, one {# offre} other {# offres}}",
+        "offersUnlimited": "Offres illimitées",
+        "photos": "{count, plural, one {# photo} other {# photos}} par offre",
+        "photosUnlimited": "Photos illimitées",
+        "reminders": "Rappels automatiques par email"
       },
+      "freeNote": "Pour tester, sans limite de durée.",
+      "freePrice": "0 €",
       "monthly": "Mensuel",
       "monthlyNote": "Résiliable à tout moment, en un clic.",
       "paymentsNote": "Le paiement en ligne ne fait pas encore partie du produit : le client réserve, tu encaisses comme aujourd'hui. Quand le paiement arrivera, tes offres n'auront rien à changer.",
       "perMonth": "/ mois",
       "perYear": "/ an",
-      "planName": "Pro",
       "subtitle": "Aucun frais par réservation, aucune commission sur ce que tu factures. Le prix affiché est le prix payé.",
-      "title": "Un seul plan, tout inclus",
-      "trial": "Essai gratuit 14 jours, sans carte bancaire",
+      "title": "Trois plans, aucune commission",
+      "trialBadge": "14 jours d'essai",
       "yearly": "Annuel",
       "yearlySaving": "2 mois offerts par rapport au mensuel."
     }
@@ -726,6 +729,7 @@
     "title": "Votre réservation"
   },
   "media": {
+    "addAnotherPhoto": "Ajouter une photo",
     "addCover": "Ajouter une photo",
     "addImage": "Ajouter",
     "addPhoto": "Ajouter une photo",
@@ -739,6 +743,10 @@
       "unsupported": "Fichier non pris en charge. Utilisez JPG, PNG ou WebP."
     },
     "hint": "Image carrée, 200×200px minimum.",
+    "mainPhoto": "Principale",
+    "moveEarlier": "Déplacer vers la gauche",
+    "moveLater": "Déplacer vers la droite",
+    "photoCount": "{used} sur {max} photos",
     "remove": "Retirer"
   },
   "meta": {
@@ -861,8 +869,8 @@
       "descriptionPlaceholder": "Une séance individuelle construite autour de vos objectifs…",
       "detailsHint": "Les suggestions viennent de votre activité. Remplissez l'utile, supprimez le reste, ajoutez les vôtres.",
       "detailsTitle": "Détails affichés sur l'offre",
-      "photo": "Photo",
-      "photoHint": "Le format paysage rend le mieux. C'est la première chose que l'on voit.",
+      "photos": "Photos",
+      "photosHint": "La première photo est celle qui s'affiche sur ta page. Glisse-les pour les réordonner.",
       "price": "Prix",
       "priceFixed": "Fixe",
       "priceFree": "Gratuit",
@@ -930,6 +938,34 @@
       "aria": "Progression de la configuration"
     }
   },
+  "plans": {
+    "fromPerMonth": "À partir de {price} €/mois",
+    "locked": {
+      "crm": {
+        "body": "Fiches clients, historique des réservations et notes privées : passe au plan Base pour y accéder.",
+        "title": "Le mini CRM est réservé aux plans payants"
+      },
+      "offers": {
+        "body": "Le plan Free permet une seule offre. Passe au plan Base pour en publier autant que tu veux.",
+        "title": "Tu as atteint la limite d'offres de ton plan"
+      },
+      "photos": {
+        "body": "Passe au plan supérieur pour ajouter plus de photos à chaque offre.",
+        "title": "Tu as atteint la limite de photos de ton plan"
+      },
+      "reminders": {
+        "body": "Tes clients reçoivent un rappel avant la séance, sans que tu aies un message à envoyer.",
+        "title": "Les rappels automatiques sont réservés aux plans payants"
+      }
+    },
+    "names": {
+      "base": "Base",
+      "free": "Free",
+      "premium": "Premium"
+    },
+    "photoLimit": "Ton plan autorise {max, plural, one {# photo} other {# photos}} par offre. Passe au plan Premium pour en ajouter plus.",
+    "upgradeTo": "Passer au plan {plan}"
+  },
   "publicProfile": {
     "booking": {
       "addToCalendar": "Ajouter au calendrier",
@@ -977,6 +1013,11 @@
       "direct_reservation": "Réserver",
       "quote_request": "Demander un devis",
       "whatsapp_direct": "WhatsApp"
+    },
+    "gallery": {
+      "next": "Photo suivante",
+      "previous": "Photo précédente",
+      "show": "Voir la photo {index}"
     },
     "offersTitle": "Offres",
     "poweredBy": "Créé avec TheSessionLink",

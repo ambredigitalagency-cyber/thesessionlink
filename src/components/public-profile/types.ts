@@ -8,6 +8,8 @@ export type PublicOffer = {
   price: number | null;
   price_type: "fixed" | "from" | "free" | "on_request";
   main_photo_url: string | null;
+  /** Ordered; photos[0] is main_photo_url. Empty when the offer has none. */
+  photos: string[];
   action_type: ActionType;
   action_config: unknown;
   custom_fields: OfferField[];

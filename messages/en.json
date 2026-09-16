@@ -384,6 +384,9 @@
     "oauth_failed": "Google sign-in did not complete. Try again or use your email.",
     "offer_unavailable": "This offer is no longer available.",
     "overlapping_rules": "Two time ranges overlap on the same day.",
+    "plan_crm_locked": "Client notes are on the paid plans.",
+    "plan_offer_limit": "Your plan allows a single offer. Upgrade to Base to publish more.",
+    "plan_photo_limit": "You have reached your plan's photo limit. Upgrade to Premium to add more.",
     "quantity_too_high": "That is more than the maximum per booking.",
     "required": "This field is required.",
     "send_failed": "We could not send the email. Please try again.",
@@ -687,26 +690,26 @@
     },
     "pricing": {
       "cta": "Start my free trial",
+      "ctaFree": "Start for free",
       "eyebrow": "Pricing",
-      "included": {
-        "actions": "The five action types",
-        "branding": "Unlimited public profile",
-        "calendar": "Calendar visibility toggle",
+      "feature": {
         "crm": "Mini CRM (client records, history, notes)",
-        "emails": "Automatic email reminders",
-        "languages": "English and French",
-        "offers": "Unlimited offers",
-        "support": "Support by email"
+        "offers": "{count, plural, one {# offer} other {# offers}}",
+        "offersUnlimited": "Unlimited offers",
+        "photos": "{count, plural, one {# photo} other {# photos}} per offer",
+        "photosUnlimited": "Unlimited photos",
+        "reminders": "Automatic email reminders"
       },
+      "freeNote": "To try it out, with no time limit.",
+      "freePrice": "€0",
       "monthly": "Monthly",
       "monthlyNote": "Cancel any time, in one click.",
       "paymentsNote": "Online payment isn't part of the product yet: the client books, you get paid the way you do today. When payments land, your offers won't need to change.",
       "perMonth": "/ month",
       "perYear": "/ year",
-      "planName": "Pro",
       "subtitle": "No per-booking fee, no commission on what you charge. The price you see is the price you pay.",
-      "title": "One plan, everything included",
-      "trial": "14-day free trial, no credit card",
+      "title": "Three plans, no commission",
+      "trialBadge": "14-day trial",
       "yearly": "Yearly",
       "yearlySaving": "Two months free compared to monthly."
     }
@@ -726,6 +729,7 @@
     "title": "Your booking"
   },
   "media": {
+    "addAnotherPhoto": "Add another photo",
     "addCover": "Add a photo",
     "addImage": "Add",
     "addPhoto": "Add a photo",
@@ -739,6 +743,10 @@
       "unsupported": "Unsupported file. Use JPG, PNG or WebP."
     },
     "hint": "Square image, at least 200×200px.",
+    "mainPhoto": "Main",
+    "moveEarlier": "Move left",
+    "moveLater": "Move right",
+    "photoCount": "{used} of {max} photos",
     "remove": "Remove"
   },
   "meta": {
@@ -861,8 +869,8 @@
       "descriptionPlaceholder": "A one-to-one session built around your goals…",
       "detailsHint": "Suggestions come from your activity. Fill what matters, drop the rest, add your own.",
       "detailsTitle": "Details shown on the offer",
-      "photo": "Photo",
-      "photoHint": "Landscape works best. It is the first thing clients see.",
+      "photos": "Photos",
+      "photosHint": "The first photo is the one shown on your page. Drag to reorder.",
       "price": "Price",
       "priceFixed": "Fixed",
       "priceFree": "Free",
@@ -930,6 +938,34 @@
       "aria": "Setup progress"
     }
   },
+  "plans": {
+    "fromPerMonth": "From €{price}/month",
+    "locked": {
+      "crm": {
+        "body": "Client records, booking history and private notes: upgrade to Base to use them.",
+        "title": "The mini CRM is on the paid plans"
+      },
+      "offers": {
+        "body": "The Free plan allows a single offer. Upgrade to Base to publish as many as you like.",
+        "title": "You have reached your plan's offer limit"
+      },
+      "photos": {
+        "body": "Upgrade your plan to add more photos to each offer.",
+        "title": "You have reached your plan's photo limit"
+      },
+      "reminders": {
+        "body": "Your clients get a reminder before the session, with no message for you to send.",
+        "title": "Automatic reminders are on the paid plans"
+      }
+    },
+    "names": {
+      "base": "Base",
+      "free": "Free",
+      "premium": "Premium"
+    },
+    "photoLimit": "Your plan allows {max, plural, one {# photo} other {# photos}} per offer. Upgrade to Premium to add more.",
+    "upgradeTo": "Upgrade to {plan}"
+  },
   "publicProfile": {
     "booking": {
       "addToCalendar": "Add to calendar",
@@ -977,6 +1013,11 @@
       "direct_reservation": "Reserve",
       "quote_request": "Get a quote",
       "whatsapp_direct": "WhatsApp"
+    },
+    "gallery": {
+      "next": "Next photo",
+      "previous": "Previous photo",
+      "show": "Show photo {index}"
     },
     "offersTitle": "Offers",
     "poweredBy": "Made with TheSessionLink",

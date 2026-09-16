@@ -11,6 +11,7 @@ export function FirstOfferForm(props: {
   currency: string;
   locale: string;
   profileWhatsapp: string | null;
+  maxPhotos: number | null;
 }) {
   const router = useRouter();
 
@@ -23,6 +24,7 @@ export function FirstOfferForm(props: {
       currency={props.currency}
       locale={props.locale}
       profileWhatsapp={props.profileWhatsapp}
+      maxPhotos={props.maxPhotos}
       onSaved={() => router.push("/onboarding/share")}
     />
   );

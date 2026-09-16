@@ -14,6 +14,7 @@ export default async function OnboardingLayout({ children }: LayoutProps<"/onboa
     "onboarding",
     "offers",
     "media",
+    "plans",
     "share",
   ]);
 

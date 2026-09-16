@@ -16,6 +16,7 @@ import { SOCIAL_KEYS, type SocialKey } from "@/lib/validation";
 
 import { BookingPanel } from "./booking-panel";
 import { OfferCard, OfferPrice } from "./offer-card";
+import { OfferGallery } from "./offer-gallery";
 import type { PublicOffer, PublicProfile } from "./types";
 
 export function PublicProfileView({
@@ -234,17 +235,7 @@ function OfferSheet({
       className="sm:max-w-lg"
     >
       <div data-accent={profile.accent} className="space-y-6">
-        {offer.main_photo_url ? (
-          <div className="bg-ink/5 relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)]">
-            <Image
-              src={offer.main_photo_url}
-              alt=""
-              fill
-              sizes="(max-width: 640px) 100vw, 480px"
-              className="object-cover"
-            />
-          </div>
-        ) : null}
+        <OfferGallery offer={offer} />
 
         <div className="flex items-center justify-between gap-4">
           <OfferPrice
