@@ -478,7 +478,7 @@
         }
       },
       "replay": "Recommencer",
-      "tapHint": "Cliquez sur une offre — cette démo fonctionne vraiment"
+      "tapHint": "Clique sur une offre — cette démo fonctionne vraiment"
     },
     "examples": {
       "badge": "Exemple",
@@ -551,32 +551,32 @@
     "faq": {
       "items": {
         "calendar": {
-          "a": "Vous réglez vos horaires hebdomadaires une fois, plus vos absences. Chaque offre garde ces horaires ou utilise les siens. Les créneaux respectent la durée, la pause entre deux séances, votre délai minimum et les réservations existantes — un même créneau ne peut jamais être pris deux fois.",
-          "q": "Comment fonctionnent les disponibilités ?"
+          "a": "Oui, tu peux rendre ton calendrier invisible tout en gardant ton profil visible, avec un message personnalisé.",
+          "q": "Je peux fermer mon calendrier temporairement ?"
         },
         "cancel": {
-          "a": "Son e-mail de confirmation contient un lien privé pour voir ou annuler. Le créneau est libéré immédiatement et vous recevez un e-mail. Vous pouvez aussi confirmer ou annuler vous-même depuis votre tableau de bord.",
-          "q": "Et si un client annule ?"
+          "a": "Oui, aucun engagement, résiliation en un clic.",
+          "q": "Je peux annuler à tout moment ?"
         },
         "clients": {
-          "a": "Chacune devient une fiche client regroupant tout son historique avec vous, avec des notes visibles de vous seul. Aucun import, aucune saisie.",
-          "q": "Que deviennent les personnes qui réservent ?"
+          "a": "Non, jamais. Ils réservent en donnant juste leurs coordonnées.",
+          "q": "Est-ce que mes clients doivent créer un compte ?"
         },
         "language": {
-          "a": "L'interface et les e-mails existent en français et en anglais. Votre page publique suit le choix du visiteur, et retombe sur la langue dans laquelle vous travaillez.",
+          "a": "L'interface et les e-mails existent en français et en anglais. Ta page publique suit le choix du visiteur, et retombe sur la langue dans laquelle tu travailles.",
           "q": "La page est-elle bilingue ?"
         },
         "link": {
-          "a": "Oui, mais l'ancienne adresse cesse de fonctionner — choisissez-en un que vous assumez d'imprimer. Tout le reste (nom, photo, offres) se modifie autant que vous voulez.",
+          "a": "Oui, mais l'ancienne adresse cesse de fonctionner — choisis-en un que tu assumes d'imprimer. Tout le reste (nom, photo, offres) se modifie autant que tu veux.",
           "q": "Puis-je changer mon lien plus tard ?"
         },
         "niche": {
-          "a": "Oui. Le produit ne code aucun métier en dur : vous choisissez ce qu'un client peut faire (réserver un créneau, réserver un bien, écrire, demander un devis) et vous ajoutez les champs qui comptent pour vous. L'activité choisie ne sert qu'à pré-remplir des suggestions.",
-          "q": "Mon métier n'est pas dans votre liste. Ça marche quand même ?"
+          "a": "N'importe quelle activité où tu vends du temps, un bien ou un service : coach, prof, tuteur, agent immobilier, coiffeur, et bien d'autres.",
+          "q": "Ça marche pour quel type d'activité ?"
         },
         "payments": {
-          "a": "Pas encore, et c'est volontaire. Une réservation ne dépend jamais d'un paiement, donc rien ne bloque le client à la dernière étape. Vous encaissez comme aujourd'hui — sur place, par virement, sur facture.",
-          "q": "Mes clients peuvent-ils payer sur la page ?"
+          "a": "Tu choisis toi-même ton moyen de paiement. L'argent va directement à toi, sans intermédiaire.",
+          "q": "Comment mes clients me paient ?"
         }
       },
       "title": "Les questions qu'on se pose avant de s'inscrire"
@@ -585,19 +585,19 @@
       "eyebrow": "Pensé pour de vrais métiers",
       "items": {
         "bilingual": {
-          "body": "Votre page, vos e-mails et votre tableau de bord suivent la langue dans laquelle vous travaillez.",
+          "body": "Ta page, tes e-mails et ton tableau de bord suivent la langue dans laquelle tu travailles.",
           "title": "Français et anglais"
         },
         "crm": {
-          "body": "Chaque réservation ou message crée une fiche client avec son historique et vos notes privées.",
+          "body": "Chaque réservation ou message crée une fiche client avec son historique et tes notes privées.",
           "title": "Un CRM qui se remplit seul"
         },
         "fields": {
-          "body": "Surface, niveau, ce qui est inclus, tenue — ajoutez tout ce qu'on vous demande à chaque fois.",
-          "title": "Vos propres champs"
+          "body": "Surface, niveau, ce qui est inclus, tenue — ajoute tout ce qu'on te demande à chaque fois.",
+          "title": "Tes propres champs"
         },
         "pause": {
-          "body": "Complet ? Coupez les réservations et affichez votre message. La page reste en ligne.",
+          "body": "Complet ? Coupe les réservations et affiche ton message. La page reste en ligne.",
           "title": "Faire une pause sans disparaître"
         },
         "reminders": {
@@ -609,14 +609,14 @@
           "title": "WhatsApp en un clic"
         }
       },
-      "subtitle": "Un coach vend du temps. Un agent vend une visite. Un consultant vend un devis. Une seule page gère tout — vous choisissez l'action, on s'occupe du parcours.",
+      "subtitle": "Un coach vend du temps. Un agent vend une visite. Un consultant vend un devis. Une seule page gère tout — tu choisis l'action, on s'occupe du parcours.",
       "title": "Cinq façons de transformer un visiteur en client."
     },
     "finalCta": {
       "cta": "Créer mon lien",
       "note": "Sans carte bancaire",
-      "subtitle": "Créez votre page, ajoutez une offre, partagez-la aujourd'hui. Quatorze jours pour voir si ça change votre semaine.",
-      "title": "Arrêtez d'expliquer comment vous réserver. <accent>Envoyez le lien.</accent>"
+      "subtitle": "Crée ta page, ajoute une offre, partage-la aujourd'hui. Quatorze jours pour voir si ça change ta semaine.",
+      "title": "Arrête d'expliquer comment te réserver. <accent>Envoie le lien.</accent>"
     },
     "footer": {
       "login": "Se connecter",
@@ -625,43 +625,35 @@
       "tagline": "La page de réservation des indépendants."
     },
     "hero": {
-      "badge": "Un seul lien pour toute votre activité",
-      "cta": "Créer mon lien",
-      "ctaNote": "14 jours d'essai · sans carte bancaire",
+      "badge": "Un seul lien pour toute ton activité",
+      "cta": "Créer mon profil gratuitement",
+      "ctaNote": "14 jours d'essai — sans carte bancaire",
       "points": {
         "anyJob": "Pour tous les indépendants",
         "noCard": "Sans carte, sans démo commerciale",
         "setup": "En ligne en deux minutes"
       },
-      "rotating": {
-        "coaches": "des coachs",
-        "hairdressers": "des coiffeurs",
-        "photographers": "des photographes",
-        "realtors": "des agents immo",
-        "tutors": "des profs"
-      },
-      "subtitle": "Vos offres, votre agenda, vos clients — sur une page à glisser dans une bio Instagram ou une signature e-mail. Vos clients réservent en deux clics. Vous arrêtez de courir après les messages.",
-      "titleEnd": "qu'on partage vraiment.",
-      "titleStart": "La page de réservation"
+      "subtitle": "TheSessionLink transforme ton Instagram et tes DM en un vrai système de réservation. Un profil, tes offres, un lien unique — tes clients réservent, toi tu gères.",
+      "title": "Ton lien de réservation professionnel, en 5 minutes chrono"
     },
     "how": {
       "eyebrow": "Comment ça marche",
       "steps": {
         "create": {
-          "body": "Un titre, un prix, une photo — puis choisissez ce qui se passe au clic : réserver un créneau, réserver un bien, vous écrire, ou demander un devis. Les champs sont suggérés selon votre activité.",
-          "title": "Décrivez ce que vous vendez"
+          "body": "Présente ton activité, tes réseaux, ton style, puis crée tes offres — séances, prestations, biens à visiter. À toi de choisir comment tes clients passent à l'action : réservation, message, WhatsApp ou devis.",
+          "title": "Configure ton profil et tes offres"
         },
         "fill": {
-          "body": "Le client réserve, vous recevez un e-mail, il reçoit une confirmation puis un rappel. Chaque demande devient une fiche client avec vos notes privées.",
-          "title": "Laissez-le remplir votre agenda"
+          "body": "Tes clients réservent ou t'écrivent sans créer de compte. Tout arrive au même endroit, et chaque demande devient une fiche client avec tes notes privées.",
+          "title": "Reçois tes réservations"
         },
         "share": {
-          "body": "Bio Instagram, signature e-mail, WhatsApp, QR code sur un flyer. La même adresse fonctionne partout et affiche toujours vos offres du moment.",
-          "title": "Partagez un seul lien"
+          "body": "En bio Instagram, en signature email, en QR code sur un flyer. La même adresse fonctionne partout et affiche toujours tes offres du moment.",
+          "title": "Partage ton lien"
         }
       },
-      "subtitle": "Pas de rendez-vous de mise en route, pas de gabarit à remplir pendant une heure. Vous décrivez ce que vous vendez, on en fait une page qui prend des réservations.",
-      "title": "Trois étapes, puis vous retournez travailler.",
+      "subtitle": "Pensé pour les indépendants qui vendent leur temps ou leur expertise — coachs, profs, tuteurs, agents immobiliers, coiffeurs, et bien d'autres.",
+      "title": "Fini les allers-retours WhatsApp pour caler un rendez-vous",
       "visuals": {
         "actions": {
           "calendar_booking": "Créneau",
@@ -672,7 +664,7 @@
         "day": "Mar",
         "places": {
           "instagram": "Bio Instagram",
-          "qr": "QR code sur votre flyer",
+          "qr": "QR code sur ton flyer",
           "signature": "Signature e-mail",
           "whatsapp": "Statut WhatsApp"
         },
@@ -695,25 +687,25 @@
       "eyebrow": "Tarif",
       "included": {
         "actions": "Les cinq types d'action",
-        "branding": "Votre photo, vos couleurs, vos champs",
-        "calendar": "Agenda, disponibilités et absences",
-        "crm": "Fiches clients et notes privées",
-        "emails": "Confirmations, notifications et rappels",
+        "branding": "Profil public illimité",
+        "calendar": "Toggle visibilité calendrier",
+        "crm": "Mini CRM (fiches clients, historique, notes)",
+        "emails": "Rappels automatiques par email",
         "languages": "Français et anglais",
         "offers": "Offres illimitées",
         "support": "Support par e-mail"
       },
       "monthly": "Mensuel",
       "monthlyNote": "Résiliable à tout moment, en un clic.",
-      "paymentsNote": "Le paiement en ligne ne fait pas encore partie du produit : le client réserve, vous encaissez comme aujourd'hui. Quand le paiement arrivera, vos offres n'auront rien à changer.",
+      "paymentsNote": "Le paiement en ligne ne fait pas encore partie du produit : le client réserve, tu encaisses comme aujourd'hui. Quand le paiement arrivera, tes offres n'auront rien à changer.",
       "perMonth": "/ mois",
       "perYear": "/ an",
       "planName": "Pro",
-      "subtitle": "Aucun frais par réservation, aucune commission sur ce que vous facturez. Le prix affiché est le prix payé.",
-      "title": "Une offre. Tout est dedans.",
-      "trial": "14 jours gratuits · sans carte bancaire",
+      "subtitle": "Aucun frais par réservation, aucune commission sur ce que tu factures. Le prix affiché est le prix payé.",
+      "title": "Un seul plan, tout inclus",
+      "trial": "Essai gratuit 14 jours, sans carte bancaire",
       "yearly": "Annuel",
-      "yearlySaving": "Deux mois offerts par rapport au mensuel."
+      "yearlySaving": "2 mois offerts par rapport au mensuel."
     }
   },
   "manageBooking": {

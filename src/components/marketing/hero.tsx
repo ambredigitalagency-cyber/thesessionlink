@@ -2,24 +2,15 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 
 import { DemoProfile } from "./demo-profile";
 
-const ROTATING = ["coaches", "realtors", "hairdressers", "tutors", "photographers"] as const;
-
 export function Hero() {
   const t = useTranslations("landing.hero");
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => setIndex((current) => (current + 1) % ROTATING.length), 2200);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <section className="relative overflow-hidden pt-28 sm:pt-32">
@@ -43,23 +34,7 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
             className="text-ink mt-5 text-[40px] leading-[1.02] font-semibold tracking-[-0.04em] sm:text-[56px]"
           >
-            {t("titleStart")}{" "}
-            <span className="relative inline-flex h-[1.1em] min-w-[6.5ch] overflow-hidden align-bottom">
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.span
-                  key={ROTATING[index]}
-                  initial={{ y: "100%", opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: "-100%", opacity: 0 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="display-accent absolute left-0 whitespace-nowrap text-[var(--accent)]"
-                >
-                  {t(`rotating.${ROTATING[index]}` as "rotating.coaches")}
-                </motion.span>
-              </AnimatePresence>
-            </span>
-            <br />
-            {t("titleEnd")}
+            {t("title")}
           </motion.h1>
 
           <motion.p

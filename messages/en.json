@@ -551,16 +551,16 @@
     "faq": {
       "items": {
         "calendar": {
-          "a": "You set weekly hours once, plus days off. Each offer can keep those hours or use its own. Slots respect the duration, the break between sessions, your minimum notice and existing bookings — so the same slot can never be booked twice.",
-          "q": "How does availability work?"
+          "a": "Yes. You can hide your calendar while keeping your profile online, with a message of your own.",
+          "q": "Can I close my calendar for a while?"
         },
         "cancel": {
-          "a": "Their confirmation email has a private link to view or cancel. The slot is freed immediately and you get an email. You can also confirm or cancel anything yourself from your dashboard.",
-          "q": "What if a client cancels?"
+          "a": "Yes — no commitment, and cancelling takes one click.",
+          "q": "Can I cancel any time?"
         },
         "clients": {
-          "a": "Each one becomes a client file grouping their whole history with you, with notes only you can see. No import, no manual entry.",
-          "q": "What happens to the people who book?"
+          "a": "Never. They book by leaving their contact details, nothing more.",
+          "q": "Do my clients have to create an account?"
         },
         "language": {
           "a": "The interface and the emails exist in English and French. Your public page follows the visitor's choice, and falls back to the language you work in.",
@@ -571,12 +571,12 @@
           "q": "Can I change my link later?"
         },
         "niche": {
-          "a": "Yes. The product does not hardcode professions: you choose what a client can do (book a slot, reserve, message, ask for a quote) and you add the fields that matter to you. The activity you pick only pre-fills suggestions.",
-          "q": "My job is not on your list. Does it still work?"
+          "a": "Any business where you sell time, a property, or a service: coaches, teachers, tutors, estate agents, hairdressers, and plenty more.",
+          "q": "What kind of business does this work for?"
         },
         "payments": {
-          "a": "Not yet, and that is deliberate. Bookings never depend on a payment, so nothing blocks a client at the last step. You keep getting paid the way you do today — on site, by transfer, by invoice.",
-          "q": "Can clients pay on the page?"
+          "a": "You choose how you get paid. The money goes straight to you, with no middleman.",
+          "q": "How do my clients pay me?"
         }
       },
       "title": "Questions people ask before signing up"
@@ -626,42 +626,34 @@
     },
     "hero": {
       "badge": "One link for your whole business",
-      "cta": "Create my link",
-      "ctaNote": "14-day trial · no card required",
+      "cta": "Create my profile free",
+      "ctaNote": "14-day trial — no card required",
       "points": {
         "anyJob": "Works for any independent job",
         "noCard": "No card, no setup call",
         "setup": "Live in about two minutes"
       },
-      "rotating": {
-        "coaches": "coaches",
-        "hairdressers": "hairdressers",
-        "photographers": "photographers",
-        "realtors": "realtors",
-        "tutors": "tutors"
-      },
-      "subtitle": "Your offers, your calendar, your clients — on one page you can drop in an Instagram bio or an email signature. Clients book in two taps. You stop chasing messages.",
-      "titleEnd": "actually share.",
-      "titleStart": "The booking page"
+      "subtitle": "TheSessionLink turns your Instagram and your DMs into a real booking system. One profile, your offers, a single link — your clients book themselves, you stay on top of it.",
+      "title": "Your professional booking link, live in five minutes"
     },
     "how": {
       "eyebrow": "How it works",
       "steps": {
         "create": {
-          "body": "A title, a price, a photo — then pick what happens when a client clicks: book a slot, reserve, message you, or ask for a quote. Fields are suggested based on your activity.",
-          "title": "Describe what you sell"
+          "body": "Show what you do, your socials, your style, then add your offers — sessions, services, places to view. You decide how clients take action: book a slot, send a message, open WhatsApp, or request a quote.",
+          "title": "Set up your profile and your offers"
         },
         "fill": {
-          "body": "Clients book, you get an email, they get a confirmation and a reminder. Every request becomes a client file with your private notes.",
-          "title": "Let it fill your calendar"
+          "body": "Clients book or message you without creating an account. Everything lands in one place, and every request becomes a client record with your private notes.",
+          "title": "Take your bookings"
         },
         "share": {
-          "body": "Instagram bio, email signature, WhatsApp, a QR code on a flyer. The same address works everywhere and always shows what you currently offer.",
-          "title": "Share one link"
+          "body": "In your Instagram bio, in your email signature, as a QR code on a flyer. The same address works everywhere and always shows your current offers.",
+          "title": "Share your link"
         }
       },
-      "subtitle": "No setup call, no template to fill for an hour. You describe what you sell, we turn it into a page that takes bookings.",
-      "title": "Three steps, then you go back to work.",
+      "subtitle": "Built for independents who sell their time or their expertise — coaches, teachers, tutors, estate agents, hairdressers, and plenty more.",
+      "title": "No more WhatsApp ping-pong just to book a time",
       "visuals": {
         "actions": {
           "calendar_booking": "Book a slot",
@@ -695,23 +687,23 @@
       "eyebrow": "Pricing",
       "included": {
         "actions": "The five action types",
-        "branding": "Your photo, colours and custom fields",
-        "calendar": "Calendar, availability and time off",
-        "crm": "Client files and private notes",
-        "emails": "Confirmations, notifications and reminders",
+        "branding": "Unlimited public profile",
+        "calendar": "Calendar visibility toggle",
+        "crm": "Mini CRM (client records, history, notes)",
+        "emails": "Automatic email reminders",
         "languages": "English and French",
         "offers": "Unlimited offers",
         "support": "Support by email"
       },
       "monthly": "Monthly",
       "monthlyNote": "Cancel any time, in one click.",
-      "paymentsNote": "Online payments are not part of the product yet: clients book, you get paid the way you already do. When payments arrive, your offers will not have to change.",
+      "paymentsNote": "Online payment isn't part of the product yet: the client books, you get paid the way you do today. When payments land, your offers won't need to change.",
       "perMonth": "/ month",
       "perYear": "/ year",
       "planName": "Pro",
-      "subtitle": "No per-booking fee, no commission on what you charge. The price is the price.",
-      "title": "One plan. Everything in it.",
-      "trial": "14 days free · no card required",
+      "subtitle": "No per-booking fee, no commission on what you charge. The price you see is the price you pay.",
+      "title": "One plan, everything included",
+      "trial": "14-day free trial, no credit card",
       "yearly": "Yearly",
       "yearlySaving": "Two months free compared to monthly."
     }
