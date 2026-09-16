@@ -1,0 +1,1001 @@
+{
+  "auth": {
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "invalidLink": "That link expired or was already used. Ask for a new one.",
+    "loginSubtitle": "We email you a link. No password to remember.",
+    "loginTitle": "Welcome back",
+    "sentBody": "We sent a sign-in link to {email}. It expires in one hour.",
+    "sentHint": "Nothing yet? Look in spam, or",
+    "sentRetry": "send it again",
+    "sentTitle": "Check your inbox",
+    "signupSubtitle": "Start with your email. You will have a bookable page in about two minutes.",
+    "signupTitle": "Create your link",
+    "submitLogin": "Email me a link",
+    "submitSignup": "Start free trial",
+    "switchToLogin": "Already have an account? Log in",
+    "switchToSignup": "New here? Create your link",
+    "terms": "By continuing you agree to our terms and privacy policy.",
+    "trialNote": "14-day free trial · no card required"
+  },
+  "bookingStatus": {
+    "cancelled": "Cancelled",
+    "confirmed": "Confirmed",
+    "pending": "Pending"
+  },
+  "common": {
+    "add": "Add",
+    "all": "All",
+    "appName": "TheSessionLink",
+    "back": "Back",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "copied": "Copied",
+    "copy": "Copy",
+    "dashboard": "Dashboard",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "edit": "Edit",
+    "free": "Free",
+    "from": "From {price}",
+    "language": "Language",
+    "learnMore": "Learn more",
+    "loading": "Loading…",
+    "login": "Log in",
+    "logout": "Log out",
+    "next": "Next",
+    "no": "No",
+    "none": "None",
+    "onRequest": "On request",
+    "open": "Open",
+    "optional": "optional",
+    "perBooking": "per booking",
+    "preview": "Preview",
+    "remove": "Remove",
+    "required": "Required",
+    "retry": "Try again",
+    "save": "Save",
+    "saved": "Saved",
+    "saving": "Saving…",
+    "search": "Search",
+    "share": "Share",
+    "signup": "Get started",
+    "today": "Today",
+    "viewPage": "View page",
+    "yes": "Yes"
+  },
+  "dashboard": {
+    "availability": {
+      "addRange": "Add a range",
+      "addTimeOff": "Add time off",
+      "backToDefault": "Back to your weekly hours",
+      "copied": "Copied to every day",
+      "copyToAll": "Copy to every day",
+      "customSchedule": "Custom hours for this offer",
+      "customScheduleHint": "Useful when one offer runs on different days than the rest.",
+      "defaultEmpty": "No weekly hours set yet.",
+      "defaultSummary": "Currently bookable on: {days}.",
+      "editDefault": "Edit weekly hours",
+      "from": "From",
+      "offerHint": "By default \"{title}\" uses your weekly hours.",
+      "offerTitle": "Availability for this offer",
+      "overridesNote": "These offers use their own hours: {offers}.",
+      "timeOffHint": "Holidays and days you are simply not available.",
+      "timeOffLabel": "Label",
+      "timeOffLabelPlaceholder": "Holidays",
+      "timeOffTitle": "Time off",
+      "to": "To",
+      "unavailable": "Unavailable",
+      "weeklyHint": "Used by every offer booked on a time slot. Times are in {timezone}.",
+      "weeklyTitle": "Weekly hours"
+    },
+    "bookings": {
+      "cancelBooking": "Cancel",
+      "cancelledToast": "Booking cancelled — the client has been notified.",
+      "confirm": "Confirm",
+      "confirmed": "Booking confirmed — the client has been notified.",
+      "dayOff": "Day off.",
+      "deleteBody": "This removes it from your history. It cannot be undone.",
+      "deleteTitle": "Delete this booking?",
+      "empty": {
+        "body": "New bookings and requests from your page land here.",
+        "title": "Nothing here yet"
+      },
+      "fields": {
+        "budget": "Budget",
+        "client": "Client",
+        "email": "Email",
+        "message": "Their message",
+        "phone": "Phone"
+      },
+      "filters": {
+        "all": "All",
+        "cancelled": "Cancelled",
+        "past": "Past",
+        "pending": "To handle",
+        "upcoming": "Upcoming"
+      },
+      "internalNotes": "Private notes",
+      "internalNotesHint": "Only you can see this. Saved when you click outside.",
+      "internalNotesPlaceholder": "Knee injury, prefers mornings…",
+      "nextMonth": "Next month",
+      "noBookingsThatDay": "Nothing booked that day.",
+      "noTime": "No time",
+      "openClient": "Open client file",
+      "previousMonth": "Previous month",
+      "searchPlaceholder": "Search a name, an email…",
+      "stats": {
+        "clients": "Clients",
+        "pending": "To handle",
+        "upcoming": "Upcoming"
+      },
+      "statusShort": {
+        "cancelled": "Cancelled",
+        "confirmed": "OK",
+        "pending": "Pending"
+      },
+      "subtitle": "Everything that came in through your page, in one place.",
+      "tabs": {
+        "availability": "Availability",
+        "calendar": "Calendar",
+        "clients": "Clients",
+        "list": "List"
+      },
+      "title": "Bookings & clients",
+      "todayButton": "Today"
+    },
+    "clients": {
+      "backToList": "All clients",
+      "bookingsCount": "{count, plural, =0 {no booking} one {# booking} other {# bookings}}",
+      "emptyBody": "Everyone who books or writes to you appears here automatically.",
+      "emptyTitle": "No clients yet",
+      "historyCount": "{count, plural, =0 {No booking yet} one {# booking} other {# bookings}}",
+      "historyTitle": "History",
+      "last": "Last: {date}",
+      "name": "Name",
+      "next": "Next: {date}",
+      "notesHint": "Preferences, history, anything useful next time.",
+      "notesLabel": "Private notes",
+      "notesPlaceholder": "Prefers Tuesday mornings. Training for a marathon in April.",
+      "phone": "Phone",
+      "searchPlaceholder": "Search a client…"
+    },
+    "nav": {
+      "bookings": "Bookings",
+      "offers": "Offers",
+      "profile": "Profile",
+      "settings": "Settings"
+    },
+    "offers": {
+      "deleteBody": "\"{title}\" will disappear from your page. Past bookings stay in your CRM.",
+      "deleteTitle": "Delete this offer?",
+      "deleted": "Offer deleted",
+      "dragHandle": "Reorder {title}",
+      "duplicated": "Offer duplicated",
+      "editSubtitle": "Changes are live on your page as soon as you save.",
+      "hidden": "Hidden",
+      "hide": "Hide from page",
+      "menuLabel": "Offer actions",
+      "new": "New offer",
+      "newSubtitle": "Essentials first, then the details specific to your work.",
+      "newTitle": "New offer",
+      "reorderHint": "Drag to change the order shown on your page.",
+      "show": "Show on page",
+      "subtitle": "What clients can book, reserve or ask about.",
+      "title": "Offers"
+    },
+    "profile": {
+      "accents": {
+        "amber": "Amber",
+        "coral": "Coral",
+        "forest": "Forest",
+        "ink": "Ink",
+        "ocean": "Ocean",
+        "violet": "Violet"
+      },
+      "appearanceHint": "Used on buttons and highlights of your public page.",
+      "appearanceTitle": "Accent colour",
+      "bio": "About",
+      "bioHint": "Two or three sentences. Who you help and how.",
+      "bioPlaceholder": "I help beginners build a routine they actually keep…",
+      "calendarVisible": "Accept bookings",
+      "calendarVisibleHint": "Off: your page stays online, the calendar is replaced by your message.",
+      "category": "Activity",
+      "closedMessage": "Message when bookings are paused",
+      "closedMessageHint": "Tell people when you are back, or how to reach you meanwhile.",
+      "closedMessagePlaceholder": "Fully booked until 5 September — send me a message and I'll get back to you.",
+      "headline": "Tagline",
+      "headlineHint": "One line under your name. It is the first thing people read.",
+      "headlinePlaceholder": "Strength coach in Lyon · online and in person",
+      "identityHint": "Photo, name and a line that says what you do.",
+      "identityTitle": "Identity",
+      "linkHint": "Change it if you want, but old links stop working.",
+      "linkTitle": "Your link",
+      "location": "Location",
+      "locationPlaceholder": "Lyon, France",
+      "name": "Profile name",
+      "noCategory": "Not specified",
+      "slug": "Public address",
+      "slugFree": "This link is available.",
+      "slugWarning": "Changing this breaks links you already shared.",
+      "socialHint": "Paste a full URL or just your handle.",
+      "socialPlaceholder": {
+        "facebook": "Page URL",
+        "instagram": "@handle or URL",
+        "linkedin": "Profile URL",
+        "tiktok": "@handle or URL",
+        "website": "yoursite.com",
+        "x": "@handle or URL",
+        "youtube": "@channel or URL"
+      },
+      "socialTitle": "Social links",
+      "subtitle": "This is the page clients land on. Keep it short and personal.",
+      "title": "Your public profile",
+      "visibilityHint": "Pause bookings without taking your page down.",
+      "visibilityTitle": "Booking visibility"
+    },
+    "settings": {
+      "channelsHint": "What clients can see and use on your public page.",
+      "channelsTitle": "Contact channels",
+      "contactEmail": "Contact email",
+      "contactEmailHint": "Where booking notifications go. Defaults to your account email.",
+      "currency": "Currency",
+      "dangerHint": "Removes your profile, offers, bookings and client files.",
+      "dangerTitle": "Delete account",
+      "deleteAccount": "Delete my account",
+      "deleteBody": "Everything is erased: your page, your offers and your client history. Type {email} to confirm.",
+      "deleteConfirm": "Delete everything",
+      "deleteConfirmLabel": "Type {email}",
+      "deleteNote": "This cannot be undone.",
+      "deleteTitle": "Delete your account?",
+      "notify": "Email me for every new booking",
+      "notifyHint": "Turn off if you prefer checking the dashboard yourself.",
+      "paymentsHint": "Taking payments online is not part of the product yet.",
+      "paymentsSoon": "Bookings never depend on a payment: clients book, you get paid the way you already do. Online payments will plug in later without changing your offers.",
+      "paymentsTitle": "Payments",
+      "phone": "Phone",
+      "preferencesHint": "Language, currency, timezone and reminders.",
+      "preferencesTitle": "Preferences",
+      "reminder": "Send reminders",
+      "reminderHint": "Only for offers booked on a time slot.",
+      "reminderOption": "{count} hours before",
+      "showEmail": "Show my email",
+      "showEmailHint": "Displayed on your public page.",
+      "showPhone": "Show my phone",
+      "showPhoneHint": "Displayed on your public page.",
+      "showWhatsapp": "Show WhatsApp",
+      "showWhatsappHint": "Needed for offers with a WhatsApp button.",
+      "subtitle": "Contact channels, language and how reminders work.",
+      "timezone": "Timezone",
+      "timezoneHint": "All your slots and bookings are computed in this timezone.",
+      "title": "Settings",
+      "whatsapp": "WhatsApp number"
+    },
+    "yourLink": "Your link"
+  },
+  "emails": {
+    "clientCancellation": {
+      "cta": "Open your dashboard",
+      "footer": "Sent by TheSessionLink",
+      "heading": "A booking was cancelled",
+      "intro": "{client} cancelled from their confirmation email. The slot is free again.",
+      "preview": "{client} cancelled their booking",
+      "subject": "{client} cancelled"
+    },
+    "clientConfirmation": {
+      "confirmed": {
+        "heading": "You're booked",
+        "intro": "{pro} has confirmed your booking. Here are the details.",
+        "preview": "Your booking with {pro} is confirmed",
+        "subject": "Your booking with {pro} is confirmed"
+      },
+      "cta": "View or cancel",
+      "footer": "Sent on behalf of {pro} via TheSessionLink",
+      "note": "Need to change something? Use the link above, or simply reply to this email.",
+      "pending": {
+        "heading": "Request received",
+        "intro": "{pro} received your request and will get back to you shortly.",
+        "preview": "{pro} received your request",
+        "subject": "{pro} received your request"
+      },
+      "yourMessage": "Your message"
+    },
+    "fields": {
+      "budget": "Budget",
+      "client": "Client",
+      "email": "Email",
+      "offer": "Offer",
+      "phone": "Phone",
+      "quantity": "Quantity",
+      "requestedDate": "Requested date",
+      "time": "Time",
+      "when": "When"
+    },
+    "magicLink": {
+      "body": "Click the button below to sign in. The link expires in one hour and works only once.",
+      "cta": "Sign in",
+      "fallback": "Or paste this address in your browser:",
+      "heading": "Your sign-in link",
+      "ignore": "If you did not request this email, you can ignore it.",
+      "preview": "Sign in to TheSessionLink",
+      "subject": "Your sign-in link"
+    },
+    "proNotification": {
+      "clientMessage": "Their message",
+      "cta": "Open your dashboard",
+      "footer": "You receive this because notifications are on in your settings.",
+      "headingConfirmed": "New booking",
+      "headingPending": "New request",
+      "intro": "{client} just came in through your public page.",
+      "preview": "{client} just booked you",
+      "subject": "New: {client} — {offer}"
+    },
+    "reminder": {
+      "cta": "View or cancel",
+      "footer": "Sent on behalf of {pro} via TheSessionLink",
+      "heading": "See you soon",
+      "intro": "A quick reminder about your session with {pro}.",
+      "note": "If you cannot make it, cancelling early frees the slot for someone else.",
+      "subject": "Reminder: {offer}"
+    },
+    "statusUpdate": {
+      "cancelled": {
+        "cta": "Book another time",
+        "footer": "Sent on behalf of {pro} via TheSessionLink",
+        "heading": "Booking cancelled",
+        "intro": "{pro} had to cancel this booking. You can book another time from their page.",
+        "preview": "{pro} cancelled your booking",
+        "subject": "Cancelled: {offer}"
+      },
+      "confirmed": {
+        "cta": "View or cancel",
+        "footer": "Sent on behalf of {pro} via TheSessionLink",
+        "heading": "It's confirmed",
+        "intro": "{pro} confirmed your booking.",
+        "preview": "{pro} confirmed your booking",
+        "subject": "Confirmed: {offer}"
+      }
+    }
+  },
+  "errorPage": {
+    "body": "This one is on us. Try again — if it keeps happening, get in touch and we'll dig in.",
+    "home": "Go to homepage",
+    "retry": "Try again",
+    "title": "Something broke on our side"
+  },
+  "errors": {
+    "calendar_closed": "Bookings are paused right now.",
+    "confirmation_mismatch": "The confirmation does not match.",
+    "date_required": "Pick a date.",
+    "end_before_start": "The end must be after the start.",
+    "invalid_currency": "Enter a 3-letter currency code.",
+    "invalid_email": "Enter a valid email address.",
+    "invalid_input": "Please check the highlighted fields.",
+    "invalid_phone": "Enter a valid phone number.",
+    "invalid_slug": "Use 3 to 40 letters, numbers or dashes.",
+    "invalid_time": "Enter a valid time.",
+    "last_offer": "Keep at least one offer on your page.",
+    "not_available": "This is not available on this environment.",
+    "not_found": "Not found.",
+    "offer_unavailable": "This offer is no longer available.",
+    "overlapping_rules": "Two time ranges overlap on the same day.",
+    "quantity_too_high": "That is more than the maximum per booking.",
+    "required": "This field is required.",
+    "send_failed": "We could not send the email. Please try again.",
+    "slot_required": "Pick a time slot.",
+    "slot_taken": "That time slot is no longer free.",
+    "slot_unavailable": "That time slot was just taken. Pick another one.",
+    "slug_reserved": "That link is reserved.",
+    "slug_taken": "That link is already taken.",
+    "sold_out": "No spots left.",
+    "too_many_requests": "Too many attempts. Please wait a few minutes.",
+    "too_short": "This is a bit too short.",
+    "unauthenticated": "Please log in again.",
+    "unexpected": "Something went wrong. Please try again."
+  },
+  "landing": {
+    "demo": {
+      "back": "Back",
+      "confirm": "Confirm {time}",
+      "days": {
+        "mon": "Mon 4",
+        "thu": "Thu 7",
+        "tue": "Tue 5",
+        "wed": "Wed 6"
+      },
+      "doneBody": "A confirmation for {time} would land in your inbox right away.",
+      "doneTitle": "You're booked",
+      "fieldEmail": "you@example.com",
+      "fieldName": "Your name",
+      "niches": {
+        "coach": "Coach",
+        "hairdresser": "Hair studio",
+        "realtor": "Realtor"
+      },
+      "pickSlot": "Pick a time",
+      "profiles": {
+        "coach": {
+          "headline": "Strength coach · online and in person",
+          "initials": "AT",
+          "location": "Lyon, France",
+          "name": "Ana Torres",
+          "offers": {
+            "0": {
+              "cta": "Book",
+              "description": "One-to-one session built around your goals, at the gym or outdoors.",
+              "price": "60 €",
+              "title": "Personal training — 60 min"
+            },
+            "1": {
+              "cta": "Get details",
+              "description": "Programme, weekly check-ins and nutrition guidance.",
+              "price": "From 540 €",
+              "title": "12-week transformation"
+            }
+          }
+        },
+        "hairdresser": {
+          "headline": "Cut, colour and care · small studio",
+          "initials": "SL",
+          "location": "Paris 11e",
+          "name": "Studio Lina",
+          "offers": {
+            "0": {
+              "cta": "Book",
+              "description": "Shampoo, cut and styling. Around 45 minutes.",
+              "price": "45 €",
+              "title": "Cut & blow-dry"
+            },
+            "1": {
+              "cta": "Book",
+              "description": "15 minutes to talk about what you want before booking.",
+              "price": "Free",
+              "title": "Colour consultation"
+            }
+          }
+        },
+        "realtor": {
+          "headline": "Real estate · Bordeaux city centre",
+          "initials": "MD",
+          "location": "Bordeaux, France",
+          "name": "Marc Delcourt",
+          "offers": {
+            "0": {
+              "cta": "Book a visit",
+              "description": "Top floor, balcony, close to Chartrons market.",
+              "price": "395 000 €",
+              "title": "Visit — 3-room apartment, 72 m²"
+            },
+            "1": {
+              "cta": "Request",
+              "description": "Thinking about selling? I come back with a price range in 48h.",
+              "price": "Free",
+              "title": "Free property valuation"
+            }
+          }
+        }
+      },
+      "replay": "Try again",
+      "tapHint": "Tap an offer — this demo really works"
+    },
+    "examples": {
+      "badge": "Example",
+      "eyebrow": "One model, many jobs",
+      "items": {
+        "coach": {
+          "headline": "Strength coach, books sessions by the hour.",
+          "initials": "AT",
+          "name": "Ana Torres",
+          "offers": {
+            "0": {
+              "price": "60 €",
+              "title": "Personal training"
+            },
+            "1": {
+              "price": "540 €",
+              "title": "12-week programme"
+            }
+          }
+        },
+        "hairdresser": {
+          "headline": "Hair studio, back-to-back slots all day.",
+          "initials": "SL",
+          "name": "Studio Lina",
+          "offers": {
+            "0": {
+              "price": "45 €",
+              "title": "Cut & blow-dry"
+            },
+            "1": {
+              "price": "From 80 €",
+              "title": "Colour"
+            }
+          }
+        },
+        "realtor": {
+          "headline": "Realtor, takes visit requests per property.",
+          "initials": "MD",
+          "name": "Marc Delcourt",
+          "offers": {
+            "0": {
+              "price": "395 000 €",
+              "title": "Apartment visit"
+            },
+            "1": {
+              "price": "Free",
+              "title": "Valuation"
+            }
+          }
+        },
+        "tutor": {
+          "headline": "Maths tutor, online lessons after school.",
+          "initials": "DR",
+          "name": "David Ruiz",
+          "offers": {
+            "0": {
+              "price": "30 €",
+              "title": "1h lesson"
+            },
+            "1": {
+              "price": "250 €",
+              "title": "Exam prep pack"
+            }
+          }
+        }
+      },
+      "subtitle": "These are example profiles built with the product — they show how the same building blocks fit a session, a property, a haircut or a lesson.",
+      "title": "The same page, in four very different businesses."
+    },
+    "faq": {
+      "items": {
+        "calendar": {
+          "a": "You set weekly hours once, plus days off. Each offer can keep those hours or use its own. Slots respect the duration, the break between sessions, your minimum notice and existing bookings — so the same slot can never be booked twice.",
+          "q": "How does availability work?"
+        },
+        "cancel": {
+          "a": "Their confirmation email has a private link to view or cancel. The slot is freed immediately and you get an email. You can also confirm or cancel anything yourself from your dashboard.",
+          "q": "What if a client cancels?"
+        },
+        "clients": {
+          "a": "Each one becomes a client file grouping their whole history with you, with notes only you can see. No import, no manual entry.",
+          "q": "What happens to the people who book?"
+        },
+        "language": {
+          "a": "The interface and the emails exist in English and French. Your public page follows the visitor's choice, and falls back to the language you work in.",
+          "q": "Is the page bilingual?"
+        },
+        "link": {
+          "a": "Yes, but the old address stops working — so pick one you are happy to print. Everything else (name, photo, offers) can change as often as you like.",
+          "q": "Can I change my link later?"
+        },
+        "niche": {
+          "a": "Yes. The product does not hardcode professions: you choose what a client can do (book a slot, reserve, message, ask for a quote) and you add the fields that matter to you. The activity you pick only pre-fills suggestions.",
+          "q": "My job is not on your list. Does it still work?"
+        },
+        "payments": {
+          "a": "Not yet, and that is deliberate. Bookings never depend on a payment, so nothing blocks a client at the last step. You keep getting paid the way you do today — on site, by transfer, by invoice.",
+          "q": "Can clients pay on the page?"
+        }
+      },
+      "title": "Questions people ask before signing up"
+    },
+    "features": {
+      "eyebrow": "Built for real jobs",
+      "items": {
+        "bilingual": {
+          "body": "Your page, your emails and your dashboard follow the language you work in.",
+          "title": "English and French"
+        },
+        "crm": {
+          "body": "Every booking and message creates a client file with their history and your private notes.",
+          "title": "A CRM that fills itself"
+        },
+        "fields": {
+          "body": "Surface, level, what's included, dress code — add anything clients always ask about.",
+          "title": "Your own fields"
+        },
+        "pause": {
+          "body": "Fully booked? Switch bookings off and show your own message. The page stays online.",
+          "title": "Pause without disappearing"
+        },
+        "reminders": {
+          "body": "Clients get a reminder before the session. Fewer no-shows, zero messages from you.",
+          "title": "Automatic reminders"
+        },
+        "whatsapp": {
+          "body": "For everything that needs a conversation first, with a message already written.",
+          "title": "WhatsApp in one tap"
+        }
+      },
+      "subtitle": "A coach sells time. A realtor sells a visit. A consultant sells a quote. One page handles all of it — you pick the action, we handle the flow.",
+      "title": "Five ways to turn a visitor into a client."
+    },
+    "finalCta": {
+      "cta": "Create my link",
+      "note": "No card required",
+      "subtitle": "Create your page, add one offer, share it today. Fourteen days to see if it changes your week.",
+      "title": "Stop explaining how to book you. <accent>Send the link.</accent>"
+    },
+    "footer": {
+      "login": "Log in",
+      "pricing": "Pricing",
+      "signup": "Get started",
+      "tagline": "The booking page for independent professionals."
+    },
+    "hero": {
+      "badge": "One link for your whole business",
+      "cta": "Create my link",
+      "ctaNote": "14-day trial · no card required",
+      "points": {
+        "anyJob": "Works for any independent job",
+        "noCard": "No card, no setup call",
+        "setup": "Live in about two minutes"
+      },
+      "rotating": {
+        "coaches": "coaches",
+        "hairdressers": "hairdressers",
+        "photographers": "photographers",
+        "realtors": "realtors",
+        "tutors": "tutors"
+      },
+      "subtitle": "Your offers, your calendar, your clients — on one page you can drop in an Instagram bio or an email signature. Clients book in two taps. You stop chasing messages.",
+      "titleEnd": "actually share.",
+      "titleStart": "The booking page"
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "steps": {
+        "create": {
+          "body": "A title, a price, a photo — then pick what happens when a client clicks: book a slot, reserve, message you, or ask for a quote. Fields are suggested based on your activity.",
+          "title": "Describe what you sell"
+        },
+        "fill": {
+          "body": "Clients book, you get an email, they get a confirmation and a reminder. Every request becomes a client file with your private notes.",
+          "title": "Let it fill your calendar"
+        },
+        "share": {
+          "body": "Instagram bio, email signature, WhatsApp, a QR code on a flyer. The same address works everywhere and always shows what you currently offer.",
+          "title": "Share one link"
+        }
+      },
+      "subtitle": "No setup call, no template to fill for an hour. You describe what you sell, we turn it into a page that takes bookings.",
+      "title": "Three steps, then you go back to work.",
+      "visuals": {
+        "actions": {
+          "calendar_booking": "Book a slot",
+          "contact_request": "Message",
+          "direct_reservation": "Reserve",
+          "quote_request": "Quote"
+        },
+        "day": "Tue",
+        "places": {
+          "instagram": "Instagram bio",
+          "qr": "QR code on your flyer",
+          "signature": "Email signature",
+          "whatsapp": "WhatsApp status"
+        },
+        "status": {
+          "confirmed": "Confirmed",
+          "pending": "To handle"
+        }
+      }
+    },
+    "nav": {
+      "cta": "Start free",
+      "examples": "Examples",
+      "features": "Features",
+      "how": "How it works",
+      "login": "Log in",
+      "pricing": "Pricing"
+    },
+    "pricing": {
+      "cta": "Start my free trial",
+      "eyebrow": "Pricing",
+      "included": {
+        "actions": "The five action types",
+        "branding": "Your photo, colours and custom fields",
+        "calendar": "Calendar, availability and time off",
+        "crm": "Client files and private notes",
+        "emails": "Confirmations, notifications and reminders",
+        "languages": "English and French",
+        "offers": "Unlimited offers",
+        "support": "Support by email"
+      },
+      "monthly": "Monthly",
+      "monthlyNote": "Cancel any time, in one click.",
+      "paymentsNote": "Online payments are not part of the product yet: clients book, you get paid the way you already do. When payments arrive, your offers will not have to change.",
+      "perMonth": "/ month",
+      "perYear": "/ year",
+      "planName": "Pro",
+      "subtitle": "No per-booking fee, no commission on what you charge. The price is the price.",
+      "title": "One plan. Everything in it.",
+      "trial": "14 days free · no card required",
+      "yearly": "Yearly",
+      "yearlySaving": "Two months free compared to monthly."
+    }
+  },
+  "manageBooking": {
+    "bookAgain": "Book another time",
+    "cancelBody": "The slot is released immediately and the professional is notified.",
+    "cancelBooking": "Cancel this booking",
+    "cancelTitle": "Cancel this booking?",
+    "cancelled": "Booking cancelled",
+    "cancelledBody": "This booking has been cancelled.",
+    "confirmCancel": "Yes, cancel",
+    "confirmedBody": "Everything is set. If you cannot make it, cancelling early frees the slot for someone else.",
+    "contactPro": "Contact",
+    "footer": "This page is private — the link was sent to you by email.",
+    "pendingBody": "This request is waiting for confirmation. You will get an email as soon as it is confirmed.",
+    "title": "Your booking"
+  },
+  "media": {
+    "addCover": "Add a photo",
+    "addImage": "Add",
+    "addPhoto": "Add a photo",
+    "change": "Change",
+    "changePhoto": "Change photo",
+    "dropHint": "Drag and drop, or click to browse",
+    "errors": {
+      "failed": "Upload failed. Please try again.",
+      "too_large": "That image is too large (12 MB max).",
+      "unauthenticated": "Your session expired. Log in again.",
+      "unsupported": "Unsupported file. Use JPG, PNG or WebP."
+    },
+    "hint": "Square image, at least 200×200px.",
+    "remove": "Remove"
+  },
+  "meta": {
+    "description": "The booking page for independent professionals. Your offers, your calendar, your clients — in one link you can share anywhere.",
+    "title": "TheSessionLink — one link to book you"
+  },
+  "notFound": {
+    "body": "The page you're looking for was moved, renamed, or never existed. If someone sent you this link, ask them for the new one.",
+    "cta": "Create my own link",
+    "home": "Go to homepage",
+    "title": "This link doesn't exist"
+  },
+  "offers": {
+    "actions": {
+      "calendar_booking": {
+        "description": "Clients pick a slot in your calendar. Best for sessions and appointments.",
+        "label": "Book a time slot"
+      },
+      "contact_request": {
+        "description": "A short form lands in your inbox and your CRM.",
+        "label": "Send a message"
+      },
+      "direct_reservation": {
+        "description": "For a property, a seat, an item. You keep control of the schedule.",
+        "label": "Reserve without a time"
+      },
+      "quote_request": {
+        "description": "Clients describe their need, you come back with a price.",
+        "label": "Ask for a quote"
+      },
+      "suggested": "Suggested",
+      "whatsapp_direct": {
+        "description": "One tap opens a conversation with you, message pre-written.",
+        "label": "WhatsApp chat"
+      }
+    },
+    "config": {
+      "askBudget": "Ask for a budget",
+      "askBudgetHint": "A free-text budget field in the form.",
+      "askPhone": "Phone number",
+      "askPhoneHidden": "Do not ask",
+      "askPhoneOptional": "Ask, optional",
+      "askPhoneRequired": "Ask, required",
+      "askPreferredDate": "Ask for a preferred date",
+      "askPreferredDateHint": "Handy when you plan the appointment afterwards.",
+      "briefPrompt": "Brief prompt",
+      "briefPromptHint": "Guide what clients should describe.",
+      "briefPromptPlaceholder": "Describe your project, your deadline and where it takes place.",
+      "buffer": "Break between sessions",
+      "bufferHint": "Time blocked before and after each booking.",
+      "capacity": "Total spots",
+      "capacityHint": "Leave empty for unlimited.",
+      "ctaContactPlaceholder": "Ask a question",
+      "ctaLabel": "Button label",
+      "ctaLabelHint": "Leave empty to use the default wording.",
+      "ctaQuotePlaceholder": "Request a quote",
+      "ctaWhatsappPlaceholder": "Message me on WhatsApp",
+      "dateMode": "Ask for a date",
+      "dateModeHint": "Useful for rentals and visits.",
+      "dateModeNone": "No date",
+      "dateModeOptional": "Optional date",
+      "dateModeRequired": "Required date",
+      "days": "{count} days",
+      "duration": "Duration",
+      "durationHint": "How long one slot lasts.",
+      "horizon": "Bookable up to",
+      "horizonHint": "How far ahead the calendar opens.",
+      "hours": "{count} hours",
+      "interval": "Slot starts every",
+      "intervalDefault": "Same as duration",
+      "intervalHint": "Leave on default to start a slot every duration.",
+      "maxQuantity": "Max per booking",
+      "maxQuantityHint": "How many units one client can take at once.",
+      "messagePrompt": "Message prompt",
+      "messagePromptHint": "Shown above the message box.",
+      "messagePromptPlaceholder": "Tell me what you need and when.",
+      "noBuffer": "No break",
+      "noNotice": "No minimum",
+      "notice": "Minimum notice",
+      "noticeHint": "How late someone can still book.",
+      "prefilledMessage": "Pre-written message",
+      "prefilledMessageHint": "What the conversation starts with.",
+      "prefilledMessagePlaceholder": "Hi! I saw your page and I'd like to know more about…",
+      "quantityLabel": "Unit name",
+      "quantityLabelHint": "Shown next to the quantity.",
+      "quantityLabelPlaceholder": "seats, nights, tickets…",
+      "requiresConfirmation": "I confirm each booking myself",
+      "requiresConfirmationHint": "Off: the slot is confirmed instantly. On: it waits for your approval.",
+      "unlimited": "Unlimited",
+      "whatsappNumber": "WhatsApp number",
+      "whatsappNumberHint": "Leave empty to use your profile number ({number}).",
+      "whatsappNumberMissing": "No number in your profile yet — add one here or in settings."
+    },
+    "fields": {
+      "add": "Add",
+      "addHint": "Anything clients ask you often: level, equipment, address, dress code…",
+      "addPlaceholder": "Field name",
+      "addTitle": "Add your own field",
+      "choose": "Choose…",
+      "labelAria": "Field name",
+      "removeField": "Remove {label}",
+      "types": {
+        "images": "Photos",
+        "number": "Number",
+        "select": "Choice",
+        "text": "Short text",
+        "textarea": "Long text"
+      }
+    },
+    "form": {
+      "actionType": "What happens when a client clicks",
+      "actionTypeHint": "This decides the whole flow on your public page.",
+      "back": "Back",
+      "cancel": "Cancel",
+      "continue": "Continue",
+      "create": "Create my offer",
+      "created": "Offer created",
+      "description": "Description",
+      "descriptionHint": "What the client gets. Two or three sentences is plenty.",
+      "descriptionPlaceholder": "A one-to-one session built around your goals…",
+      "detailsHint": "Suggestions come from your activity. Fill what matters, drop the rest, add your own.",
+      "detailsTitle": "Details shown on the offer",
+      "photo": "Photo",
+      "photoHint": "Landscape works best. It is the first thing clients see.",
+      "price": "Price",
+      "priceFixed": "Fixed",
+      "priceFree": "Free",
+      "priceFrom": "From",
+      "priceOnRequest": "On request",
+      "priceType": "Type",
+      "save": "Save changes",
+      "settingsHint": "Settings tied to the action you chose — not to your profession.",
+      "settingsTitle": "How this action works",
+      "stepOne": "Essentials",
+      "stepTwo": "Details",
+      "title": "Offer title",
+      "titlePlaceholder": "60-minute personal training",
+      "updated": "Offer updated",
+      "visible": "Visible on my page",
+      "visibleHint": "Hide an offer without deleting it."
+    }
+  },
+  "onboarding": {
+    "offer": {
+      "subtitle": "One offer is enough to go live. Start with the essentials, then add the details that matter for your work.",
+      "title": "Create your first offer"
+    },
+    "profile": {
+      "categoryHint": "Pick the closest one — it only pre-fills suggestions.",
+      "categoryTitle": "Your activity",
+      "nameHint": "Your name or your brand, as clients know you.",
+      "nameLabel": "Profile name",
+      "namePlaceholder": "Ana Torres Coaching",
+      "previewBody": "Based on your activity, we'll suggest fields like {fields} — keep what fits, ignore the rest.",
+      "previewTitle": "Next step will suggest",
+      "slugFree": "This link is available.",
+      "slugHint": "Letters, numbers and dashes. This is what you share.",
+      "slugLabel": "Your link",
+      "submit": "Create my profile",
+      "subtitle": "This shapes your public page and pre-fills your first offer. You can change all of it later.",
+      "title": "What do you do, and under which name?"
+    },
+    "share": {
+      "badge": "Your page is live",
+      "places": {
+        "instagram": {
+          "body": "Replace the link in your bio — the one people already tap.",
+          "title": "Instagram bio"
+        },
+        "messages": {
+          "body": "Answer \"how do I book?\" with one link instead of ten messages.",
+          "title": "DMs and WhatsApp"
+        },
+        "signature": {
+          "body": "Every email you send becomes a booking opportunity.",
+          "title": "Email signature"
+        }
+      },
+      "subtitle": "Share it once and let clients book, reserve or reach out — without a single back-and-forth message.",
+      "title": "One link. <accent>Everything you sell.</accent>",
+      "toDashboard": "Go to my dashboard",
+      "viewPage": "See my public page"
+    },
+    "steps": {
+      "1": "Account",
+      "2": "Profile",
+      "3": "First offer",
+      "4": "Your link",
+      "aria": "Setup progress"
+    }
+  },
+  "publicProfile": {
+    "booking": {
+      "addToCalendar": "Add to calendar",
+      "budget": "Budget",
+      "budgetPlaceholder": "Around 500 €",
+      "confirmationNote": "You will receive a confirmation email right away.",
+      "decrease": "One less",
+      "email": "Email",
+      "emailPlaceholder": "you@example.com",
+      "increase": "One more",
+      "loadingSlots": "Loading availability…",
+      "lookFurther": "Look further ahead",
+      "manageBooking": "View or cancel",
+      "message": "Message",
+      "messagePlaceholder": "Anything useful to know beforehand?",
+      "name": "Your name",
+      "namePlaceholder": "First and last name",
+      "noSlots": "No free slot right now",
+      "noSlotsHint": "Everything is booked in this period. Try a later date or send a message.",
+      "phone": "Phone",
+      "pickSlot": "Pick a time",
+      "preferredDate": "Preferred date",
+      "quantity": "How many",
+      "slotsError": "Could not load availability. Please refresh.",
+      "submitBooking": "Confirm booking",
+      "submitMessage": "Send message",
+      "submitQuote": "Request a quote",
+      "submitReservation": "Send reservation",
+      "successConfirmed": "You're booked",
+      "successConfirmedBody": "{name} has been notified and your confirmation email is on its way.",
+      "successPending": "Request sent",
+      "successPendingBody": "{name} will come back to you shortly. A copy is in your inbox.",
+      "timezoneNote": "Times shown in your timezone ({timezone})."
+    },
+    "closedDefault": "I am not taking new bookings at the moment. Feel free to reach out and I'll let you know when I reopen.",
+    "closedTitle": "Bookings are paused",
+    "contact": {
+      "email": "Email",
+      "phone": "Call",
+      "whatsapp": "WhatsApp"
+    },
+    "cta": {
+      "calendar_booking": "Book",
+      "contact_request": "Get in touch",
+      "direct_reservation": "Reserve",
+      "quote_request": "Get a quote",
+      "whatsapp_direct": "WhatsApp"
+    },
+    "offersTitle": "Offers",
+    "poweredBy": "Made with TheSessionLink",
+    "whatsappUnavailable": "This contact option is temporarily unavailable."
+  },
+  "share": {
+    "copied": "Link copied",
+    "copy": "Copy",
+    "copyFailed": "Could not copy. Select the link and copy it manually.",
+    "email": "Email",
+    "qr": "QR code",
+    "qrHint": "Print it, put it on a flyer, or show it on your phone.",
+    "qrTitle": "Your QR code",
+    "share": "Share",
+    "shareText": "Book with {name}:"
+  }
+}

@@ -1,0 +1,1001 @@
+{
+  "auth": {
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "invalidLink": "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau.",
+    "loginSubtitle": "On vous envoie un lien par e-mail. Aucun mot de passe à retenir.",
+    "loginTitle": "Content de vous revoir",
+    "sentBody": "Nous avons envoyé un lien de connexion à {email}. Il expire dans une heure.",
+    "sentHint": "Rien reçu ? Vérifiez les spams, ou",
+    "sentRetry": "renvoyez-le",
+    "sentTitle": "Regardez vos e-mails",
+    "signupSubtitle": "Commencez avec votre e-mail. Votre page réservable est prête en deux minutes.",
+    "signupTitle": "Créez votre lien",
+    "submitLogin": "Recevoir mon lien",
+    "submitSignup": "Démarrer l'essai gratuit",
+    "switchToLogin": "Vous avez déjà un compte ? Connectez-vous",
+    "switchToSignup": "Nouveau ici ? Créez votre lien",
+    "terms": "En continuant, vous acceptez nos conditions et notre politique de confidentialité.",
+    "trialNote": "14 jours d'essai · sans carte bancaire"
+  },
+  "bookingStatus": {
+    "cancelled": "Annulé",
+    "confirmed": "Confirmé",
+    "pending": "En attente"
+  },
+  "common": {
+    "add": "Ajouter",
+    "all": "Tout",
+    "appName": "TheSessionLink",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "confirm": "Confirmer",
+    "continue": "Continuer",
+    "copied": "Copié",
+    "copy": "Copier",
+    "dashboard": "Tableau de bord",
+    "delete": "Supprimer",
+    "duplicate": "Dupliquer",
+    "edit": "Modifier",
+    "free": "Gratuit",
+    "from": "À partir de {price}",
+    "language": "Langue",
+    "learnMore": "En savoir plus",
+    "loading": "Chargement…",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "next": "Suivant",
+    "no": "Non",
+    "none": "Aucun",
+    "onRequest": "Sur demande",
+    "open": "Ouvrir",
+    "optional": "facultatif",
+    "perBooking": "par réservation",
+    "preview": "Aperçu",
+    "remove": "Retirer",
+    "required": "Obligatoire",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "saved": "Enregistré",
+    "saving": "Enregistrement…",
+    "search": "Rechercher",
+    "share": "Partager",
+    "signup": "Commencer",
+    "today": "Aujourd'hui",
+    "viewPage": "Voir la page",
+    "yes": "Oui"
+  },
+  "dashboard": {
+    "availability": {
+      "addRange": "Ajouter une plage",
+      "addTimeOff": "Ajouter une absence",
+      "backToDefault": "Retour aux horaires hebdomadaires",
+      "copied": "Copié sur tous les jours",
+      "copyToAll": "Copier sur tous les jours",
+      "customSchedule": "Horaires spécifiques à cette offre",
+      "customScheduleHint": "Utile quand une offre tourne sur d'autres jours que le reste.",
+      "defaultEmpty": "Aucun horaire hebdomadaire défini.",
+      "defaultSummary": "Actuellement réservable : {days}.",
+      "editDefault": "Modifier les horaires",
+      "from": "Du",
+      "offerHint": "Par défaut, « {title} » suit vos horaires hebdomadaires.",
+      "offerTitle": "Disponibilités de cette offre",
+      "overridesNote": "Ces offres utilisent leurs propres horaires : {offers}.",
+      "timeOffHint": "Vacances et journées où vous n'êtes tout simplement pas disponible.",
+      "timeOffLabel": "Libellé",
+      "timeOffLabelPlaceholder": "Vacances",
+      "timeOffTitle": "Absences",
+      "to": "Au",
+      "unavailable": "Indisponible",
+      "weeklyHint": "Utilisés par toutes les offres réservables sur créneau. Heures en {timezone}.",
+      "weeklyTitle": "Horaires hebdomadaires"
+    },
+    "bookings": {
+      "cancelBooking": "Annuler",
+      "cancelledToast": "Réservation annulée — le client a été prévenu.",
+      "confirm": "Confirmer",
+      "confirmed": "Réservation confirmée — le client a été prévenu.",
+      "dayOff": "Jour off.",
+      "deleteBody": "Elle disparaît de votre historique. C'est irréversible.",
+      "deleteTitle": "Supprimer cette réservation ?",
+      "empty": {
+        "body": "Les nouvelles réservations et demandes venant de votre page arrivent ici.",
+        "title": "Rien pour l'instant"
+      },
+      "fields": {
+        "budget": "Budget",
+        "client": "Client",
+        "email": "E-mail",
+        "message": "Son message",
+        "phone": "Téléphone"
+      },
+      "filters": {
+        "all": "Tout",
+        "cancelled": "Annulées",
+        "past": "Passées",
+        "pending": "À traiter",
+        "upcoming": "À venir"
+      },
+      "internalNotes": "Notes privées",
+      "internalNotesHint": "Visible uniquement par vous. Enregistré quand vous cliquez ailleurs.",
+      "internalNotesPlaceholder": "Genou fragile, préfère le matin…",
+      "nextMonth": "Mois suivant",
+      "noBookingsThatDay": "Rien de prévu ce jour-là.",
+      "noTime": "Sans heure",
+      "openClient": "Ouvrir la fiche client",
+      "previousMonth": "Mois précédent",
+      "searchPlaceholder": "Chercher un nom, un e-mail…",
+      "stats": {
+        "clients": "Clients",
+        "pending": "À traiter",
+        "upcoming": "À venir"
+      },
+      "statusShort": {
+        "cancelled": "Annulé",
+        "confirmed": "OK",
+        "pending": "En attente"
+      },
+      "subtitle": "Tout ce qui arrive par votre page, au même endroit.",
+      "tabs": {
+        "availability": "Disponibilités",
+        "calendar": "Calendrier",
+        "clients": "Clients",
+        "list": "Liste"
+      },
+      "title": "Réservations & clients",
+      "todayButton": "Aujourd'hui"
+    },
+    "clients": {
+      "backToList": "Tous les clients",
+      "bookingsCount": "{count, plural, =0 {aucune réservation} one {# réservation} other {# réservations}}",
+      "emptyBody": "Toute personne qui réserve ou vous écrit apparaît ici automatiquement.",
+      "emptyTitle": "Aucun client pour l'instant",
+      "historyCount": "{count, plural, =0 {Aucune réservation} one {# réservation} other {# réservations}}",
+      "historyTitle": "Historique",
+      "last": "Dernier : {date}",
+      "name": "Nom",
+      "next": "Prochain : {date}",
+      "notesHint": "Préférences, historique, tout ce qui servira la prochaine fois.",
+      "notesLabel": "Notes privées",
+      "notesPlaceholder": "Préfère le mardi matin. Prépare un marathon en avril.",
+      "phone": "Téléphone",
+      "searchPlaceholder": "Chercher un client…"
+    },
+    "nav": {
+      "bookings": "Réservations",
+      "offers": "Offres",
+      "profile": "Profil",
+      "settings": "Paramètres"
+    },
+    "offers": {
+      "deleteBody": "« {title} » disparaîtra de votre page. Les réservations passées restent dans votre CRM.",
+      "deleteTitle": "Supprimer cette offre ?",
+      "deleted": "Offre supprimée",
+      "dragHandle": "Réordonner {title}",
+      "duplicated": "Offre dupliquée",
+      "editSubtitle": "Les modifications sont visibles sur votre page dès l'enregistrement.",
+      "hidden": "Masquée",
+      "hide": "Masquer de la page",
+      "menuLabel": "Actions sur l'offre",
+      "new": "Nouvelle offre",
+      "newSubtitle": "L'essentiel d'abord, puis les détails propres à votre métier.",
+      "newTitle": "Nouvelle offre",
+      "reorderHint": "Glissez pour changer l'ordre affiché sur votre page.",
+      "show": "Afficher sur la page",
+      "subtitle": "Ce que vos clients peuvent réserver, demander ou acheter.",
+      "title": "Offres"
+    },
+    "profile": {
+      "accents": {
+        "amber": "Ambre",
+        "coral": "Corail",
+        "forest": "Forêt",
+        "ink": "Encre",
+        "ocean": "Océan",
+        "violet": "Violet"
+      },
+      "appearanceHint": "Utilisée sur les boutons et les éléments mis en avant de votre page.",
+      "appearanceTitle": "Couleur d'accent",
+      "bio": "À propos",
+      "bioHint": "Deux ou trois phrases. Qui vous aidez et comment.",
+      "bioPlaceholder": "J'aide les débutants à installer une routine qu'ils tiennent vraiment…",
+      "calendarVisible": "Accepter les réservations",
+      "calendarVisibleHint": "Désactivé : votre page reste en ligne, le calendrier laisse place à votre message.",
+      "category": "Activité",
+      "closedMessage": "Message quand les réservations sont en pause",
+      "closedMessageHint": "Dites quand vous revenez, ou comment vous joindre entre-temps.",
+      "closedMessagePlaceholder": "Complet jusqu'au 5 septembre — écrivez-moi, je reviens vers vous.",
+      "headline": "Accroche",
+      "headlineHint": "Une ligne sous votre nom. C'est la première chose qu'on lit.",
+      "headlinePlaceholder": "Coach sportif à Lyon · en ligne et en présentiel",
+      "identityHint": "Photo, nom et une ligne qui dit ce que vous faites.",
+      "identityTitle": "Identité",
+      "linkHint": "Vous pouvez le changer, mais les anciens liens cesseront de fonctionner.",
+      "linkTitle": "Votre lien",
+      "location": "Localisation",
+      "locationPlaceholder": "Lyon, France",
+      "name": "Nom du profil",
+      "noCategory": "Non précisée",
+      "slug": "Adresse publique",
+      "slugFree": "Ce lien est disponible.",
+      "slugWarning": "Le modifier casse les liens déjà partagés.",
+      "socialHint": "Collez une URL complète ou simplement votre pseudo.",
+      "socialPlaceholder": {
+        "facebook": "URL de la page",
+        "instagram": "@pseudo ou URL",
+        "linkedin": "URL du profil",
+        "tiktok": "@pseudo ou URL",
+        "website": "votresite.com",
+        "x": "@pseudo ou URL",
+        "youtube": "@chaîne ou URL"
+      },
+      "socialTitle": "Réseaux sociaux",
+      "subtitle": "C'est la page que vos clients découvrent. Restez court et personnel.",
+      "title": "Votre profil public",
+      "visibilityHint": "Mettez les réservations en pause sans retirer votre page.",
+      "visibilityTitle": "Visibilité des réservations"
+    },
+    "settings": {
+      "channelsHint": "Ce que vos clients voient et peuvent utiliser sur votre page publique.",
+      "channelsTitle": "Canaux de contact",
+      "contactEmail": "E-mail de contact",
+      "contactEmailHint": "Où arrivent les notifications. Par défaut, l'e-mail de votre compte.",
+      "currency": "Devise",
+      "dangerHint": "Efface votre profil, vos offres, vos réservations et vos fiches clients.",
+      "dangerTitle": "Supprimer le compte",
+      "deleteAccount": "Supprimer mon compte",
+      "deleteBody": "Tout est effacé : votre page, vos offres et votre historique client. Saisissez {email} pour confirmer.",
+      "deleteConfirm": "Tout supprimer",
+      "deleteConfirmLabel": "Saisissez {email}",
+      "deleteNote": "Cette action est irréversible.",
+      "deleteTitle": "Supprimer votre compte ?",
+      "notify": "M'envoyer un e-mail à chaque réservation",
+      "notifyHint": "Désactivez si vous préférez consulter le tableau de bord.",
+      "paymentsHint": "L'encaissement en ligne ne fait pas encore partie du produit.",
+      "paymentsSoon": "Une réservation ne dépend jamais d'un paiement : le client réserve, vous encaissez comme aujourd'hui. Le paiement en ligne s'ajoutera plus tard sans toucher à vos offres.",
+      "paymentsTitle": "Paiements",
+      "phone": "Téléphone",
+      "preferencesHint": "Langue, devise, fuseau horaire et rappels.",
+      "preferencesTitle": "Préférences",
+      "reminder": "Envoyer les rappels",
+      "reminderHint": "Uniquement pour les offres réservées sur créneau.",
+      "reminderOption": "{count} heures avant",
+      "showEmail": "Afficher mon e-mail",
+      "showEmailHint": "Visible sur votre page publique.",
+      "showPhone": "Afficher mon téléphone",
+      "showPhoneHint": "Visible sur votre page publique.",
+      "showWhatsapp": "Afficher WhatsApp",
+      "showWhatsappHint": "Nécessaire pour les offres avec bouton WhatsApp.",
+      "subtitle": "Canaux de contact, langue et fonctionnement des rappels.",
+      "timezone": "Fuseau horaire",
+      "timezoneHint": "Tous vos créneaux et réservations sont calculés dans ce fuseau.",
+      "title": "Paramètres",
+      "whatsapp": "Numéro WhatsApp"
+    },
+    "yourLink": "Votre lien"
+  },
+  "emails": {
+    "clientCancellation": {
+      "cta": "Ouvrir mon tableau de bord",
+      "footer": "Envoyé par TheSessionLink",
+      "heading": "Une réservation a été annulée",
+      "intro": "{client} a annulé depuis son e-mail de confirmation. Le créneau est de nouveau libre.",
+      "preview": "{client} a annulé sa réservation",
+      "subject": "{client} a annulé"
+    },
+    "clientConfirmation": {
+      "confirmed": {
+        "heading": "C'est réservé",
+        "intro": "{pro} a confirmé votre réservation. Voici les détails.",
+        "preview": "Votre réservation avec {pro} est confirmée",
+        "subject": "Votre réservation avec {pro} est confirmée"
+      },
+      "cta": "Voir ou annuler",
+      "footer": "Envoyé pour le compte de {pro} via TheSessionLink",
+      "note": "Besoin de changer quelque chose ? Utilisez le lien ci-dessus ou répondez simplement à cet e-mail.",
+      "pending": {
+        "heading": "Demande reçue",
+        "intro": "{pro} a bien reçu votre demande et vous répondra rapidement.",
+        "preview": "{pro} a bien reçu votre demande",
+        "subject": "{pro} a bien reçu votre demande"
+      },
+      "yourMessage": "Votre message"
+    },
+    "fields": {
+      "budget": "Budget",
+      "client": "Client",
+      "email": "E-mail",
+      "offer": "Offre",
+      "phone": "Téléphone",
+      "quantity": "Quantité",
+      "requestedDate": "Date souhaitée",
+      "time": "Horaire",
+      "when": "Quand"
+    },
+    "magicLink": {
+      "body": "Cliquez sur le bouton ci-dessous pour vous connecter. Le lien expire dans une heure et ne fonctionne qu'une fois.",
+      "cta": "Se connecter",
+      "fallback": "Ou collez cette adresse dans votre navigateur :",
+      "heading": "Votre lien de connexion",
+      "ignore": "Si vous n'avez pas demandé cet e-mail, ignorez-le.",
+      "preview": "Connectez-vous à TheSessionLink",
+      "subject": "Votre lien de connexion"
+    },
+    "proNotification": {
+      "clientMessage": "Son message",
+      "cta": "Ouvrir mon tableau de bord",
+      "footer": "Vous recevez cet e-mail car les notifications sont activées dans vos paramètres.",
+      "headingConfirmed": "Nouvelle réservation",
+      "headingPending": "Nouvelle demande",
+      "intro": "{client} vient d'arriver via votre page publique.",
+      "preview": "{client} vient de réserver",
+      "subject": "Nouveau : {client} — {offer}"
+    },
+    "reminder": {
+      "cta": "Voir ou annuler",
+      "footer": "Envoyé pour le compte de {pro} via TheSessionLink",
+      "heading": "À très vite",
+      "intro": "Petit rappel pour votre séance avec {pro}.",
+      "note": "Un empêchement ? Annuler tôt libère le créneau pour quelqu'un d'autre.",
+      "subject": "Rappel : {offer}"
+    },
+    "statusUpdate": {
+      "cancelled": {
+        "cta": "Réserver un autre créneau",
+        "footer": "Envoyé pour le compte de {pro} via TheSessionLink",
+        "heading": "Réservation annulée",
+        "intro": "{pro} a dû annuler cette réservation. Vous pouvez en réserver une autre depuis sa page.",
+        "preview": "{pro} a annulé votre réservation",
+        "subject": "Annulé : {offer}"
+      },
+      "confirmed": {
+        "cta": "Voir ou annuler",
+        "footer": "Envoyé pour le compte de {pro} via TheSessionLink",
+        "heading": "C'est confirmé",
+        "intro": "{pro} a confirmé votre réservation.",
+        "preview": "{pro} a confirmé votre réservation",
+        "subject": "Confirmé : {offer}"
+      }
+    }
+  },
+  "errorPage": {
+    "body": "C'est notre faute. Réessayez — si cela persiste, écrivez-nous et on regarde.",
+    "home": "Aller à l'accueil",
+    "retry": "Réessayer",
+    "title": "Quelque chose a cassé de notre côté"
+  },
+  "errors": {
+    "calendar_closed": "Les réservations sont en pause.",
+    "confirmation_mismatch": "La confirmation ne correspond pas.",
+    "date_required": "Choisissez une date.",
+    "end_before_start": "La fin doit être après le début.",
+    "invalid_currency": "Saisissez un code devise à 3 lettres.",
+    "invalid_email": "Saisissez une adresse e-mail valide.",
+    "invalid_input": "Vérifiez les champs en surbrillance.",
+    "invalid_phone": "Saisissez un numéro de téléphone valide.",
+    "invalid_slug": "3 à 40 lettres, chiffres ou tirets.",
+    "invalid_time": "Saisissez une heure valide.",
+    "last_offer": "Gardez au moins une offre sur votre page.",
+    "not_available": "Indisponible sur cet environnement.",
+    "not_found": "Introuvable.",
+    "offer_unavailable": "Cette offre n'est plus disponible.",
+    "overlapping_rules": "Deux plages se chevauchent le même jour.",
+    "quantity_too_high": "C'est au-delà du maximum par réservation.",
+    "required": "Ce champ est obligatoire.",
+    "send_failed": "Impossible d'envoyer l'e-mail. Réessayez.",
+    "slot_required": "Choisissez un créneau.",
+    "slot_taken": "Ce créneau n'est plus libre.",
+    "slot_unavailable": "Ce créneau vient d'être pris. Choisissez-en un autre.",
+    "slug_reserved": "Ce lien est réservé.",
+    "slug_taken": "Ce lien est déjà pris.",
+    "sold_out": "Plus de place disponible.",
+    "too_many_requests": "Trop de tentatives. Patientez quelques minutes.",
+    "too_short": "C'est un peu trop court.",
+    "unauthenticated": "Reconnectez-vous.",
+    "unexpected": "Une erreur est survenue. Réessayez."
+  },
+  "landing": {
+    "demo": {
+      "back": "Retour",
+      "confirm": "Confirmer {time}",
+      "days": {
+        "mon": "Lun 4",
+        "thu": "Jeu 7",
+        "tue": "Mar 5",
+        "wed": "Mer 6"
+      },
+      "doneBody": "Une confirmation pour {time} arriverait immédiatement dans votre boîte mail.",
+      "doneTitle": "C'est réservé",
+      "fieldEmail": "vous@exemple.com",
+      "fieldName": "Votre nom",
+      "niches": {
+        "coach": "Coach",
+        "hairdresser": "Salon",
+        "realtor": "Agent immo"
+      },
+      "pickSlot": "Choisissez un créneau",
+      "profiles": {
+        "coach": {
+          "headline": "Coach sportive · en ligne et en présentiel",
+          "initials": "AT",
+          "location": "Lyon, France",
+          "name": "Ana Torres",
+          "offers": {
+            "0": {
+              "cta": "Réserver",
+              "description": "Séance construite autour de vos objectifs, en salle ou en extérieur.",
+              "price": "60 €",
+              "title": "Coaching individuel — 60 min"
+            },
+            "1": {
+              "cta": "En savoir plus",
+              "description": "Programme, suivi hebdomadaire et conseils nutrition.",
+              "price": "Dès 540 €",
+              "title": "Transformation 12 semaines"
+            }
+          }
+        },
+        "hairdresser": {
+          "headline": "Coupe, couleur et soin · petit salon",
+          "initials": "SL",
+          "location": "Paris 11e",
+          "name": "Studio Lina",
+          "offers": {
+            "0": {
+              "cta": "Réserver",
+              "description": "Shampoing, coupe et coiffage. Environ 45 minutes.",
+              "price": "45 €",
+              "title": "Coupe & brushing"
+            },
+            "1": {
+              "cta": "Réserver",
+              "description": "15 minutes pour en parler avant de réserver.",
+              "price": "Gratuit",
+              "title": "Diagnostic couleur"
+            }
+          }
+        },
+        "realtor": {
+          "headline": "Immobilier · Bordeaux centre",
+          "initials": "MD",
+          "location": "Bordeaux, France",
+          "name": "Marc Delcourt",
+          "offers": {
+            "0": {
+              "cta": "Réserver une visite",
+              "description": "Dernier étage, balcon, à deux pas du marché des Chartrons.",
+              "price": "395 000 €",
+              "title": "Visite — T3 de 72 m²"
+            },
+            "1": {
+              "cta": "Demander",
+              "description": "Vous pensez vendre ? Je reviens avec une fourchette sous 48 h.",
+              "price": "Gratuit",
+              "title": "Estimation offerte"
+            }
+          }
+        }
+      },
+      "replay": "Recommencer",
+      "tapHint": "Cliquez sur une offre — cette démo fonctionne vraiment"
+    },
+    "examples": {
+      "badge": "Exemple",
+      "eyebrow": "Un modèle, plusieurs métiers",
+      "items": {
+        "coach": {
+          "headline": "Coach sportive, réserve ses séances à l'heure.",
+          "initials": "AT",
+          "name": "Ana Torres",
+          "offers": {
+            "0": {
+              "price": "60 €",
+              "title": "Coaching individuel"
+            },
+            "1": {
+              "price": "540 €",
+              "title": "Programme 12 semaines"
+            }
+          }
+        },
+        "hairdresser": {
+          "headline": "Salon de coiffure, créneaux enchaînés toute la journée.",
+          "initials": "SL",
+          "name": "Studio Lina",
+          "offers": {
+            "0": {
+              "price": "45 €",
+              "title": "Coupe & brushing"
+            },
+            "1": {
+              "price": "Dès 80 €",
+              "title": "Couleur"
+            }
+          }
+        },
+        "realtor": {
+          "headline": "Agent immobilier, une demande de visite par bien.",
+          "initials": "MD",
+          "name": "Marc Delcourt",
+          "offers": {
+            "0": {
+              "price": "395 000 €",
+              "title": "Visite d'appartement"
+            },
+            "1": {
+              "price": "Gratuit",
+              "title": "Estimation"
+            }
+          }
+        },
+        "tutor": {
+          "headline": "Prof de maths, cours en ligne après l'école.",
+          "initials": "DR",
+          "name": "David Ruiz",
+          "offers": {
+            "0": {
+              "price": "30 €",
+              "title": "Cours d'1 h"
+            },
+            "1": {
+              "price": "250 €",
+              "title": "Pack révisions bac"
+            }
+          }
+        }
+      },
+      "subtitle": "Ce sont des profils d'exemple construits avec le produit — ils montrent comment les mêmes briques s'adaptent à une séance, un bien, une coupe ou un cours.",
+      "title": "La même page, dans quatre activités très différentes."
+    },
+    "faq": {
+      "items": {
+        "calendar": {
+          "a": "Vous réglez vos horaires hebdomadaires une fois, plus vos absences. Chaque offre garde ces horaires ou utilise les siens. Les créneaux respectent la durée, la pause entre deux séances, votre délai minimum et les réservations existantes — un même créneau ne peut jamais être pris deux fois.",
+          "q": "Comment fonctionnent les disponibilités ?"
+        },
+        "cancel": {
+          "a": "Son e-mail de confirmation contient un lien privé pour voir ou annuler. Le créneau est libéré immédiatement et vous recevez un e-mail. Vous pouvez aussi confirmer ou annuler vous-même depuis votre tableau de bord.",
+          "q": "Et si un client annule ?"
+        },
+        "clients": {
+          "a": "Chacune devient une fiche client regroupant tout son historique avec vous, avec des notes visibles de vous seul. Aucun import, aucune saisie.",
+          "q": "Que deviennent les personnes qui réservent ?"
+        },
+        "language": {
+          "a": "L'interface et les e-mails existent en français et en anglais. Votre page publique suit le choix du visiteur, et retombe sur la langue dans laquelle vous travaillez.",
+          "q": "La page est-elle bilingue ?"
+        },
+        "link": {
+          "a": "Oui, mais l'ancienne adresse cesse de fonctionner — choisissez-en un que vous assumez d'imprimer. Tout le reste (nom, photo, offres) se modifie autant que vous voulez.",
+          "q": "Puis-je changer mon lien plus tard ?"
+        },
+        "niche": {
+          "a": "Oui. Le produit ne code aucun métier en dur : vous choisissez ce qu'un client peut faire (réserver un créneau, réserver un bien, écrire, demander un devis) et vous ajoutez les champs qui comptent pour vous. L'activité choisie ne sert qu'à pré-remplir des suggestions.",
+          "q": "Mon métier n'est pas dans votre liste. Ça marche quand même ?"
+        },
+        "payments": {
+          "a": "Pas encore, et c'est volontaire. Une réservation ne dépend jamais d'un paiement, donc rien ne bloque le client à la dernière étape. Vous encaissez comme aujourd'hui — sur place, par virement, sur facture.",
+          "q": "Mes clients peuvent-ils payer sur la page ?"
+        }
+      },
+      "title": "Les questions qu'on se pose avant de s'inscrire"
+    },
+    "features": {
+      "eyebrow": "Pensé pour de vrais métiers",
+      "items": {
+        "bilingual": {
+          "body": "Votre page, vos e-mails et votre tableau de bord suivent la langue dans laquelle vous travaillez.",
+          "title": "Français et anglais"
+        },
+        "crm": {
+          "body": "Chaque réservation ou message crée une fiche client avec son historique et vos notes privées.",
+          "title": "Un CRM qui se remplit seul"
+        },
+        "fields": {
+          "body": "Surface, niveau, ce qui est inclus, tenue — ajoutez tout ce qu'on vous demande à chaque fois.",
+          "title": "Vos propres champs"
+        },
+        "pause": {
+          "body": "Complet ? Coupez les réservations et affichez votre message. La page reste en ligne.",
+          "title": "Faire une pause sans disparaître"
+        },
+        "reminders": {
+          "body": "Le client reçoit un rappel avant la séance. Moins d'oublis, aucun message à envoyer.",
+          "title": "Rappels automatiques"
+        },
+        "whatsapp": {
+          "body": "Pour tout ce qui mérite d'abord une conversation, avec un message déjà écrit.",
+          "title": "WhatsApp en un clic"
+        }
+      },
+      "subtitle": "Un coach vend du temps. Un agent vend une visite. Un consultant vend un devis. Une seule page gère tout — vous choisissez l'action, on s'occupe du parcours.",
+      "title": "Cinq façons de transformer un visiteur en client."
+    },
+    "finalCta": {
+      "cta": "Créer mon lien",
+      "note": "Sans carte bancaire",
+      "subtitle": "Créez votre page, ajoutez une offre, partagez-la aujourd'hui. Quatorze jours pour voir si ça change votre semaine.",
+      "title": "Arrêtez d'expliquer comment vous réserver. <accent>Envoyez le lien.</accent>"
+    },
+    "footer": {
+      "login": "Se connecter",
+      "pricing": "Tarif",
+      "signup": "Commencer",
+      "tagline": "La page de réservation des indépendants."
+    },
+    "hero": {
+      "badge": "Un seul lien pour toute votre activité",
+      "cta": "Créer mon lien",
+      "ctaNote": "14 jours d'essai · sans carte bancaire",
+      "points": {
+        "anyJob": "Pour tous les indépendants",
+        "noCard": "Sans carte, sans démo commerciale",
+        "setup": "En ligne en deux minutes"
+      },
+      "rotating": {
+        "coaches": "des coachs",
+        "hairdressers": "des coiffeurs",
+        "photographers": "des photographes",
+        "realtors": "des agents immo",
+        "tutors": "des profs"
+      },
+      "subtitle": "Vos offres, votre agenda, vos clients — sur une page à glisser dans une bio Instagram ou une signature e-mail. Vos clients réservent en deux clics. Vous arrêtez de courir après les messages.",
+      "titleEnd": "qu'on partage vraiment.",
+      "titleStart": "La page de réservation"
+    },
+    "how": {
+      "eyebrow": "Comment ça marche",
+      "steps": {
+        "create": {
+          "body": "Un titre, un prix, une photo — puis choisissez ce qui se passe au clic : réserver un créneau, réserver un bien, vous écrire, ou demander un devis. Les champs sont suggérés selon votre activité.",
+          "title": "Décrivez ce que vous vendez"
+        },
+        "fill": {
+          "body": "Le client réserve, vous recevez un e-mail, il reçoit une confirmation puis un rappel. Chaque demande devient une fiche client avec vos notes privées.",
+          "title": "Laissez-le remplir votre agenda"
+        },
+        "share": {
+          "body": "Bio Instagram, signature e-mail, WhatsApp, QR code sur un flyer. La même adresse fonctionne partout et affiche toujours vos offres du moment.",
+          "title": "Partagez un seul lien"
+        }
+      },
+      "subtitle": "Pas de rendez-vous de mise en route, pas de gabarit à remplir pendant une heure. Vous décrivez ce que vous vendez, on en fait une page qui prend des réservations.",
+      "title": "Trois étapes, puis vous retournez travailler.",
+      "visuals": {
+        "actions": {
+          "calendar_booking": "Créneau",
+          "contact_request": "Message",
+          "direct_reservation": "Réservation",
+          "quote_request": "Devis"
+        },
+        "day": "Mar",
+        "places": {
+          "instagram": "Bio Instagram",
+          "qr": "QR code sur votre flyer",
+          "signature": "Signature e-mail",
+          "whatsapp": "Statut WhatsApp"
+        },
+        "status": {
+          "confirmed": "Confirmé",
+          "pending": "À traiter"
+        }
+      }
+    },
+    "nav": {
+      "cta": "Commencer",
+      "examples": "Exemples",
+      "features": "Fonctionnalités",
+      "how": "Comment ça marche",
+      "login": "Se connecter",
+      "pricing": "Tarif"
+    },
+    "pricing": {
+      "cta": "Démarrer mon essai gratuit",
+      "eyebrow": "Tarif",
+      "included": {
+        "actions": "Les cinq types d'action",
+        "branding": "Votre photo, vos couleurs, vos champs",
+        "calendar": "Agenda, disponibilités et absences",
+        "crm": "Fiches clients et notes privées",
+        "emails": "Confirmations, notifications et rappels",
+        "languages": "Français et anglais",
+        "offers": "Offres illimitées",
+        "support": "Support par e-mail"
+      },
+      "monthly": "Mensuel",
+      "monthlyNote": "Résiliable à tout moment, en un clic.",
+      "paymentsNote": "Le paiement en ligne ne fait pas encore partie du produit : le client réserve, vous encaissez comme aujourd'hui. Quand le paiement arrivera, vos offres n'auront rien à changer.",
+      "perMonth": "/ mois",
+      "perYear": "/ an",
+      "planName": "Pro",
+      "subtitle": "Aucun frais par réservation, aucune commission sur ce que vous facturez. Le prix affiché est le prix payé.",
+      "title": "Une offre. Tout est dedans.",
+      "trial": "14 jours gratuits · sans carte bancaire",
+      "yearly": "Annuel",
+      "yearlySaving": "Deux mois offerts par rapport au mensuel."
+    }
+  },
+  "manageBooking": {
+    "bookAgain": "Réserver un autre créneau",
+    "cancelBody": "Le créneau est libéré immédiatement et le professionnel est prévenu.",
+    "cancelBooking": "Annuler cette réservation",
+    "cancelTitle": "Annuler cette réservation ?",
+    "cancelled": "Réservation annulée",
+    "cancelledBody": "Cette réservation a été annulée.",
+    "confirmCancel": "Oui, annuler",
+    "confirmedBody": "Tout est en place. En cas d'empêchement, annuler tôt libère le créneau pour quelqu'un d'autre.",
+    "contactPro": "Contacter",
+    "footer": "Cette page est privée — le lien vous a été envoyé par e-mail.",
+    "pendingBody": "Cette demande attend confirmation. Vous recevrez un e-mail dès qu'elle est confirmée.",
+    "title": "Votre réservation"
+  },
+  "media": {
+    "addCover": "Ajouter une photo",
+    "addImage": "Ajouter",
+    "addPhoto": "Ajouter une photo",
+    "change": "Changer",
+    "changePhoto": "Changer la photo",
+    "dropHint": "Glissez-déposez, ou cliquez pour parcourir",
+    "errors": {
+      "failed": "Échec de l'envoi. Réessayez.",
+      "too_large": "Image trop lourde (12 Mo maximum).",
+      "unauthenticated": "Votre session a expiré. Reconnectez-vous.",
+      "unsupported": "Fichier non pris en charge. Utilisez JPG, PNG ou WebP."
+    },
+    "hint": "Image carrée, 200×200px minimum.",
+    "remove": "Retirer"
+  },
+  "meta": {
+    "description": "La page de réservation des indépendants. Vos offres, votre agenda, vos clients — dans un lien à partager partout.",
+    "title": "TheSessionLink — un seul lien pour vous réserver"
+  },
+  "notFound": {
+    "body": "La page recherchée a été déplacée, renommée, ou n'a jamais existé. Si quelqu'un vous a envoyé ce lien, demandez-lui le nouveau.",
+    "cta": "Créer mon propre lien",
+    "home": "Aller à l'accueil",
+    "title": "Ce lien n'existe pas"
+  },
+  "offers": {
+    "actions": {
+      "calendar_booking": {
+        "description": "Le client choisit un horaire dans votre agenda. Idéal pour les séances et rendez-vous.",
+        "label": "Réserver un créneau"
+      },
+      "contact_request": {
+        "description": "Un formulaire court arrive dans votre boîte mail et votre CRM.",
+        "label": "Envoyer un message"
+      },
+      "direct_reservation": {
+        "description": "Pour un bien, une place, un objet. Vous gardez la main sur le planning.",
+        "label": "Réserver sans horaire"
+      },
+      "quote_request": {
+        "description": "Le client décrit son besoin, vous revenez avec un prix.",
+        "label": "Demander un devis"
+      },
+      "suggested": "Suggéré",
+      "whatsapp_direct": {
+        "description": "Un clic ouvre une conversation avec vous, message déjà écrit.",
+        "label": "Discussion WhatsApp"
+      }
+    },
+    "config": {
+      "askBudget": "Demander un budget",
+      "askBudgetHint": "Un champ budget libre dans le formulaire.",
+      "askPhone": "Numéro de téléphone",
+      "askPhoneHidden": "Ne pas demander",
+      "askPhoneOptional": "Demander, facultatif",
+      "askPhoneRequired": "Demander, obligatoire",
+      "askPreferredDate": "Demander une date souhaitée",
+      "askPreferredDateHint": "Pratique quand vous fixez le rendez-vous ensuite.",
+      "briefPrompt": "Consigne du brief",
+      "briefPromptHint": "Orientez ce que le client doit décrire.",
+      "briefPromptPlaceholder": "Décrivez votre projet, votre délai et le lieu.",
+      "buffer": "Pause entre deux séances",
+      "bufferHint": "Temps bloqué avant et après chaque réservation.",
+      "capacity": "Places au total",
+      "capacityHint": "Laissez vide pour illimité.",
+      "ctaContactPlaceholder": "Poser une question",
+      "ctaLabel": "Libellé du bouton",
+      "ctaLabelHint": "Laissez vide pour le libellé par défaut.",
+      "ctaQuotePlaceholder": "Demander un devis",
+      "ctaWhatsappPlaceholder": "M'écrire sur WhatsApp",
+      "dateMode": "Demander une date",
+      "dateModeHint": "Utile pour les locations et les visites.",
+      "dateModeNone": "Sans date",
+      "dateModeOptional": "Date facultative",
+      "dateModeRequired": "Date obligatoire",
+      "days": "{count} jours",
+      "duration": "Durée",
+      "durationHint": "Durée d'un créneau.",
+      "horizon": "Réservable jusqu'à",
+      "horizonHint": "Jusqu'où l'agenda s'ouvre.",
+      "hours": "{count} heures",
+      "interval": "Un créneau toutes les",
+      "intervalDefault": "Comme la durée",
+      "intervalHint": "Laissez par défaut pour enchaîner les créneaux.",
+      "maxQuantity": "Maximum par réservation",
+      "maxQuantityHint": "Combien d'unités un client peut prendre d'un coup.",
+      "messagePrompt": "Consigne du message",
+      "messagePromptHint": "Affichée au-dessus du champ message.",
+      "messagePromptPlaceholder": "Dites-moi ce dont vous avez besoin et quand.",
+      "noBuffer": "Aucune pause",
+      "noNotice": "Aucun minimum",
+      "notice": "Délai minimum",
+      "noticeHint": "Jusqu'à quand on peut encore réserver.",
+      "prefilledMessage": "Message pré-rempli",
+      "prefilledMessageHint": "Ce par quoi la conversation démarre.",
+      "prefilledMessagePlaceholder": "Bonjour ! J'ai vu votre page et j'aimerais en savoir plus sur…",
+      "quantityLabel": "Nom de l'unité",
+      "quantityLabelHint": "Affiché à côté de la quantité.",
+      "quantityLabelPlaceholder": "places, nuits, billets…",
+      "requiresConfirmation": "Je confirme chaque réservation",
+      "requiresConfirmationHint": "Désactivé : le créneau est confirmé immédiatement. Activé : il attend votre accord.",
+      "unlimited": "Illimité",
+      "whatsappNumber": "Numéro WhatsApp",
+      "whatsappNumberHint": "Laissez vide pour utiliser le numéro de votre profil ({number}).",
+      "whatsappNumberMissing": "Aucun numéro dans votre profil — ajoutez-le ici ou dans les paramètres."
+    },
+    "fields": {
+      "add": "Ajouter",
+      "addHint": "Tout ce qu'on vous demande souvent : niveau, matériel, adresse, tenue…",
+      "addPlaceholder": "Nom du champ",
+      "addTitle": "Ajouter votre propre champ",
+      "choose": "Choisir…",
+      "labelAria": "Nom du champ",
+      "removeField": "Retirer {label}",
+      "types": {
+        "images": "Photos",
+        "number": "Nombre",
+        "select": "Choix",
+        "text": "Texte court",
+        "textarea": "Texte long"
+      }
+    },
+    "form": {
+      "actionType": "Ce qui se passe quand un client clique",
+      "actionTypeHint": "Cela détermine tout le parcours sur votre page publique.",
+      "back": "Retour",
+      "cancel": "Annuler",
+      "continue": "Continuer",
+      "create": "Créer mon offre",
+      "created": "Offre créée",
+      "description": "Description",
+      "descriptionHint": "Ce que le client obtient. Deux ou trois phrases suffisent.",
+      "descriptionPlaceholder": "Une séance individuelle construite autour de vos objectifs…",
+      "detailsHint": "Les suggestions viennent de votre activité. Remplissez l'utile, supprimez le reste, ajoutez les vôtres.",
+      "detailsTitle": "Détails affichés sur l'offre",
+      "photo": "Photo",
+      "photoHint": "Le format paysage rend le mieux. C'est la première chose que l'on voit.",
+      "price": "Prix",
+      "priceFixed": "Fixe",
+      "priceFree": "Gratuit",
+      "priceFrom": "À partir de",
+      "priceOnRequest": "Sur demande",
+      "priceType": "Type",
+      "save": "Enregistrer",
+      "settingsHint": "Réglages liés à l'action choisie — pas à votre métier.",
+      "settingsTitle": "Fonctionnement de cette action",
+      "stepOne": "L'essentiel",
+      "stepTwo": "Les détails",
+      "title": "Titre de l'offre",
+      "titlePlaceholder": "Coaching personnel — 60 minutes",
+      "updated": "Offre mise à jour",
+      "visible": "Visible sur ma page",
+      "visibleHint": "Masquez une offre sans la supprimer."
+    }
+  },
+  "onboarding": {
+    "offer": {
+      "subtitle": "Une seule offre suffit pour être en ligne. Commencez par l'essentiel, puis ajoutez les détails propres à votre métier.",
+      "title": "Créez votre première offre"
+    },
+    "profile": {
+      "categoryHint": "Choisissez la plus proche — cela ne sert qu'à pré-remplir des suggestions.",
+      "categoryTitle": "Votre activité",
+      "nameHint": "Votre nom ou votre marque, tel que vos clients vous connaissent.",
+      "nameLabel": "Nom du profil",
+      "namePlaceholder": "Ana Torres Coaching",
+      "previewBody": "Selon votre activité, nous proposerons des champs comme {fields} — gardez ce qui colle, ignorez le reste.",
+      "previewTitle": "À l'étape suivante",
+      "slugFree": "Ce lien est disponible.",
+      "slugHint": "Lettres, chiffres et tirets. C'est ce que vous partagerez.",
+      "slugLabel": "Votre lien",
+      "submit": "Créer mon profil",
+      "subtitle": "Cela façonne votre page publique et pré-remplit votre première offre. Tout reste modifiable ensuite.",
+      "title": "Quelle est votre activité, et sous quel nom ?"
+    },
+    "share": {
+      "badge": "Votre page est en ligne",
+      "places": {
+        "instagram": {
+          "body": "Remplacez le lien de votre bio — celui sur lequel on clique déjà.",
+          "title": "Bio Instagram"
+        },
+        "messages": {
+          "body": "Répondez « comment je réserve ? » avec un lien, pas dix messages.",
+          "title": "DM et WhatsApp"
+        },
+        "signature": {
+          "body": "Chaque e-mail envoyé devient une occasion de réservation.",
+          "title": "Signature e-mail"
+        }
+      },
+      "subtitle": "Partagez-le une fois : vos clients réservent, demandent ou vous écrivent — sans échanges interminables.",
+      "title": "Un lien. <accent>Tout ce que vous vendez.</accent>",
+      "toDashboard": "Aller à mon tableau de bord",
+      "viewPage": "Voir ma page publique"
+    },
+    "steps": {
+      "1": "Compte",
+      "2": "Profil",
+      "3": "Première offre",
+      "4": "Votre lien",
+      "aria": "Progression de la configuration"
+    }
+  },
+  "publicProfile": {
+    "booking": {
+      "addToCalendar": "Ajouter au calendrier",
+      "budget": "Budget",
+      "budgetPlaceholder": "Autour de 500 €",
+      "confirmationNote": "Vous recevez un e-mail de confirmation immédiatement.",
+      "decrease": "Un de moins",
+      "email": "E-mail",
+      "emailPlaceholder": "vous@exemple.com",
+      "increase": "Un de plus",
+      "loadingSlots": "Chargement des disponibilités…",
+      "lookFurther": "Voir plus loin",
+      "manageBooking": "Voir ou annuler",
+      "message": "Message",
+      "messagePlaceholder": "Quelque chose d'utile à savoir avant ?",
+      "name": "Votre nom",
+      "namePlaceholder": "Prénom et nom",
+      "noSlots": "Aucun créneau libre pour l'instant",
+      "noSlotsHint": "Tout est réservé sur cette période. Essayez plus tard ou envoyez un message.",
+      "phone": "Téléphone",
+      "pickSlot": "Choisissez un créneau",
+      "preferredDate": "Date souhaitée",
+      "quantity": "Combien",
+      "slotsError": "Impossible de charger les disponibilités. Actualisez la page.",
+      "submitBooking": "Confirmer la réservation",
+      "submitMessage": "Envoyer le message",
+      "submitQuote": "Demander un devis",
+      "submitReservation": "Envoyer la réservation",
+      "successConfirmed": "C'est réservé",
+      "successConfirmedBody": "{name} a été prévenu et votre e-mail de confirmation arrive.",
+      "successPending": "Demande envoyée",
+      "successPendingBody": "{name} revient vers vous rapidement. Une copie est dans votre boîte mail.",
+      "timezoneNote": "Horaires affichés dans votre fuseau ({timezone})."
+    },
+    "closedDefault": "Je ne prends pas de nouvelles réservations pour le moment. Écrivez-moi, je vous préviens dès la réouverture.",
+    "closedTitle": "Réservations en pause",
+    "contact": {
+      "email": "E-mail",
+      "phone": "Appeler",
+      "whatsapp": "WhatsApp"
+    },
+    "cta": {
+      "calendar_booking": "Réserver",
+      "contact_request": "Contacter",
+      "direct_reservation": "Réserver",
+      "quote_request": "Demander un devis",
+      "whatsapp_direct": "WhatsApp"
+    },
+    "offersTitle": "Offres",
+    "poweredBy": "Créé avec TheSessionLink",
+    "whatsappUnavailable": "Ce moyen de contact est temporairement indisponible."
+  },
+  "share": {
+    "copied": "Lien copié",
+    "copy": "Copier",
+    "copyFailed": "Copie impossible. Sélectionnez le lien et copiez-le manuellement.",
+    "email": "E-mail",
+    "qr": "QR code",
+    "qrHint": "Imprimez-le, mettez-le sur un flyer, ou montrez-le depuis votre téléphone.",
+    "qrTitle": "Votre QR code",
+    "share": "Partager",
+    "shareText": "Réservez avec {name} :"
+  }
+}
