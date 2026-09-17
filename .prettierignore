@@ -2,3 +2,8 @@
 node_modules
 package-lock.json
 supabase/.temp
+
+# Email templates: prettier formats HTML for a browser, not for a mail client.
+# Reflowing them adds whitespace inside inline-block elements and rewrites the
+# quoting in style attributes, so they are kept exactly as authored.
+supabase/templates/

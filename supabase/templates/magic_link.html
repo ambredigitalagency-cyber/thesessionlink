@@ -5,82 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Your sign-in link</title>
   </head>
-  <body
-    style="
-      margin: 0;
-      padding: 0;
-      background: #f4f4f5;
-      font-family:
-        -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif;
-      color: #0a0a0a;
-    "
-  >
-    <table
-      role="presentation"
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      style="background: #f4f4f5; padding: 48px 16px"
-    >
+  <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;color:#0a0a0a;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:48px 16px;">
       <tr>
         <td align="center">
-          <table
-            role="presentation"
-            width="100%"
-            cellpadding="0"
-            cellspacing="0"
-            style="
-              max-width: 480px;
-              background: #ffffff;
-              border-radius: 24px;
-              padding: 40px;
-              border: 1px solid #e4e4e7;
-            "
-          >
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:24px;padding:40px;border:1px solid #e4e4e7;">
             <tr>
               <td>
-                <p
-                  style="
-                    margin: 0 0 32px;
-                    font-size: 15px;
-                    font-weight: 600;
-                    letter-spacing: -0.01em;
-                  "
-                >
-                  TheSessionLink
-                </p>
-                <h1
-                  style="
-                    margin: 0 0 12px;
-                    font-size: 26px;
-                    line-height: 1.2;
-                    font-weight: 600;
-                    letter-spacing: -0.03em;
-                  "
-                >
-                  Your sign-in link
-                </h1>
-                <p style="margin: 0 0 28px; font-size: 15px; line-height: 1.6; color: #52525b">
-                  Click the button below to sign in. This link expires in one hour and can only be
-                  used once.
-                </p>
-                <a
-                  href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email"
-                  style="
-                    display: inline-block;
-                    background: #0a0a0a;
-                    color: #ffffff;
-                    text-decoration: none;
-                    font-size: 15px;
-                    font-weight: 500;
-                    padding: 14px 24px;
-                    border-radius: 999px;
-                  "
-                  >Sign in to TheSessionLink</a
-                >
-                <p style="margin: 32px 0 0; font-size: 13px; line-height: 1.6; color: #a1a1aa">
-                  If you didn't request this email, you can safely ignore it.
-                </p>
+                <p style="margin:0 0 32px;font-size:15px;font-weight:600;letter-spacing:-0.01em;">TheSessionLink</p>
+                <h1 style="margin:0 0 12px;font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-0.03em;">Your sign-in link</h1>
+                <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#52525b;">Click the button below to sign in. This link expires in one hour and can only be used once.</p>
+                <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email" style="display:inline-block;background:#0a0a0a;color:#ffffff;text-decoration:none;font-size:15px;font-weight:500;padding:14px 24px;border-radius:999px;">Sign in to TheSessionLink</a>
+                <p style="margin:32px 0 0;font-size:13px;line-height:1.6;color:#a1a1aa;">If you didn't request this email, you can safely ignore it.</p>
               </td>
             </tr>
           </table>
