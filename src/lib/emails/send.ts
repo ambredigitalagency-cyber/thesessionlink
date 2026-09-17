@@ -46,7 +46,9 @@ export async function sendEmail({ to, subject, react, replyTo, attachments }: Se
       subject,
       html,
       text,
-      replyTo: replyTo ?? serverEnv.emailReplyTo ?? undefined,
+      // `??` would keep an empty string: EMAIL_FROM unset, or a profile with no
+      // contact email, would send Resend `reply_to: ""` and be rejected.
+      replyTo: replyTo || serverEnv.emailReplyTo || undefined,
       attachments: attachments?.map((attachment) => ({
         filename: attachment.filename,
         content: Buffer.from(attachment.content).toString("base64"),
