@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Plane } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, LayoutGrid, Plane } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { ACTION_ICONS, BOOKING_STATUS_TONE, weekdayLabel } from "@/lib/offers/meta";
 import type { ActionType } from "@/lib/offers/schema";
 import { localDateKey } from "@/lib/scheduling/slots";
+
+import { BookingsWeek } from "./bookings-week";
 import { cn } from "@/lib/utils";
 
 export type CalendarBooking = {
@@ -46,6 +48,31 @@ export function BookingsCalendar({
 
   const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [selected, setSelected] = useState<string>(todayKey);
+  const [mode, setMode] = useState<"month" | "week">("month");
+
+  /** Monday of the week holding the selected day, as a local date key. */
+  const weekStart = useMemo(() => {
+    const [year, month, day] = selected.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    // getUTCDay(): 0 = Sunday, so Monday-first needs the 6-day wrap.
+    const offset = (date.getUTCDay() + 6) % 7;
+    date.setUTCDate(date.getUTCDate() - offset);
+    return date.toISOString().slice(0, 10);
+  }, [selected]);
+
+  const weekLabel = useMemo(() => {
+    const [year, month, day] = weekStart.split("-").map(Number);
+    const start = new Date(Date.UTC(year, month - 1, day));
+    const end = new Date(Date.UTC(year, month - 1, day + 6));
+    const fmt = new Intl.DateTimeFormat(tag, { day: "numeric", month: "short", timeZone: "UTC" });
+    return `${fmt.format(start)} – ${fmt.format(end)}`;
+  }, [weekStart, tag]);
+
+  function shiftWeek(direction: number) {
+    const [year, month, day] = weekStart.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day + direction * 7));
+    setSelected(date.toISOString().slice(0, 10));
+  }
 
   /** Bookings grouped by local day, in the pro's timezone. */
   const byDay = useMemo(() => {
@@ -103,17 +130,42 @@ export function BookingsCalendar({
 
   return (
     <div className="space-y-5">
-      <div className="surface-card p-4 sm:p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <p className="text-ink text-[16px] font-semibold tracking-[-0.02em] capitalize">
-            {monthLabel}
-          </p>
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <p className="text-ink text-[16px] font-semibold tracking-[-0.02em] capitalize">
+          {mode === "week" ? weekLabel : monthLabel}
+        </p>
+
+        <div className="flex items-center gap-2">
+          <div className="border-line bg-surface flex items-center gap-0.5 rounded-full border p-0.5">
+            {(["month", "week"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={mode === option}
+                aria-label={t(`calendarMode.${option}` as "calendarMode.month")}
+                onClick={() => setMode(option)}
+                className={cn(
+                  "rounded-full p-2 transition-colors",
+                  mode === option
+                    ? "bg-ink text-ink-inverse"
+                    : "text-ink-muted hover:text-ink hover:bg-ink/5",
+                )}
+              >
+                {option === "month" ? (
+                  <LayoutGrid className="size-4" />
+                ) : (
+                  <CalendarDays className="size-4" />
+                )}
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => shift(-1)}
-              aria-label={t("previousMonth")}
+              onClick={() => (mode === "week" ? shiftWeek(-1) : shift(-1))}
+              aria-label={mode === "week" ? t("previousWeek") : t("previousMonth")}
             >
               <ChevronLeft className="size-4" />
             </Button>
@@ -130,86 +182,106 @@ export function BookingsCalendar({
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={() => shift(1)}
-              aria-label={t("nextMonth")}
+              onClick={() => (mode === "week" ? shiftWeek(1) : shift(1))}
+              aria-label={mode === "week" ? t("nextWeek") : t("nextMonth")}
             >
               <ChevronRight className="size-4" />
             </Button>
           </div>
         </div>
-
-        <div className="grid grid-cols-7 gap-1">
-          {[1, 2, 3, 4, 5, 6, 0].map((weekday) => (
-            <div
-              key={weekday}
-              className="text-ink-subtle pb-1.5 text-center text-[11px] font-medium tracking-wide uppercase"
-            >
-              {weekdayLabel(weekday, locale, "short").slice(0, 2)}
-            </div>
-          ))}
-
-          {Array.from({ length: leadingBlanks }).map((_, index) => (
-            <div key={`blank-${index}`} />
-          ))}
-
-          {Array.from({ length: daysInMonth }).map((_, index) => {
-            const day = index + 1;
-            const key = dateKey(cursor.year, cursor.month, day);
-            const dayBookings = byDay.get(key) ?? [];
-            const isToday = key === todayKey;
-            const isSelected = key === selected;
-            const isOff = offDays.has(key);
-            const hasPending = dayBookings.some((booking) => booking.status === "pending");
-
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelected(key)}
-                className={cn(
-                  "relative flex aspect-square flex-col items-center justify-center gap-1 rounded-[var(--radius-xs)] text-[13px] transition-colors",
-                  isSelected
-                    ? "bg-ink text-ink-inverse"
-                    : isOff
-                      ? "bg-ink/[0.04] text-ink-subtle"
-                      : "text-ink hover:bg-ink/5",
-                )}
-                aria-current={isToday ? "date" : undefined}
-              >
-                <span
-                  className={cn("font-medium", isToday && !isSelected && "text-[var(--accent)]")}
-                >
-                  {day}
-                </span>
-
-                {dayBookings.length > 0 ? (
-                  <span className="flex items-center gap-0.5">
-                    {dayBookings.slice(0, 3).map((booking) => (
-                      <span
-                        key={booking.id}
-                        className={cn(
-                          "size-1.5 rounded-full",
-                          isSelected
-                            ? "bg-white/70"
-                            : booking.status === "pending"
-                              ? "bg-[var(--accent)]"
-                              : "bg-ink/40",
-                        )}
-                      />
-                    ))}
-                  </span>
-                ) : isOff ? (
-                  <Plane className="size-3 opacity-50" />
-                ) : null}
-
-                {hasPending && !isSelected ? (
-                  <span className="absolute inset-0 rounded-[var(--radius-xs)] ring-1 ring-[var(--accent)]/30 ring-inset" />
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
       </div>
+
+      {mode === "week" ? (
+        <BookingsWeek
+          bookings={bookings}
+          weekStart={weekStart}
+          timezone={timezone}
+          locale={locale}
+          onOpen={(id) => {
+            // Neither view has a detail panel: selecting the day surfaces the
+            // booking in the list underneath.
+            const target = bookings.find((booking) => booking.id === id);
+            const key = target?.starts_at
+              ? localDateKey(new Date(target.starts_at), timezone)
+              : target?.requested_date;
+            if (key) setSelected(key);
+          }}
+        />
+      ) : (
+        <div className="surface-card p-4 sm:p-5">
+          <div className="grid grid-cols-7 gap-1">
+            {[1, 2, 3, 4, 5, 6, 0].map((weekday) => (
+              <div
+                key={weekday}
+                className="text-ink-subtle pb-1.5 text-center text-[11px] font-medium tracking-wide uppercase"
+              >
+                {weekdayLabel(weekday, locale, "short").slice(0, 2)}
+              </div>
+            ))}
+
+            {Array.from({ length: leadingBlanks }).map((_, index) => (
+              <div key={`blank-${index}`} />
+            ))}
+
+            {Array.from({ length: daysInMonth }).map((_, index) => {
+              const day = index + 1;
+              const key = dateKey(cursor.year, cursor.month, day);
+              const dayBookings = byDay.get(key) ?? [];
+              const isToday = key === todayKey;
+              const isSelected = key === selected;
+              const isOff = offDays.has(key);
+              const hasPending = dayBookings.some((booking) => booking.status === "pending");
+
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSelected(key)}
+                  className={cn(
+                    "relative flex aspect-square flex-col items-center justify-center gap-1 rounded-[var(--radius-xs)] text-[13px] transition-colors",
+                    isSelected
+                      ? "bg-ink text-ink-inverse"
+                      : isOff
+                        ? "bg-ink/[0.04] text-ink-subtle"
+                        : "text-ink hover:bg-ink/5",
+                  )}
+                  aria-current={isToday ? "date" : undefined}
+                >
+                  <span
+                    className={cn("font-medium", isToday && !isSelected && "text-[var(--accent)]")}
+                  >
+                    {day}
+                  </span>
+
+                  {dayBookings.length > 0 ? (
+                    <span className="flex items-center gap-0.5">
+                      {dayBookings.slice(0, 3).map((booking) => (
+                        <span
+                          key={booking.id}
+                          className={cn(
+                            "size-1.5 rounded-full",
+                            isSelected
+                              ? "bg-white/70"
+                              : booking.status === "pending"
+                                ? "bg-[var(--accent)]"
+                                : "bg-ink/40",
+                          )}
+                        />
+                      ))}
+                    </span>
+                  ) : isOff ? (
+                    <Plane className="size-3 opacity-50" />
+                  ) : null}
+
+                  {hasPending && !isSelected ? (
+                    <span className="absolute inset-0 rounded-[var(--radius-xs)] ring-1 ring-[var(--accent)]/30 ring-inset" />
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div>
         <p className="text-ink-subtle mb-3 text-[13px] font-medium tracking-wide uppercase">
@@ -240,7 +312,8 @@ export function BookingsCalendar({
               return (
                 <li
                   key={booking.id}
-                  className="border-line bg-surface flex items-center gap-3 rounded-[var(--radius-md)] border p-3"
+                  data-action={booking.action_type}
+                  className="border-line bg-surface flex items-center gap-3 rounded-[var(--radius-md)] border border-l-[3px] border-l-[var(--event)] p-3"
                 >
                   <span className="text-ink w-12 shrink-0 text-[13px] font-semibold">
                     {time ?? "—"}
@@ -250,7 +323,7 @@ export function BookingsCalendar({
                       {booking.client_name}
                     </p>
                     <p className="text-ink-muted mt-0.5 flex items-center gap-1.5 truncate text-[12.5px]">
-                      <Icon className="size-3" />
+                      <Icon className="size-3 text-[var(--event)]" />
                       {booking.offer_title}
                     </p>
                   </div>

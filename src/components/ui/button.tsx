@@ -13,8 +13,10 @@ const buttonVariants = cva(
       variant: {
         primary:
           "bg-ink text-ink-inverse hover:bg-night-soft shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
+        // A per-theme hover step rather than brightness: on the near-black "ink"
+        // accent a 6% lift is invisible.
         accent:
-          "bg-[var(--accent)] text-white hover:brightness-[1.06] shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
+          "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
         secondary:
           "bg-surface text-ink border border-line-strong hover:border-ink/25 hover:bg-canvas",
         ghost: "text-ink-muted hover:bg-ink/5 hover:text-ink",

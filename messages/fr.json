@@ -94,10 +94,25 @@
       "weeklyTitle": "Horaires hebdomadaires"
     },
     "bookings": {
+      "actionTypeFilter": "Type d'action",
+      "calendarMode": {
+        "month": "Vue mois",
+        "week": "Vue semaine"
+      },
       "cancelBooking": "Annuler",
       "cancelledToast": "Réservation annulée — le client a été prévenu.",
+      "clearFilters": "Tout effacer",
+      "columns": "Colonnes",
+      "columns_": {
+        "client": "Client",
+        "date": "Date",
+        "offer": "Offre",
+        "quantity": "Quantité",
+        "status": "Statut"
+      },
       "confirm": "Confirmer",
       "confirmed": "Réservation confirmée — le client a été prévenu.",
+      "dateRange": "Plage de dates",
       "dayOff": "Jour off.",
       "deleteBody": "Elle disparaît de votre historique. C'est irréversible.",
       "deleteTitle": "Supprimer cette réservation ?",
@@ -112,26 +127,45 @@
         "message": "Son message",
         "phone": "Téléphone"
       },
-      "filters": {
-        "all": "Tout",
-        "cancelled": "Annulées",
-        "past": "Passées",
-        "pending": "À traiter",
-        "upcoming": "À venir"
-      },
       "internalNotes": "Notes privées",
       "internalNotesHint": "Visible uniquement par vous. Enregistré quand vous cliquez ailleurs.",
       "internalNotesPlaceholder": "Genou fragile, préfère le matin…",
+      "kanbanHint": "Glisse une card d'une colonne à l'autre pour changer son statut. « Terminé » se calcule depuis la date.",
+      "moreFilters": "Plus de filtres",
       "nextMonth": "Mois suivant",
+      "nextWeek": "Semaine suivante",
       "noBookingsThatDay": "Rien de prévu ce jour-là.",
       "noTime": "Sans heure",
+      "offerFilter": "Offre",
       "openClient": "Ouvrir la fiche client",
       "previousMonth": "Mois précédent",
+      "previousWeek": "Semaine précédente",
+      "rescheduled": "Réservation déplacée.",
+      "resultCount": "{count, plural, one {# résultat} other {# résultats}}",
       "searchPlaceholder": "Chercher un nom, un e-mail…",
+      "sort": {
+        "client": "Client",
+        "created": "Reçue le",
+        "date": "Date",
+        "offer": "Offre",
+        "status": "Statut"
+      },
+      "sortBy": "Trier par",
       "stats": {
         "clients": "Clients",
         "pending": "À traiter",
         "upcoming": "À venir"
+      },
+      "status": {
+        "cancelled": "Annulé",
+        "completed": "Terminé",
+        "confirmed": "Confirmé",
+        "pending": "En attente"
+      },
+      "statusChanged": {
+        "cancelled": "Réservation annulée.",
+        "confirmed": "Réservation confirmée.",
+        "pending": "Remise en attente."
       },
       "statusShort": {
         "cancelled": "Annulé",
@@ -146,7 +180,12 @@
         "list": "Liste"
       },
       "title": "Réservations & clients",
-      "todayButton": "Aujourd'hui"
+      "todayButton": "Aujourd'hui",
+      "view": {
+        "kanban": "Vue kanban",
+        "list": "Vue liste"
+      },
+      "weekHint": "Glisse une séance vers un autre créneau. Les règles de disponibilité et le battement entre séances sont revérifiés ; un créneau refusé remet la séance à sa place."
     },
     "clients": {
       "backToList": "Tous les clients",
@@ -219,6 +258,9 @@
       "locationPlaceholder": "Lyon, France",
       "name": "Nom du profil",
       "noCategory": "Non précisée",
+      "previewCta": "Réserver",
+      "previewOffer": "Coaching individuel",
+      "previewTitle": "Aperçu sur ta page publique",
       "slug": "Adresse publique",
       "slugFree": "Ce lien est disponible.",
       "slugWarning": "Le modifier casse les liens déjà partagés.",

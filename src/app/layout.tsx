@@ -5,6 +5,7 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Toaster } from "sonner";
 
 import { siteUrl } from "@/lib/env";
+import { MotionProvider } from "@/components/motion-provider";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 
 import "./globals.css";
@@ -54,7 +55,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={pickMessages(messages, BASE_NAMESPACES)}>
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </NextIntlClientProvider>
         <Toaster
           position="bottom-right"

@@ -152,7 +152,12 @@ function OfferRow({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "surface-card flex items-center gap-3 p-3 transition-shadow",
+        // Same hover language as the public offer card: a half-step lift and a
+        // softer shadow. Suppressed while dragging, where dnd-kit owns the
+        // transform.
+        "surface-card flex items-center gap-3 p-3 transition-[box-shadow,transform,border-color] duration-200 ease-[var(--ease-out-expo)]",
+        !isDragging &&
+          "hover:border-ink/15 hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)]",
         isDragging && "z-10 shadow-[var(--shadow-float)]",
         !offer.is_active && "opacity-60",
       )}

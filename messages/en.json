@@ -94,10 +94,25 @@
       "weeklyTitle": "Weekly hours"
     },
     "bookings": {
+      "actionTypeFilter": "Action type",
+      "calendarMode": {
+        "month": "Month view",
+        "week": "Week view"
+      },
       "cancelBooking": "Cancel",
       "cancelledToast": "Booking cancelled — the client has been notified.",
+      "clearFilters": "Clear all",
+      "columns": "Columns",
+      "columns_": {
+        "client": "Client",
+        "date": "Date",
+        "offer": "Offer",
+        "quantity": "Quantity",
+        "status": "Status"
+      },
       "confirm": "Confirm",
       "confirmed": "Booking confirmed — the client has been notified.",
+      "dateRange": "Date range",
       "dayOff": "Day off.",
       "deleteBody": "This removes it from your history. It cannot be undone.",
       "deleteTitle": "Delete this booking?",
@@ -112,26 +127,45 @@
         "message": "Their message",
         "phone": "Phone"
       },
-      "filters": {
-        "all": "All",
-        "cancelled": "Cancelled",
-        "past": "Past",
-        "pending": "To handle",
-        "upcoming": "Upcoming"
-      },
       "internalNotes": "Private notes",
       "internalNotesHint": "Only you can see this. Saved when you click outside.",
       "internalNotesPlaceholder": "Knee injury, prefers mornings…",
+      "kanbanHint": "Drag a card between columns to change its status. “Completed” is worked out from the date.",
+      "moreFilters": "More filters",
       "nextMonth": "Next month",
+      "nextWeek": "Next week",
       "noBookingsThatDay": "Nothing booked that day.",
       "noTime": "No time",
+      "offerFilter": "Offer",
       "openClient": "Open client file",
       "previousMonth": "Previous month",
+      "previousWeek": "Previous week",
+      "rescheduled": "Booking moved.",
+      "resultCount": "{count, plural, one {# result} other {# results}}",
       "searchPlaceholder": "Search a name, an email…",
+      "sort": {
+        "client": "Client",
+        "created": "Received",
+        "date": "Date",
+        "offer": "Offer",
+        "status": "Status"
+      },
+      "sortBy": "Sort by",
       "stats": {
         "clients": "Clients",
         "pending": "To handle",
         "upcoming": "Upcoming"
+      },
+      "status": {
+        "cancelled": "Cancelled",
+        "completed": "Completed",
+        "confirmed": "Confirmed",
+        "pending": "Pending"
+      },
+      "statusChanged": {
+        "cancelled": "Booking cancelled.",
+        "confirmed": "Booking confirmed.",
+        "pending": "Moved back to pending."
       },
       "statusShort": {
         "cancelled": "Cancelled",
@@ -146,7 +180,12 @@
         "list": "List"
       },
       "title": "Bookings & clients",
-      "todayButton": "Today"
+      "todayButton": "Today",
+      "view": {
+        "kanban": "Board view",
+        "list": "List view"
+      },
+      "weekHint": "Drag a session to another slot. Availability rules and the buffer between sessions are re-checked; a refused slot puts the session back."
     },
     "clients": {
       "backToList": "All clients",
@@ -219,6 +258,9 @@
       "locationPlaceholder": "Lyon, France",
       "name": "Profile name",
       "noCategory": "Not specified",
+      "previewCta": "Book",
+      "previewOffer": "One-to-one coaching",
+      "previewTitle": "How it looks on your page",
       "slug": "Public address",
       "slugFree": "This link is available.",
       "slugWarning": "Changing this breaks links you already shared.",

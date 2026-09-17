@@ -152,6 +152,7 @@
 :root {
   /* Overridden per public profile by the pro's accent preset. */
   --accent: var(--color-brand);
+  --accent-hover: var(--color-brand-hover);
   --accent-soft: var(--color-brand-soft);
   --accent-ink: var(--color-brand-ink);
   color-scheme: light;
@@ -160,38 +161,82 @@
 /* Accent presets a pro can pick for their public page. */
 [data-accent="coral"] {
   --accent: #f2542d;
+  --accent-hover: #d9431f;
   --accent-soft: #fff0ea;
   --accent-ink: #7d2a12;
 }
 
 [data-accent="ink"] {
   --accent: #0c0c0d;
+  --accent-hover: #2a2a2e;
   --accent-soft: #f1f0ee;
   --accent-ink: #0c0c0d;
 }
 
 [data-accent="forest"] {
   --accent: #1f7a55;
+  --accent-hover: #1a6647;
   --accent-soft: #e7f5ee;
   --accent-ink: #10553a;
 }
 
 [data-accent="ocean"] {
   --accent: #2563eb;
+  --accent-hover: #1d4ed8;
   --accent-soft: #eaf1fe;
   --accent-ink: #1a4699;
 }
 
 [data-accent="violet"] {
   --accent: #7c3aed;
+  --accent-hover: #6d28d9;
   --accent-soft: #f3ecfe;
   --accent-ink: #4c1d95;
 }
 
 [data-accent="amber"] {
   --accent: #b45309;
+  --accent-hover: #92400e;
   --accent-soft: #fdf3e2;
   --accent-ink: #78350f;
+}
+
+/*
+ * Event colours, by action type.
+ *
+ * Deliberately muted and kept apart from the accent presets above: the accent
+ * is the pro's branding on their public page, these are data categories inside
+ * the dashboard. Reusing the accent here would make a coral profile look like
+ * everything was the same kind of booking.
+ */
+[data-action="calendar_booking"] {
+  --event: #5566cc;
+  --event-soft: #eef0fb;
+  --event-ink: #38468f;
+}
+
+[data-action="direct_reservation"] {
+  --event: #2f9182;
+  --event-soft: #e8f4f1;
+  --event-ink: #1f6b5c;
+}
+
+[data-action="contact_request"] {
+  --event: #a3843c;
+  --event-soft: #f7f1e5;
+  --event-ink: #6d5526;
+}
+
+[data-action="quote_request"] {
+  --event: #8c5a9c;
+  --event-soft: #f4eef6;
+  --event-ink: #5f3a6b;
+}
+
+[data-action="whatsapp_direct"] {
+  --event: #4f8a6b;
+  --event-soft: #ebf3ee;
+  --event-ink: #356049;
 }
 
 * {

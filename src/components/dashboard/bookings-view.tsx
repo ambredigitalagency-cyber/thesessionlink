@@ -7,7 +7,6 @@ import {
   Mail,
   MessageSquare,
   Phone,
-  Search,
   Trash2,
   UserRound,
 } from "lucide-react";
@@ -17,6 +16,18 @@ import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { deleteBooking, saveBookingNotes, updateBookingStatus } from "@/actions/bookings";
+import { BookingsKanban } from "@/components/dashboard/bookings-kanban";
+import { BookingsToolbar } from "@/components/dashboard/bookings-toolbar";
+import { useBookingPrefs } from "@/lib/bookings/prefs";
+import {
+  EMPTY_FILTERS,
+  applyFilters,
+  sortBookings,
+  type BookingFilters,
+  type ColumnKey,
+  type SortDirection,
+  type SortKey,
+} from "@/lib/bookings/filters";
 import { Button } from "@/components/ui/button";
 import { Modal, Sheet } from "@/components/ui/overlays";
 import { Badge, EmptyState } from "@/components/ui/primitives";
@@ -44,10 +55,6 @@ export type BookingRow = {
   created_at: string;
 };
 
-type Filter = "upcoming" | "pending" | "all" | "past" | "cancelled";
-
-const FILTERS: Filter[] = ["upcoming", "pending", "all", "past", "cancelled"];
-
 export function BookingsView({
   bookings,
   timezone,
@@ -61,48 +68,24 @@ export function BookingsView({
   now: number;
 }) {
   const t = useTranslations("dashboard.bookings");
-  const [filter, setFilter] = useState<Filter>("upcoming");
-  const [query, setQuery] = useState("");
+  const [filters, setFilters] = useState<BookingFilters>(EMPTY_FILTERS);
+  const [sort, setSort] = useState<{ key: SortKey; direction: SortDirection }>({
+    key: "date",
+    direction: "asc",
+  });
+  const [{ view, columns }, setPrefs] = useBookingPrefs();
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const filtered = useMemo(() => {
-    const search = query.trim().toLowerCase();
+  const filtered = useMemo(
+    () => sortBookings(applyFilters(bookings, filters, now), sort.key, sort.direction, now),
+    [bookings, filters, sort, now],
+  );
 
-    return bookings
-      .filter((booking) => {
-        if (search) {
-          const haystack = `${booking.client_name} ${booking.client_email} ${booking.offer_title}`;
-          if (!haystack.toLowerCase().includes(search)) return false;
-        }
-
-        const reference = booking.starts_at ? new Date(booking.starts_at).getTime() : null;
-
-        switch (filter) {
-          case "pending":
-            return booking.status === "pending";
-          case "cancelled":
-            return booking.status === "cancelled";
-          case "upcoming":
-            return (
-              booking.status !== "cancelled" &&
-              (reference === null ? booking.status === "pending" : reference >= now)
-            );
-          case "past":
-            return reference !== null && reference < now;
-          default:
-            return true;
-        }
-      })
-      .sort((a, b) => {
-        const aTime = a.starts_at
-          ? new Date(a.starts_at).getTime()
-          : new Date(a.created_at).getTime();
-        const bTime = b.starts_at
-          ? new Date(b.starts_at).getTime()
-          : new Date(b.created_at).getTime();
-        return filter === "past" ? bTime - aTime : aTime - bTime;
-      });
-  }, [bookings, filter, query, now]);
+  /** Offer titles actually present, so the filter never offers a dead option. */
+  const offerTitles = useMemo(
+    () => [...new Set(bookings.map((booking) => booking.offer_title))].sort(),
+    [bookings],
+  );
 
   const counts = useMemo(
     () => ({
@@ -128,41 +111,32 @@ export function BookingsView({
         <Stat label={t("stats.clients")} value={counts.clients} />
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="-mx-4 flex scrollbar-none gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          {FILTERS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setFilter(item)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors",
-                filter === item
-                  ? "border-ink bg-ink text-ink-inverse"
-                  : "border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink",
-              )}
-            >
-              {t(`filters.${item}` as "filters.all")}
-            </button>
-          ))}
-        </div>
-
-        <div className="relative sm:w-64">
-          <Search className="text-ink-subtle absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t("searchPlaceholder")}
-            className="border-line-strong bg-surface text-ink placeholder:text-ink-subtle focus:border-ink h-10 w-full rounded-full border pr-3 pl-9 text-[14px] focus:outline-none"
-          />
-        </div>
-      </div>
+      <BookingsToolbar
+        filters={filters}
+        onFiltersChange={setFilters}
+        view={view}
+        onViewChange={(next) => setPrefs({ view: next })}
+        sort={sort}
+        onSortChange={setSort}
+        columns={columns}
+        onColumnsChange={(next) => setPrefs({ columns: next })}
+        offerTitles={offerTitles}
+        resultCount={filtered.length}
+      />
 
       {filtered.length === 0 ? (
         <EmptyState
           icon={<CalendarClock className="size-5" />}
           title={t("empty.title")}
           description={t("empty.body")}
+        />
+      ) : view === "kanban" ? (
+        <BookingsKanban
+          bookings={filtered}
+          timezone={timezone}
+          locale={locale}
+          now={now}
+          onOpen={setOpenId}
         />
       ) : (
         <ul className="space-y-2">
@@ -172,6 +146,7 @@ export function BookingsView({
               booking={booking}
               timezone={timezone}
               locale={locale}
+              columns={columns}
               onOpen={() => setOpenId(booking.id)}
             />
           ))}
@@ -246,11 +221,13 @@ function BookingListItem({
   booking,
   timezone,
   locale,
+  columns,
   onOpen,
 }: {
   booking: BookingRow;
   timezone: string;
   locale: string;
+  columns: ColumnKey[];
   onOpen: () => void;
 }) {
   const t = useTranslations("dashboard.bookings");
@@ -268,25 +245,37 @@ function BookingListItem({
           booking.status === "cancelled" && "opacity-60",
         )}
       >
-        <div className="bg-ink/[0.04] flex w-[4.5rem] shrink-0 flex-col items-center rounded-[var(--radius-xs)] px-2 py-2">
-          <span className="text-ink text-[12px] font-medium capitalize">{when.date}</span>
-          {when.time ? (
-            <span className="text-ink text-[13px] font-semibold">{when.time}</span>
-          ) : (
-            <span className="text-ink-subtle text-[11px]">{t("noTime")}</span>
-          )}
-        </div>
+        {columns.includes("date") ? (
+          <div className="bg-ink/[0.04] flex w-[4.5rem] shrink-0 flex-col items-center rounded-[var(--radius-xs)] px-2 py-2">
+            <span className="text-ink text-[12px] font-medium capitalize">{when.date}</span>
+            {when.time ? (
+              <span className="text-ink text-[13px] font-semibold">{when.time}</span>
+            ) : (
+              <span className="text-ink-subtle text-[11px]">{t("noTime")}</span>
+            )}
+          </div>
+        ) : null}
 
         <div className="min-w-0 flex-1">
           <p className="text-ink truncate text-[15px] font-medium">{booking.client_name}</p>
-          <p className="text-ink-muted mt-0.5 flex items-center gap-1.5 truncate text-[13px]">
-            <Icon className="size-3.5 shrink-0" />
-            {booking.offer_title}
-            {booking.quantity > 1 ? <span>· ×{booking.quantity}</span> : null}
-          </p>
+          {columns.includes("offer") ? (
+            <p className="text-ink-muted mt-0.5 flex items-center gap-1.5 truncate text-[13px]">
+              <Icon className="size-3.5 shrink-0" />
+              {booking.offer_title}
+              {columns.includes("quantity") && booking.quantity > 1 ? (
+                <span>· ×{booking.quantity}</span>
+              ) : null}
+            </p>
+          ) : null}
         </div>
 
-        <Badge tone={BOOKING_STATUS_TONE[booking.status]}>{tStatus(booking.status)}</Badge>
+        {columns.includes("quantity") && booking.quantity > 1 && !columns.includes("offer") ? (
+          <span className="text-ink-muted text-[13px] tabular-nums">×{booking.quantity}</span>
+        ) : null}
+
+        {columns.includes("status") ? (
+          <Badge tone={BOOKING_STATUS_TONE[booking.status]}>{tStatus(booking.status)}</Badge>
+        ) : null}
       </button>
     </li>
   );

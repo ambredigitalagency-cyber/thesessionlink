@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { checkSlugAvailability, updateProfile } from "@/actions/profile";
 import { SocialIcon } from "@/components/brand/social-icons";
+import { AccentPreview } from "@/components/dashboard/accent-preview";
 import { AvatarUpload } from "@/components/media/image-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
@@ -257,6 +258,24 @@ export function ProfileEditor({
               {t(`accents.${option}` as "accents.coral")}
             </button>
           ))}
+        </div>
+
+        <div className="mt-6">
+          <p className="text-ink-subtle mb-2 text-[12.5px] font-medium">{t("previewTitle")}</p>
+          <div className="max-w-xs">
+            <AccentPreview
+              accent={accent}
+              displayName={displayName || profile.display_name}
+              categoryName={
+                categories.find((category) => category.id === categoryId)
+                  ? localized(
+                      categories.find((category) => category.id === categoryId)!.name,
+                      locale,
+                    )
+                  : null
+              }
+            />
+          </div>
         </div>
       </Card>
 

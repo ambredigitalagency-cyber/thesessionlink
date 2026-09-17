@@ -7,6 +7,8 @@ import { z } from "zod";
 import { requireProfileForAction } from "@/lib/auth";
 import { sendBookingStatusUpdate } from "@/lib/emails/send";
 import { planLimits } from "@/lib/plans/config";
+import { clampWindow, getBookingContext, slotInputFrom } from "@/lib/public/booking-context";
+import { isSlotBookable } from "@/lib/scheduling/slots";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/validation";
 
@@ -46,6 +48,70 @@ export async function updateBookingStatus(
   }
 
   revalidatePath("/dashboard", "layout");
+  return { ok: true };
+}
+
+/**
+ * Moves a confirmed or pending session to another slot, from the calendar.
+ *
+ * Re-runs the exact validation a public booking goes through — same context,
+ * same slot engine — so availability rules, the buffer between sessions, time
+ * off and the minimum notice all still apply. The no-overlap exclusion
+ * constraint in Postgres is the backstop if something is booked in between.
+ */
+export async function rescheduleBooking(id: string, startsAt: string): Promise<ActionResult> {
+  const profile = await requireProfileForAction();
+  const supabase = await createSupabaseServerClient();
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, offer_id, action_type, status, starts_at, ends_at")
+    .eq("id", id)
+    .eq("profile_id", profile.id)
+    .maybeSingle();
+
+  if (!booking) return { ok: false, error: "not_found" };
+  if (booking.action_type !== "calendar_booking" || !booking.offer_id) {
+    return { ok: false, error: "not_available" };
+  }
+  if (booking.status === "cancelled") return { ok: false, error: "not_available" };
+
+  const start = new Date(startsAt);
+  if (Number.isNaN(start.getTime())) return { ok: false, error: "invalid_input" };
+
+  const window = clampWindow(
+    new Date(start.getTime() - 24 * 3600_000),
+    new Date(start.getTime() + 24 * 3600_000),
+  );
+  const context = await getBookingContext(booking.offer_id, window);
+  if (!context) return { ok: false, error: "offer_unavailable" };
+
+  // The booking being moved must not block itself. The exclusion constraint
+  // guarantees at most one non-cancelled booking occupies a given range, so
+  // matching on its own bounds is unambiguous.
+  const own = booking.starts_at ? new Date(booking.starts_at).getTime() : null;
+  const context_ = {
+    ...context,
+    busy: context.busy.filter((range) => range.start.getTime() !== own),
+  };
+
+  const slot = isSlotBookable(slotInputFrom(context_, window), start);
+  if (!slot) return { ok: false, error: "slot_unavailable" };
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ starts_at: slot.start.toISOString(), ends_at: slot.end.toISOString() })
+    .eq("id", id)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    if (error.code === "23P01") return { ok: false, error: "slot_taken" };
+    console.error("[bookings] reschedule failed", error);
+    return { ok: false, error: "unexpected" };
+  }
+
+  revalidatePath("/dashboard", "layout");
+  revalidatePath(`/${profile.slug}`);
   return { ok: true };
 }
 
