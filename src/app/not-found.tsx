@@ -10,7 +10,7 @@ export default async function NotFound() {
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-16 text-center">
-      <div className="bg-grid pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+      <div className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] opacity-50" />
 
       <div className="relative max-w-md">
         <Link href="/" className="inline-block">

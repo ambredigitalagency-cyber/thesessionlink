@@ -7,9 +7,7 @@ export const revalidate = 3600;
 
 /** Landing plus every published profile — the pages we want indexed. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [
-    { url: siteUrl, changeFrequency: "weekly", priority: 1 },
-  ];
+  const entries: MetadataRoute.Sitemap = [{ url: siteUrl, changeFrequency: "weekly", priority: 1 }];
 
   if (!supabaseUrl || !supabasePublishableKey) return entries;
 

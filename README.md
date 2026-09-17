@@ -10,16 +10,16 @@ Coaches, realtors, hairdressers, tutors, photographers, consultants: **no profes
 
 ## Stack
 
-| Area        | Choice                                                        |
-| ----------- | ------------------------------------------------------------- |
-| Framework   | Next.js 16 (App Router, Server Actions, Turbopack)            |
-| Language    | TypeScript, React 19                                          |
-| Styling     | Tailwind CSS v4 (CSS-first tokens in `src/app/globals.css`)   |
-| Animation   | Motion (formerly Framer Motion) — `motion/react`              |
-| Backend     | Supabase (Postgres + Auth + Storage), RLS everywhere          |
-| Email       | Resend + React Email templates, EN/FR                         |
-| i18n        | next-intl, cookie-based (no locale prefix in URLs)            |
-| Deployment  | Vercel                                                        |
+| Area       | Choice                                                      |
+| ---------- | ----------------------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Server Actions, Turbopack)          |
+| Language   | TypeScript, React 19                                        |
+| Styling    | Tailwind CSS v4 (CSS-first tokens in `src/app/globals.css`) |
+| Animation  | Motion (formerly Framer Motion) — `motion/react`            |
+| Backend    | Supabase (Postgres + Auth + Storage), RLS everywhere        |
+| Email      | Resend + React Email templates, EN/FR                       |
+| i18n       | next-intl, cookie-based (no locale prefix in URLs)          |
+| Deployment | Vercel                                                      |
 
 ## Quick start
 
@@ -41,29 +41,29 @@ magic links are printed in the server log and also land in Mailpit (http://127.0
 
 ### Commands
 
-| Command             | What it does                                             |
-| ------------------- | -------------------------------------------------------- |
-| `npm run dev`       | Dev server                                                |
-| `npm run build`     | Production build                                          |
-| `npm test`          | Vitest (slot engine, i18n parity)                         |
-| `npm run typecheck` | `tsc --noEmit`                                            |
-| `npm run lint`      | ESLint                                                    |
-| `npm run format`    | Prettier                                                  |
-| `npm run db:reset`  | Re-apply migrations + seed locally                        |
-| `npm run db:types`  | Regenerate `src/lib/supabase/database.types.ts`           |
-| `npm run db:push`   | Push migrations to the linked Supabase project            |
+| Command             | What it does                                    |
+| ------------------- | ----------------------------------------------- |
+| `npm run dev`       | Dev server                                      |
+| `npm run build`     | Production build                                |
+| `npm test`          | Vitest (slot engine, i18n parity)               |
+| `npm run typecheck` | `tsc --noEmit`                                  |
+| `npm run lint`      | ESLint                                          |
+| `npm run format`    | Prettier                                        |
+| `npm run db:reset`  | Re-apply migrations + seed locally              |
+| `npm run db:types`  | Regenerate `src/lib/supabase/database.types.ts` |
+| `npm run db:push`   | Push migrations to the linked Supabase project  |
 
 ## Environment
 
-| Variable                               | Required | Notes                                             |
-| -------------------------------------- | -------- | ------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`             | yes      | Supabase project URL                              |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | yes      | Publishable (anon) key                            |
-| `SUPABASE_SECRET_KEY`                  | yes      | Service role key — server only                    |
-| `NEXT_PUBLIC_SITE_URL`                 | yes      | Public base URL, used in share links and emails   |
-| `RESEND_API_KEY`                       | no       | Without it, emails are logged instead of sent     |
-| `EMAIL_FROM`, `EMAIL_REPLY_TO`         | no       | Sender identity                                   |
-| `CRON_SECRET`                          | yes      | Bearer token for `/api/cron/reminders`            |
+| Variable                               | Required | Notes                                           |
+| -------------------------------------- | -------- | ----------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | yes      | Supabase project URL                            |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | yes      | Publishable (anon) key                          |
+| `SUPABASE_SECRET_KEY`                  | yes      | Service role key — server only                  |
+| `NEXT_PUBLIC_SITE_URL`                 | yes      | Public base URL, used in share links and emails |
+| `RESEND_API_KEY`                       | no       | Without it, emails are logged instead of sent   |
+| `EMAIL_FROM`, `EMAIL_REPLY_TO`         | no       | Sender identity                                 |
+| `CRON_SECRET`                          | yes      | Bearer token for `/api/cron/reminders`          |
 
 The service key is used only where RLS cannot express the rule: creating public bookings,
 reading a booking from its manage token, the reminder cron, and generating magic links.
@@ -72,31 +72,31 @@ reading a booking from its manage token, the reminder cron, and generating magic
 
 Generic by design — the only closed set is the action type.
 
-| Table                 | Purpose                                                                     |
-| --------------------- | --------------------------------------------------------------------------- |
-| `activity_categories` | Niches. `config.suggested_fields` pre-fills the offer form. **Insert a row to add a niche.** |
+| Table                 | Purpose                                                                                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `activity_categories` | Niches. `config.suggested_fields` pre-fills the offer form. **Insert a row to add a niche.**                                                     |
 | `profiles`            | Public identity, contact channels, timezone, locale, accent, `calendar_visible` + `custom_closed_message`, nullable `payment_method` (reserved). |
-| `offers`              | Common core (title, description, price, photo, `action_type`, position, active) + two JSONB columns. |
-| `availabilities`      | Weekly windows. `offer_id IS NULL` = default schedule, `offer_id` set = override for that offer. |
-| `time_off`            | Full days off, applied to every calendar offer.                              |
-| `bookings`            | Every reservation/request, whatever the action type.                         |
-| `clients`             | One row per (profile, email), with the pro's private notes. Filled automatically. |
+| `offers`              | Common core (title, description, price, photo, `action_type`, position, active) + two JSONB columns.                                             |
+| `availabilities`      | Weekly windows. `offer_id IS NULL` = default schedule, `offer_id` set = override for that offer.                                                 |
+| `time_off`            | Full days off, applied to every calendar offer.                                                                                                  |
+| `bookings`            | Every reservation/request, whatever the action type.                                                                                             |
+| `clients`             | One row per (profile, email), with the pro's private notes. Filled automatically.                                                                |
 
 Two JSONB columns on `offers` carry everything niche-specific:
 
-- **`custom_fields`** — what is *displayed*: `[{ id, key, label, type, value, unit, source }]`.
+- **`custom_fields`** — what is _displayed_: `[{ id, key, label, type, value, unit, source }]`.
   Suggested by the category, editable and extensible by the pro.
-- **`action_config`** — how the *action* behaves: duration, buffer, minimum notice, capacity,
+- **`action_config`** — how the _action_ behaves: duration, buffer, minimum notice, capacity,
   date mode, phone requirement… Tied to the action type, never to a profession.
 
 ### The five action types
 
-| Type                 | Client flow                                     |
-| -------------------- | ----------------------------------------------- |
-| `calendar_booking`   | Picks a slot in the calendar                    |
-| `direct_reservation` | Reserves without a time (item, seats, property) |
-| `contact_request`    | Sends a message                                 |
-| `whatsapp_direct`    | Opens WhatsApp with a pre-written message       |
+| Type                 | Client flow                                       |
+| -------------------- | ------------------------------------------------- |
+| `calendar_booking`   | Picks a slot in the calendar                      |
+| `direct_reservation` | Reserves without a time (item, seats, property)   |
+| `contact_request`    | Sends a message                                   |
+| `whatsapp_direct`    | Opens WhatsApp with a pre-written message         |
 | `quote_request`      | Describes a need, the pro comes back with a price |
 
 ### Guarantees enforced in the database

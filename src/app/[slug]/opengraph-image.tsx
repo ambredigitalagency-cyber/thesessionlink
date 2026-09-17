@@ -36,86 +36,84 @@ export default async function OpengraphImage({ params }: { params: Promise<{ slu
     .join("");
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: "#fbfaf9",
-          padding: "72px",
-          fontFamily: "sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontSize: 26, fontWeight: 600, color: "#0c0c0d", letterSpacing: "-0.02em" }}>
-            TheSessionLink
-          </span>
-          <span
-            style={{ width: 9, height: 9, borderRadius: 99, background: accent, marginTop: 10 }}
-          />
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        background: "#fbfaf9",
+        padding: "72px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <span style={{ fontSize: 26, fontWeight: 600, color: "#0c0c0d", letterSpacing: "-0.02em" }}>
+          TheSessionLink
+        </span>
+        <span
+          style={{ width: 9, height: 9, borderRadius: 99, background: accent, marginTop: 10 }}
+        />
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
+        <div
+          style={{
+            width: 168,
+            height: 168,
+            borderRadius: 999,
+            background: accent,
+            color: "#ffffff",
+            fontSize: 64,
+            fontWeight: 600,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {initials || "?"}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
+        <div style={{ display: "flex", flexDirection: "column", maxWidth: 760 }}>
           <div
             style={{
-              width: 168,
-              height: 168,
-              borderRadius: 999,
-              background: accent,
-              color: "#ffffff",
-              fontSize: 64,
+              fontSize: 68,
               fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {initials || "?"}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", maxWidth: 760 }}>
-            <div
-              style={{
-                fontSize: 68,
-                fontWeight: 600,
-                color: "#0c0c0d",
-                letterSpacing: "-0.04em",
-                lineHeight: 1.05,
-              }}
-            >
-              {name}
-            </div>
-            {profile?.headline ? (
-              <div style={{ marginTop: 18, fontSize: 30, color: "#63636b", lineHeight: 1.3 }}>
-                {profile.headline.slice(0, 110)}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 26,
               color: "#0c0c0d",
-              background: "#ffffff",
-              border: "1px solid #ebe8e4",
-              borderRadius: 999,
-              padding: "16px 28px",
+              letterSpacing: "-0.04em",
+              lineHeight: 1.05,
             }}
           >
-            thesessionlink.com/{slug}
+            {name}
           </div>
-          {profile?.location ? (
-            <div style={{ fontSize: 24, color: "#93939c" }}>{profile.location}</div>
+          {profile?.headline ? (
+            <div style={{ marginTop: 18, fontSize: 30, color: "#63636b", lineHeight: 1.3 }}>
+              {profile.headline.slice(0, 110)}
+            </div>
           ) : null}
         </div>
       </div>
-    ),
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          style={{
+            display: "flex",
+            fontSize: 26,
+            color: "#0c0c0d",
+            background: "#ffffff",
+            border: "1px solid #ebe8e4",
+            borderRadius: 999,
+            padding: "16px 28px",
+          }}
+        >
+          thesessionlink.com/{slug}
+        </div>
+        {profile?.location ? (
+          <div style={{ fontSize: 24, color: "#93939c" }}>{profile.location}</div>
+        ) : null}
+      </div>
+    </div>,
     size,
   );
 }
