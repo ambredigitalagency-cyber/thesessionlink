@@ -11,11 +11,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (!supabaseUrl || !supabasePublishableKey) return entries;
 
-  const supabase = createClient(supabaseUrl, supabasePublishableKey, {
-    auth: { persistSession: false },
-  });
+  // This route is prerendered, so anything thrown here fails the whole build.
+  // A misconfigured URL or an unreachable database is not worth a failed
+  // deploy: fall back to a sitemap holding just the landing page.
+  let data: { slug: string | null }[] | null = null;
 
-  const { data } = await supabase.from("public_profiles").select("slug").limit(5000);
+  try {
+    const supabase = createClient(supabaseUrl, supabasePublishableKey, {
+      auth: { persistSession: false },
+    });
+    ({ data } = await supabase.from("public_profiles").select("slug").limit(5000));
+  } catch (error) {
+    console.warn("[sitemap] could not list public profiles", error);
+    return entries;
+  }
 
   for (const profile of data ?? []) {
     if (!profile.slug) continue;
