@@ -8,6 +8,7 @@ import { useState, useTransition } from "react";
 import { requestMagicLink } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
 
 export function AuthForm({
   intent,
@@ -113,7 +114,9 @@ export function AuthForm({
           </Button>
 
           {intent === "signup" ? (
-            <p className="text-ink-subtle text-center text-[12px]">{t("trialNote")}</p>
+            <p className="text-ink-subtle text-center text-[12px]">
+              {t("trialNote", { price: PLAN_PRICE_MONTHLY })}
+            </p>
           ) : null}
 
           <p className="text-ink-subtle pt-1 text-center text-[11px] leading-relaxed">

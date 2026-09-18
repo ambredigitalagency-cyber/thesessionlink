@@ -6,7 +6,6 @@ import { z } from "zod";
 
 import { requireProfileForAction } from "@/lib/auth";
 import { sendBookingStatusUpdate } from "@/lib/emails/send";
-import { planLimits } from "@/lib/plans/config";
 import { clampWindow, getBookingContext, slotInputFrom } from "@/lib/public/booking-context";
 import { isSlotBookable } from "@/lib/scheduling/slots";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -117,7 +116,6 @@ export async function rescheduleBooking(id: string, startsAt: string): Promise<A
 
 export async function saveBookingNotes(id: string, notes: string | null): Promise<ActionResult> {
   const profile = await requireProfileForAction();
-  if (!planLimits(profile).crm) return { ok: false, error: "plan_crm_locked" };
 
   const parsed = notesSchema.safeParse(notes);
   if (!parsed.success) return { ok: false, error: "invalid_input" };
@@ -140,7 +138,6 @@ export async function saveClientNotes(
   notes: string | null,
 ): Promise<ActionResult> {
   const profile = await requireProfileForAction();
-  if (!planLimits(profile).crm) return { ok: false, error: "plan_crm_locked" };
 
   const parsed = notesSchema.safeParse(notes);
   if (!parsed.success) return { ok: false, error: "invalid_input" };

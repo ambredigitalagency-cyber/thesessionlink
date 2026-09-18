@@ -47,8 +47,6 @@ type Props = {
   currency: string;
   locale: string;
   profileWhatsapp?: string | null;
-  /** From the pro's plan; null = unlimited. Re-checked in the server action. */
-  maxPhotos: number | null;
   initial?: OfferInitialValues;
   submitLabel?: string;
   onSaved?: (offerId: string) => void;
@@ -63,7 +61,6 @@ export function OfferForm({
   currency,
   locale,
   profileWhatsapp,
-  maxPhotos,
   initial,
   submitLabel,
   onSaved,
@@ -71,7 +68,6 @@ export function OfferForm({
 }: Props) {
   const t = useTranslations("offers.form");
   const tError = useTranslations("errors");
-  const tPlans = useTranslations("plans");
 
   const startingActionType =
     initial?.action_type ?? suggestedActionType ?? ("calendar_booking" as ActionType);
@@ -226,12 +222,7 @@ export function OfferForm({
       </div>
 
       <Field label={t("photos")} hint={t("photosHint")} optional>
-        <OfferPhotosUpload
-          value={photos}
-          onChange={setPhotos}
-          max={maxPhotos}
-          upgradeHint={maxPhotos === null ? "" : tPlans("photoLimit", { max: maxPhotos })}
-        />
+        <OfferPhotosUpload value={photos} onChange={setPhotos} />
       </Field>
 
       <Field label={t("actionType")} hint={t("actionTypeHint")}>

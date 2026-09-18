@@ -58,6 +58,10 @@ export async function createProfile(input: {
     return { ok: false, error: "slug_taken", fieldErrors: { slug: "slug_taken" } };
   }
 
+  // TODO(billing): the 14-day trial requires a bank card. Once Stripe/PayPal is
+  // integrated, collect and verify a payment method before this insert and
+  // refuse to create the profile without one. Until then signup stays open:
+  // trial_ends_at defaults to now() + 14 days and nothing is gated on it.
   const { error } = await supabase.from("profiles").insert({
     user_id: user.id,
     display_name: parsed.data.display_name,

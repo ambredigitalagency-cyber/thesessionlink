@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
 
 export function FinalCta() {
   const t = useTranslations("landing.finalCta");
@@ -39,7 +40,7 @@ export function FinalCta() {
               <ArrowRight className="size-4" />
             </Link>
           </Button>
-          <p className="text-[13px] text-white/45">{t("note")}</p>
+          <p className="text-[13px] text-white/45">{t("note", { price: PLAN_PRICE_MONTHLY })}</p>
         </div>
       </motion.div>
     </section>

@@ -4,9 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { ClientDetail } from "@/components/dashboard/client-detail";
-import { PlanUpsell } from "@/components/dashboard/plan-upsell";
 import { requireOnboardedProfile } from "@/lib/auth";
-import { effectivePlan, planLimits } from "@/lib/plans/config";
 import type { ActionType } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -15,10 +13,6 @@ export default async function ClientDetailPage({
 }: PageProps<"/dashboard/bookings/clients/[id]">) {
   const { id } = await params;
   const profile = await requireOnboardedProfile();
-
-  if (!planLimits(profile).crm) {
-    return <PlanUpsell feature="crm" currentPlan={effectivePlan(profile)} />;
-  }
 
   const t = await getTranslations("dashboard.clients");
 

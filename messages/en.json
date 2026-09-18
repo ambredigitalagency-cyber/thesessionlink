@@ -18,7 +18,7 @@
     "switchToLogin": "Already have an account? Log in",
     "switchToSignup": "New here? Create your link",
     "terms": "By continuing you agree to our terms and privacy policy.",
-    "trialNote": "14-day free trial · no card required"
+    "trialNote": "14-day trial, then €{price}/month"
   },
   "bookingStatus": {
     "cancelled": "Cancelled",
@@ -426,9 +426,6 @@
     "oauth_failed": "Google sign-in did not complete. Try again or use your email.",
     "offer_unavailable": "This offer is no longer available.",
     "overlapping_rules": "Two time ranges overlap on the same day.",
-    "plan_crm_locked": "Client notes are on the paid plans.",
-    "plan_offer_limit": "Your plan allows a single offer. Upgrade to Base to publish more.",
-    "plan_photo_limit": "You have reached your plan's photo limit. Upgrade to Premium to add more.",
     "quantity_too_high": "That is more than the maximum per booking.",
     "required": "This field is required.",
     "send_failed": "We could not send the email. Please try again.",
@@ -662,7 +659,7 @@
     },
     "finalCta": {
       "cta": "Create my link",
-      "note": "No card required",
+      "note": "14-day trial, then €{price}/month",
       "subtitle": "Create your page, add one offer, share it today. Fourteen days to see if it changes your week.",
       "title": "Stop explaining how to book you. <accent>Send the link.</accent>"
     },
@@ -675,10 +672,10 @@
     "hero": {
       "badge": "One link for your whole business",
       "cta": "Create my profile free",
-      "ctaNote": "14-day trial — no card required",
+      "ctaNote": "14-day trial, then €{price}/month",
       "points": {
         "anyJob": "Works for any independent job",
-        "noCard": "No card, no setup call",
+        "noCommission": "No commission, no setup call",
         "setup": "Live in about two minutes"
       },
       "subtitle": "TheSessionLink turns your Instagram and your DMs into a real booking system. One profile, your offers, a single link — your clients book themselves, you stay on top of it.",
@@ -732,28 +729,24 @@
     },
     "pricing": {
       "cta": "Start my free trial",
-      "ctaFree": "Start for free",
       "eyebrow": "Pricing",
       "feature": {
         "crm": "Mini CRM (client records, history, notes)",
-        "offers": "{count, plural, one {# offer} other {# offers}}",
+        "noCommission": "No commission on your bookings",
         "offersUnlimited": "Unlimited offers",
-        "photos": "{count, plural, one {# photo} other {# photos}} per offer",
         "photosUnlimited": "Unlimited photos",
         "reminders": "Automatic email reminders"
       },
-      "freeNote": "To try it out, with no time limit.",
-      "freePrice": "€0",
-      "monthly": "Monthly",
+      "featuresIntro": "Everything you need, no tier to unlock:",
       "monthlyNote": "Cancel any time, in one click.",
       "paymentsNote": "Online payment isn't part of the product yet: the client books, you get paid the way you do today. When payments land, your offers won't need to change.",
       "perMonth": "/ month",
-      "perYear": "/ year",
+      "planName": "All included",
+      "price": "€{price}",
       "subtitle": "No per-booking fee, no commission on what you charge. The price you see is the price you pay.",
-      "title": "Three plans, no commission",
+      "title": "One plan, everything included",
       "trialBadge": "14-day trial",
-      "yearly": "Yearly",
-      "yearlySaving": "Two months free compared to monthly."
+      "trialNote": "14-day trial · card required"
     }
   },
   "manageBooking": {
@@ -788,7 +781,7 @@
     "mainPhoto": "Main",
     "moveEarlier": "Move left",
     "moveLater": "Move right",
-    "photoCount": "{used} of {max} photos",
+    "photoLimit": "Up to {max} photos per offer.",
     "remove": "Remove"
   },
   "meta": {
@@ -979,34 +972,6 @@
       "4": "Your link",
       "aria": "Setup progress"
     }
-  },
-  "plans": {
-    "fromPerMonth": "From €{price}/month",
-    "locked": {
-      "crm": {
-        "body": "Client records, booking history and private notes: upgrade to Base to use them.",
-        "title": "The mini CRM is on the paid plans"
-      },
-      "offers": {
-        "body": "The Free plan allows a single offer. Upgrade to Base to publish as many as you like.",
-        "title": "You have reached your plan's offer limit"
-      },
-      "photos": {
-        "body": "Upgrade your plan to add more photos to each offer.",
-        "title": "You have reached your plan's photo limit"
-      },
-      "reminders": {
-        "body": "Your clients get a reminder before the session, with no message for you to send.",
-        "title": "Automatic reminders are on the paid plans"
-      }
-    },
-    "names": {
-      "base": "Base",
-      "free": "Free",
-      "premium": "Premium"
-    },
-    "photoLimit": "Your plan allows {max, plural, one {# photo} other {# photos}} per offer. Upgrade to Premium to add more.",
-    "upgradeTo": "Upgrade to {plan}"
   },
   "publicProfile": {
     "booking": {

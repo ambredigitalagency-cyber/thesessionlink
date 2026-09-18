@@ -18,7 +18,7 @@
     "switchToLogin": "Vous avez déjà un compte ? Connectez-vous",
     "switchToSignup": "Nouveau ici ? Créez votre lien",
     "terms": "En continuant, vous acceptez nos conditions et notre politique de confidentialité.",
-    "trialNote": "14 jours d'essai · sans carte bancaire"
+    "trialNote": "14 jours d'essai, puis {price} €/mois"
   },
   "bookingStatus": {
     "cancelled": "Annulé",
@@ -426,9 +426,6 @@
     "oauth_failed": "La connexion avec Google n'a pas abouti. Réessayez ou utilisez votre e-mail.",
     "offer_unavailable": "Cette offre n'est plus disponible.",
     "overlapping_rules": "Deux plages se chevauchent le même jour.",
-    "plan_crm_locked": "Les notes clients sont réservées aux plans payants.",
-    "plan_offer_limit": "Ton plan ne permet qu'une seule offre. Passe au plan Base pour en publier plus.",
-    "plan_photo_limit": "Tu as atteint la limite de photos de ton plan. Passe au plan Premium pour en ajouter plus.",
     "quantity_too_high": "C'est au-delà du maximum par réservation.",
     "required": "Ce champ est obligatoire.",
     "send_failed": "Impossible d'envoyer l'e-mail. Réessayez.",
@@ -662,7 +659,7 @@
     },
     "finalCta": {
       "cta": "Créer mon lien",
-      "note": "Sans carte bancaire",
+      "note": "14 jours d'essai, puis {price} €/mois",
       "subtitle": "Crée ta page, ajoute une offre, partage-la aujourd'hui. Quatorze jours pour voir si ça change ta semaine.",
       "title": "Arrête d'expliquer comment te réserver. <accent>Envoie le lien.</accent>"
     },
@@ -675,10 +672,10 @@
     "hero": {
       "badge": "Un seul lien pour toute ton activité",
       "cta": "Créer mon profil gratuitement",
-      "ctaNote": "14 jours d'essai — sans carte bancaire",
+      "ctaNote": "14 jours d'essai, puis {price} €/mois",
       "points": {
         "anyJob": "Pour tous les indépendants",
-        "noCard": "Sans carte, sans démo commerciale",
+        "noCommission": "Sans commission, sans démo commerciale",
         "setup": "En ligne en deux minutes"
       },
       "subtitle": "TheSessionLink transforme ton Instagram et tes DM en un vrai système de réservation. Un profil, tes offres, un lien unique — tes clients réservent, toi tu gères.",
@@ -732,28 +729,24 @@
     },
     "pricing": {
       "cta": "Démarrer mon essai gratuit",
-      "ctaFree": "Commencer gratuitement",
       "eyebrow": "Tarif",
       "feature": {
         "crm": "Mini CRM (fiches clients, historique, notes)",
-        "offers": "{count, plural, one {# offre} other {# offres}}",
+        "noCommission": "Aucune commission sur tes réservations",
         "offersUnlimited": "Offres illimitées",
-        "photos": "{count, plural, one {# photo} other {# photos}} par offre",
         "photosUnlimited": "Photos illimitées",
         "reminders": "Rappels automatiques par email"
       },
-      "freeNote": "Pour tester, sans limite de durée.",
-      "freePrice": "0 €",
-      "monthly": "Mensuel",
+      "featuresIntro": "Tout ce dont tu as besoin, sans palier à débloquer :",
       "monthlyNote": "Résiliable à tout moment, en un clic.",
       "paymentsNote": "Le paiement en ligne ne fait pas encore partie du produit : le client réserve, tu encaisses comme aujourd'hui. Quand le paiement arrivera, tes offres n'auront rien à changer.",
       "perMonth": "/ mois",
-      "perYear": "/ an",
+      "planName": "Tout inclus",
+      "price": "{price} €",
       "subtitle": "Aucun frais par réservation, aucune commission sur ce que tu factures. Le prix affiché est le prix payé.",
-      "title": "Trois plans, aucune commission",
+      "title": "Un seul plan, tout inclus",
       "trialBadge": "14 jours d'essai",
-      "yearly": "Annuel",
-      "yearlySaving": "2 mois offerts par rapport au mensuel."
+      "trialNote": "14 jours d'essai · carte bancaire requise"
     }
   },
   "manageBooking": {
@@ -788,7 +781,7 @@
     "mainPhoto": "Principale",
     "moveEarlier": "Déplacer vers la gauche",
     "moveLater": "Déplacer vers la droite",
-    "photoCount": "{used} sur {max} photos",
+    "photoLimit": "{max} photos maximum par offre.",
     "remove": "Retirer"
   },
   "meta": {
@@ -979,34 +972,6 @@
       "4": "Votre lien",
       "aria": "Progression de la configuration"
     }
-  },
-  "plans": {
-    "fromPerMonth": "À partir de {price} €/mois",
-    "locked": {
-      "crm": {
-        "body": "Fiches clients, historique des réservations et notes privées : passe au plan Base pour y accéder.",
-        "title": "Le mini CRM est réservé aux plans payants"
-      },
-      "offers": {
-        "body": "Le plan Free permet une seule offre. Passe au plan Base pour en publier autant que tu veux.",
-        "title": "Tu as atteint la limite d'offres de ton plan"
-      },
-      "photos": {
-        "body": "Passe au plan supérieur pour ajouter plus de photos à chaque offre.",
-        "title": "Tu as atteint la limite de photos de ton plan"
-      },
-      "reminders": {
-        "body": "Tes clients reçoivent un rappel avant la séance, sans que tu aies un message à envoyer.",
-        "title": "Les rappels automatiques sont réservés aux plans payants"
-      }
-    },
-    "names": {
-      "base": "Base",
-      "free": "Free",
-      "premium": "Premium"
-    },
-    "photoLimit": "Ton plan autorise {max, plural, one {# photo} other {# photos}} par offre. Passe au plan Premium pour en ajouter plus.",
-    "upgradeTo": "Passer au plan {plan}"
   },
   "publicProfile": {
     "booking": {

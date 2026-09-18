@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 
 import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
 import { requireOnboardedProfile } from "@/lib/auth";
-import { planLimits } from "@/lib/plans/config";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -44,7 +43,6 @@ export default async function NewOfferPage() {
           currency={profile.currency}
           locale={profile.locale}
           profileWhatsapp={profile.whatsapp_number}
-          maxPhotos={planLimits(profile).maxPhotosPerOffer}
         />
       </div>
     </>

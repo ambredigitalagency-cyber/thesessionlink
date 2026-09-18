@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
+import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
 
 import { DemoProfile } from "./demo-profile";
 
@@ -58,7 +59,9 @@ export function Hero() {
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
-            <p className="text-ink-subtle text-[13px]">{t("ctaNote")}</p>
+            <p className="text-ink-subtle text-[13px]">
+              {t("ctaNote", { price: PLAN_PRICE_MONTHLY })}
+            </p>
           </motion.div>
 
           <motion.ul
@@ -67,10 +70,10 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-ink-muted mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[13.5px]"
           >
-            {["noCard", "setup", "anyJob"].map((key) => (
+            {["noCommission", "setup", "anyJob"].map((key) => (
               <li key={key} className="flex items-center gap-2">
                 <span className="bg-ink/30 size-1 rounded-full" />
-                {t(`points.${key}` as "points.noCard")}
+                {t(`points.${key}` as "points.noCommission")}
               </li>
             ))}
           </motion.ul>

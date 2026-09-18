@@ -7,26 +7,23 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { UploadError, deleteImage, uploadImage } from "@/lib/media/upload";
+import { ABSOLUTE_MAX_PHOTOS } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
 /**
  * Ordered photo picker for an offer: drag-and-drop or click to add, drag a tile
  * (or use the arrows) to reorder, first tile is the main photo.
  *
- * `max` comes from the pro's plan (null = unlimited). It is enforced again in
- * the server action — this is only here to say so before they hit save.
+ * Photos are unlimited on the plan; the only cap is ABSOLUTE_MAX_PHOTOS, the
+ * anti-abuse ceiling the server also enforces. It is checked here so the pro
+ * hears about it before they hit save.
  */
 export function OfferPhotosUpload({
   value,
   onChange,
-  max,
-  upgradeHint,
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
-  max: number | null;
-  /** Shown when the plan's cap is reached. */
-  upgradeHint: string;
 }) {
   const t = useTranslations("media");
 
@@ -35,14 +32,15 @@ export function OfferPhotosUpload({
   const [dragging, setDragging] = useState(false);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
 
-  const full = max !== null && value.length >= max;
-  const remaining = max === null ? Infinity : max - value.length;
+  const full = value.length >= ABSOLUTE_MAX_PHOTOS;
+  const remaining = ABSOLUTE_MAX_PHOTOS - value.length;
+  const limitHint = t("photoLimit", { max: ABSOLUTE_MAX_PHOTOS });
 
   async function addFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
 
-    const accepted = Array.from(files).slice(0, remaining === Infinity ? undefined : remaining);
-    if (accepted.length < files.length) toast.error(upgradeHint);
+    const accepted = Array.from(files).slice(0, remaining);
+    if (accepted.length < files.length) toast.error(limitHint);
     if (accepted.length === 0) return;
 
     setBusy(true);
@@ -148,7 +146,7 @@ export function OfferPhotosUpload({
           event.preventDefault();
           setDragging(false);
           if (full) {
-            toast.error(upgradeHint);
+            toast.error(limitHint);
             return;
           }
           await addFiles(event.dataTransfer.files);
@@ -161,7 +159,7 @@ export function OfferPhotosUpload({
       >
         <button
           type="button"
-          onClick={() => (full ? toast.error(upgradeHint) : inputRef.current?.click())}
+          onClick={() => (full ? toast.error(limitHint) : inputRef.current?.click())}
           className="flex w-full flex-col items-center gap-2 px-6 py-7 text-center"
         >
           {busy ? (
@@ -174,15 +172,9 @@ export function OfferPhotosUpload({
           <span className="text-ink text-[14px] font-medium">
             {value.length === 0 ? t("addCover") : t("addAnotherPhoto")}
           </span>
-          <span className="text-ink-subtle text-[12px]">{full ? upgradeHint : t("dropHint")}</span>
+          <span className="text-ink-subtle text-[12px]">{full ? limitHint : t("dropHint")}</span>
         </button>
       </div>
-
-      {!full && max !== null ? (
-        <p className="text-ink-subtle text-[12px]">
-          {t("photoCount", { used: value.length, max })}
-        </p>
-      ) : null}
 
       <input
         ref={inputRef}

@@ -2,9 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireProfileForAction, type Profile } from "@/lib/auth";
+import { requireProfileForAction } from "@/lib/auth";
 import { parseActionConfig } from "@/lib/offers/schema";
-import { isWithinLimit, planLimits } from "@/lib/plans/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom, offerInputSchema, type ActionResult } from "@/lib/validation";
 
@@ -14,11 +13,10 @@ function revalidateOffers(slug: string) {
 }
 
 /**
- * Validates the payload, normalises action_config and applies the plan's photo
- * cap. main_photo_url is not part of the input: a trigger derives it from
- * photos[0].
+ * Validates the payload and normalises action_config. main_photo_url is not
+ * part of the input: a trigger derives it from photos[0].
  */
-function prepare(input: unknown, profile: Profile) {
+function prepare(input: unknown) {
   const parsed = offerInputSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -29,11 +27,6 @@ function prepare(input: unknown, profile: Profile) {
   }
 
   const { action_config, price, price_type, photos, ...rest } = parsed.data;
-  const { maxPhotosPerOffer } = planLimits(profile);
-
-  if (!isWithinLimit(photos.length, maxPhotosPerOffer)) {
-    return { ok: false as const, error: "plan_photo_limit" as const, fieldErrors: undefined };
-  }
 
   return {
     ok: true as const,
@@ -50,20 +43,10 @@ function prepare(input: unknown, profile: Profile) {
 
 export async function createOffer(input: unknown): Promise<ActionResult<{ id: string }>> {
   const profile = await requireProfileForAction();
-  const prepared = prepare(input, profile);
+  const prepared = prepare(input);
   if (!prepared.ok) return { ok: false, error: prepared.error, fieldErrors: prepared.fieldErrors };
 
   const supabase = await createSupabaseServerClient();
-
-  const { maxOffers } = planLimits(profile);
-  if (maxOffers !== null) {
-    const { count } = await supabase
-      .from("offers")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id);
-
-    if ((count ?? 0) >= maxOffers) return { ok: false, error: "plan_offer_limit" };
-  }
 
   const { data: last } = await supabase
     .from("offers")
@@ -94,7 +77,7 @@ export async function createOffer(input: unknown): Promise<ActionResult<{ id: st
 
 export async function updateOffer(id: string, input: unknown): Promise<ActionResult> {
   const profile = await requireProfileForAction();
-  const prepared = prepare(input, profile);
+  const prepared = prepare(input);
   if (!prepared.ok) return { ok: false, error: prepared.error, fieldErrors: prepared.fieldErrors };
 
   const supabase = await createSupabaseServerClient();
@@ -160,16 +143,6 @@ export async function deleteOffer(id: string): Promise<ActionResult> {
 export async function duplicateOffer(id: string): Promise<ActionResult<{ id: string }>> {
   const profile = await requireProfileForAction();
   const supabase = await createSupabaseServerClient();
-
-  const { maxOffers } = planLimits(profile);
-  if (maxOffers !== null) {
-    const { count } = await supabase
-      .from("offers")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id);
-
-    if ((count ?? 0) >= maxOffers) return { ok: false, error: "plan_offer_limit" };
-  }
 
   const { data: source } = await supabase
     .from("offers")
