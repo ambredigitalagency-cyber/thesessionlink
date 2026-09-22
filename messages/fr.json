@@ -1062,6 +1062,7 @@
   "publicProfile": {
     "booking": {
       "addToCalendar": "Ajouter au calendrier",
+      "allTaken": "Tous les créneaux de cette période sont déjà pris.",
       "budget": "Budget",
       "budgetPlaceholder": "Autour de 500 €",
       "confirmationNote": "Vous recevez un e-mail de confirmation immédiatement.",
@@ -1069,6 +1070,8 @@
       "email": "E-mail",
       "emailPlaceholder": "vous@exemple.com",
       "increase": "Un de plus",
+      "legendAvailable": "Disponible",
+      "legendUnavailable": "Indisponible",
       "loadingSlots": "Chargement des disponibilités…",
       "lookFurther": "Voir plus loin",
       "manageBooking": "Voir ou annuler",
@@ -1082,6 +1085,7 @@
       "pickSlot": "Choisissez un créneau",
       "preferredDate": "Date souhaitée",
       "quantity": "Combien",
+      "slotUnavailable": "{time} — indisponible",
       "slotsError": "Impossible de charger les disponibilités. Actualisez la page.",
       "submitBooking": "Confirmer la réservation",
       "submitMessage": "Envoyer le message",

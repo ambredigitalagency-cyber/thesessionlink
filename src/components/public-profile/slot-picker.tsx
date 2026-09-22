@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-type Slot = { start: string; end: string };
+type Slot = { start: string; end: string; status: "available" | "unavailable" };
 
 type SlotResponse = {
   timezone: string;
@@ -48,7 +48,11 @@ function groupByDay(slots: Slot[], timezone: string, locale: string) {
     groups.set(key, group);
   }
 
-  return [...groups.entries()].map(([key, value]) => ({ key, ...value }));
+  return [...groups.entries()].map(([key, value]) => ({
+    key,
+    ...value,
+    open: value.slots.filter((slot) => slot.status === "available").length,
+  }));
 }
 
 export function SlotPicker({
@@ -68,7 +72,7 @@ export function SlotPicker({
   const [data, setData] = useState<SlotResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  /** Day the visitor tapped; the first day with slots is used until then. */
+  /** Day the visitor tapped; the first day with an opening is used until then. */
   const [preferredDay, setPreferredDay] = useState<string | null>(null);
   const [weeks, setWeeks] = useState(4);
 
@@ -104,6 +108,23 @@ export function SlotPicker({
     [data, timezone, tag],
   );
 
+  const openings = days.reduce((total, day) => total + day.open, 0);
+
+  const lookFurther =
+    weeks < 12 ? (
+      <button
+        type="button"
+        onClick={() => {
+          setLoading(true);
+          setWeeks((current) => current + 4);
+        }}
+        className="text-ink mt-1 inline-flex items-center gap-1 text-[13px] font-medium underline underline-offset-4"
+      >
+        {t("lookFurther")}
+        <ChevronRight className="size-3.5" />
+      </button>
+    ) : null;
+
   if (loading) {
     return (
       <div className="text-ink-muted flex items-center justify-center gap-2 py-10 text-[14px]">
@@ -123,24 +144,14 @@ export function SlotPicker({
         <CalendarX2 className="text-ink-subtle size-5" />
         <p className="text-ink text-[14px] font-medium">{t("noSlots")}</p>
         <p className="text-ink-muted max-w-xs text-[13px]">{t("noSlotsHint")}</p>
-        {weeks < 12 ? (
-          <button
-            type="button"
-            onClick={() => {
-              setLoading(true);
-              setWeeks((current) => current + 4);
-            }}
-            className="text-ink mt-1 inline-flex items-center gap-1 text-[13px] font-medium underline underline-offset-4"
-          >
-            {t("lookFurther")}
-            <ChevronRight className="size-3.5" />
-          </button>
-        ) : null}
+        {lookFurther}
       </div>
     );
   }
 
-  const current = days.find((day) => day.key === preferredDay) ?? days[0];
+  // Land on a day the visitor can actually book, not just the first one shown.
+  const current =
+    days.find((day) => day.key === preferredDay) ?? days.find((day) => day.open > 0) ?? days[0];
   const timeFormat = new Intl.DateTimeFormat(tag, {
     hour: "2-digit",
     minute: "2-digit",
@@ -150,55 +161,107 @@ export function SlotPicker({
   return (
     <div className="space-y-4">
       <div className="-mx-1 flex scrollbar-none gap-2 overflow-x-auto px-1 pb-1">
-        {days.map((day) => (
-          <button
-            key={day.key}
-            type="button"
-            onClick={() => setPreferredDay(day.key)}
-            className={cn(
-              "relative shrink-0 rounded-full px-3.5 py-2 text-[13px] font-medium capitalize transition-colors",
-              day.key === current.key
-                ? "text-ink-inverse"
-                : "border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink border",
-            )}
-          >
-            {day.key === current.key ? (
-              <motion.span
-                layoutId="slot-day-active"
-                className="bg-ink absolute inset-0 rounded-full"
-                transition={{ type: "spring", stiffness: 420, damping: 34 }}
-              />
-            ) : null}
-            <span className="relative">{day.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        {current.slots.map((slot) => {
-          const active = selected === slot.start;
+        {days.map((day) => {
+          const isCurrent = day.key === current.key;
           return (
             <button
-              key={slot.start}
+              key={day.key}
               type="button"
-              onClick={() => onSelect(active ? null : slot.start)}
-              aria-pressed={active}
+              onClick={() => setPreferredDay(day.key)}
+              aria-current={isCurrent ? "true" : undefined}
               className={cn(
-                "rounded-[var(--radius-xs)] border px-2 py-2.5 text-[13.5px] font-medium tabular-nums transition-all",
-                active
-                  ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                  : "border-line-strong text-ink hover:border-ink/40 hover:bg-ink/[0.03]",
+                "relative shrink-0 rounded-full px-3.5 py-2 text-[13px] font-medium capitalize transition-colors",
+                isCurrent
+                  ? "text-ink-inverse"
+                  : cn(
+                      "border-line-strong hover:border-ink/30 hover:text-ink border",
+                      day.open > 0 ? "text-ink-muted" : "text-ink-subtle",
+                    ),
               )}
             >
-              {timeFormat.format(new Date(slot.start))}
+              {isCurrent ? (
+                <motion.span
+                  layoutId="slot-day-active"
+                  className="bg-ink absolute inset-0 rounded-full"
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              ) : null}
+              <span className="relative flex items-center gap-1.5">
+                {day.label}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "size-1.5 rounded-full transition-colors",
+                    day.open > 0 ? (isCurrent ? "bg-white/70" : "bg-[var(--accent)]") : "bg-ink/15",
+                  )}
+                />
+              </span>
             </button>
           );
         })}
       </div>
 
-      <p className="text-ink-subtle text-[12px]">
-        {t("timezoneNote", { timezone: timezone.replace(/_/g, " ") })}
-      </p>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {current.slots.map((slot) => {
+          const time = timeFormat.format(new Date(slot.start));
+          const taken = slot.status === "unavailable";
+          const active = selected === slot.start;
+
+          if (taken) {
+            return (
+              <span
+                key={slot.start}
+                aria-disabled="true"
+                aria-label={t("slotUnavailable", { time })}
+                className="bg-ink/[0.03] border-line text-ink-subtle cursor-not-allowed rounded-[var(--radius-xs)] border px-2 py-2.5 text-center text-[13.5px] font-medium tabular-nums line-through decoration-1"
+              >
+                {time}
+              </span>
+            );
+          }
+
+          return (
+            <motion.button
+              key={slot.start}
+              type="button"
+              onClick={() => onSelect(active ? null : slot.start)}
+              aria-pressed={active}
+              // Transforms are dropped under prefers-reduced-motion by
+              // MotionProvider; the colour change carries the state on its own.
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              className={cn(
+                "rounded-[var(--radius-xs)] border px-2 py-2.5 text-[13.5px] font-medium tabular-nums transition-colors duration-200",
+                active
+                  ? "border-[var(--accent)] bg-[var(--accent)] text-white shadow-[var(--shadow-card)]"
+                  : "border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[var(--accent-soft)] text-[var(--accent-ink)] hover:border-[var(--accent)]",
+              )}
+            >
+              {time}
+            </motion.button>
+          );
+        })}
+      </div>
+
+      {openings === 0 ? (
+        <div className="text-ink-muted bg-ink/[0.02] rounded-[var(--radius-sm)] px-4 py-3 text-center text-[13px]">
+          <p>{t("allTaken")}</p>
+          {lookFurther}
+        </div>
+      ) : null}
+
+      <div className="text-ink-subtle flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px]">
+        <span className="flex items-center gap-1.5">
+          <span className="size-2.5 rounded-full border border-[var(--accent)] bg-[var(--accent-soft)]" />
+          {t("legendAvailable")}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="border-line bg-ink/[0.03] size-2.5 rounded-full border" />
+          {t("legendUnavailable")}
+        </span>
+        <span>{t("timezoneNote", { timezone: timezone.replace(/_/g, " ") })}</span>
+      </div>
     </div>
   );
 }

@@ -2,10 +2,10 @@ import "server-only";
 
 import { parseActionConfig, type CalendarBookingConfig } from "@/lib/offers/schema";
 import {
-  generateSlots,
+  generateSlotGrid,
   type AvailabilityRule,
   type BusyRange,
-  type Slot,
+  type GradedSlot,
   type TimeOffRange,
 } from "@/lib/scheduling/slots";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -115,12 +115,16 @@ export function clampWindow(from: Date, to: Date) {
   return { from: start, to: new Date(Math.min(to.getTime(), maxEnd.getTime())) };
 }
 
-/** Public slot list for an offer, in a bounded window. */
-export async function getAvailableSlots(
+/**
+ * Public slot list for an offer, in a bounded window. Unbookable slots are
+ * returned too, marked as such, so the picker can grey them out; the booking
+ * actions never trust this list and re-check the slot they are given.
+ */
+export async function getPublicSlots(
   offerId: string,
   from: Date,
   to: Date,
-): Promise<{ slots: Slot[]; config: CalendarBookingConfig; timezone: string } | null> {
+): Promise<{ slots: GradedSlot[]; config: CalendarBookingConfig; timezone: string } | null> {
   const window = clampWindow(from, to);
   const context = await getBookingContext(offerId, window);
 
@@ -134,7 +138,7 @@ export async function getAvailableSlots(
   }
 
   return {
-    slots: generateSlots(slotInputFrom(context, window)),
+    slots: generateSlotGrid(slotInputFrom(context, window)),
     config: parseActionConfig("calendar_booking", context.offer.action_config),
     timezone: context.profile.timezone,
   };

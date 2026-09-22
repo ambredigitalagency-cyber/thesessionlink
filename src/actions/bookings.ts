@@ -7,7 +7,7 @@ import { z } from "zod";
 import { requireProfileForAction } from "@/lib/auth";
 import { sendBookingStatusUpdate } from "@/lib/emails/send";
 import { clampWindow, getBookingContext, slotInputFrom } from "@/lib/public/booking-context";
-import { isSlotBookable } from "@/lib/scheduling/slots";
+import { isSlotBookable, withoutMinimumNotice } from "@/lib/scheduling/slots";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/validation";
 
@@ -94,7 +94,9 @@ export async function rescheduleBooking(id: string, startsAt: string): Promise<A
     busy: context.busy.filter((range) => range.start.getTime() !== own),
   };
 
-  const slot = isSlotBookable(slotInputFrom(context_, window), start);
+  // The pro is not held to the notice they ask of their clients; the buffer
+  // between sessions still is.
+  const slot = isSlotBookable(withoutMinimumNotice(slotInputFrom(context_, window)), start);
   if (!slot) return { ok: false, error: "slot_unavailable" };
 
   const { error } = await supabase

@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  generateSlotGrid,
   generateSlots,
   isSlotBookable,
   localDateKey,
   rulesForOffer,
+  withoutMinimumNotice,
   type AvailabilityRule,
   type SlotEngineInput,
 } from "./slots";
@@ -176,5 +178,89 @@ describe("isSlotBookable", () => {
       busy: [{ start: new Date("2026-10-01T07:00:00Z"), end: new Date("2026-10-01T08:00:00Z") }],
     });
     expect(isSlotBookable(input, new Date("2026-10-01T07:00:00.000Z"))).toBeNull();
+  });
+});
+
+describe("generateSlotGrid", () => {
+  const grid = (overrides: Partial<SlotEngineInput> = {}) =>
+    generateSlotGrid(baseInput(overrides)).map((slot) => [
+      slot.start.toISOString().slice(11, 16),
+      slot.status,
+    ]);
+
+  it("keeps slots inside the minimum notice, marked unavailable", () => {
+    // 09:00 Paris is 07:00 UTC, 2 hours after "now"; a 4-hour notice rules it out.
+    expect(grid({ minNoticeHours: 4 })).toEqual([
+      ["07:00", "unavailable"],
+      ["08:00", "unavailable"],
+      ["09:00", "available"],
+    ]);
+    expect(hours(generateSlots(baseInput({ minNoticeHours: 4 })))).toEqual([
+      "2026-10-01T09:00:00.000Z",
+    ]);
+  });
+
+  it("marks what a booking and its buffer cover, without saying why", () => {
+    const busy = [
+      { start: new Date("2026-10-01T08:00:00Z"), end: new Date("2026-10-01T09:00:00Z") },
+    ];
+    expect(grid({ busy, bufferMinutes: 15 })).toEqual([
+      ["07:00", "unavailable"],
+      ["08:00", "unavailable"],
+      ["09:00", "unavailable"],
+    ]);
+    expect(grid({ busy })).toEqual([
+      ["07:00", "available"],
+      ["08:00", "unavailable"],
+      ["09:00", "available"],
+    ]);
+  });
+
+  it("never returns a slot that has already started", () => {
+    const now = new Date("2026-10-01T07:30:00Z");
+    expect(grid({ now, from: now })).toEqual([
+      ["08:00", "available"],
+      ["09:00", "available"],
+    ]);
+  });
+
+  it("offers the same slots as the engine once nothing is blocked", () => {
+    const open = generateSlotGrid(baseInput()).filter((slot) => slot.status === "available");
+    expect(hours(open)).toEqual(hours(generateSlots(baseInput())));
+  });
+});
+
+describe("withoutMinimumNotice", () => {
+  // 09:00 Paris, two hours after "now" — inside a four-hour notice.
+  const soon = new Date("2026-10-01T07:00:00.000Z");
+
+  it("lets the pro reschedule inside the notice they ask of their clients", () => {
+    const input = baseInput({ minNoticeHours: 4 });
+    expect(isSlotBookable(input, soon)).toBeNull();
+    expect(isSlotBookable(withoutMinimumNotice(input), soon)).not.toBeNull();
+  });
+
+  it("still keeps the buffer with the other bookings", () => {
+    // Ends 15 minutes before the slot the pro is aiming for.
+    const busy = [
+      { start: new Date("2026-10-01T06:00:00Z"), end: new Date("2026-10-01T06:45:00Z") },
+    ];
+    const blocked = baseInput({ minNoticeHours: 4, busy, bufferMinutes: 30 });
+    expect(isSlotBookable(withoutMinimumNotice(blocked), soon)).toBeNull();
+
+    const roomy = baseInput({ minNoticeHours: 4, busy, bufferMinutes: 10 });
+    expect(isSlotBookable(withoutMinimumNotice(roomy), soon)).not.toBeNull();
+  });
+
+  it("does not reach back into the past", () => {
+    const now = new Date("2026-10-01T07:30:00Z");
+    const input = baseInput({ now, from: now, minNoticeHours: 4 });
+    expect(isSlotBookable(withoutMinimumNotice(input), soon)).toBeNull();
+  });
+
+  it("leaves the client-facing path alone", () => {
+    const input = baseInput({ minNoticeHours: 4 });
+    expect(input.minNoticeHours).toBe(4);
+    expect(withoutMinimumNotice(input).minNoticeHours).toBe(0);
   });
 });

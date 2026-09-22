@@ -34,6 +34,15 @@ export type Slot = {
   end: Date;
 };
 
+/**
+ * Why a slot cannot be booked is deliberately not exposed: "taken" and "too
+ * close to now" look the same to a visitor, so the public page never discloses
+ * when the pro is actually busy.
+ */
+export type SlotStatus = "available" | "unavailable";
+
+export type GradedSlot = Slot & { status: SlotStatus };
+
 export type SlotEngineInput = {
   timezone: string;
   offerId: string;
@@ -108,7 +117,15 @@ function isDayOff(dateKey: string, timeOff: TimeOffRange[]): boolean {
   return timeOff.some((range) => dateKey >= range.starts_on && dateKey <= range.ends_on);
 }
 
-export function generateSlots(input: SlotEngineInput): Slot[] {
+/**
+ * Every slot of the window, graded.
+ *
+ * `includeUnavailable` is what the public picker uses to grey out the slots it
+ * cannot offer instead of hiding them: a day full of holes reads as "that day
+ * is busy", not as "this pro has no schedule". Slots that have already started
+ * are never returned, in either mode.
+ */
+function collectSlots(input: SlotEngineInput, includeUnavailable: boolean): GradedSlot[] {
   const {
     timezone,
     offerId,
@@ -128,7 +145,12 @@ export function generateSlots(input: SlotEngineInput): Slot[] {
   if (rules.length === 0 || durationMinutes <= 0) return [];
 
   const step = Math.max(5, slotIntervalMinutes ?? durationMinutes);
-  const earliest = new Date(Math.max(from.getTime(), now.getTime() + minNoticeHours * 60 * MINUTE));
+  // The minimum notice the pro asks for. Below it a slot exists but cannot be
+  // booked — the one rule the engine and the public page must never disagree on.
+  const bookableFrom = new Date(now.getTime() + minNoticeHours * 60 * MINUTE);
+  const earliest = new Date(
+    Math.max(from.getTime(), includeUnavailable ? now.getTime() : bookableFrom.getTime()),
+  );
   const latest = new Date(Math.min(to.getTime(), now.getTime() + maxDaysAhead * DAY));
   if (earliest >= latest) return [];
 
@@ -139,7 +161,7 @@ export function generateSlots(input: SlotEngineInput): Slot[] {
     rulesByWeekday.set(rule.weekday, list);
   }
 
-  const slots: Slot[] = [];
+  const slots: GradedSlot[] = [];
   // Start one day early: a late-night window can still contain slots that fall
   // inside the requested range.
   let cursor = new Date(earliest.getTime() - DAY);
@@ -167,9 +189,10 @@ export function generateSlots(input: SlotEngineInput): Slot[] {
               start.getTime() < range.end.getTime() + bufferMinutes * MINUTE &&
               end.getTime() + bufferMinutes * MINUTE > range.start.getTime(),
           );
-          if (blocked) continue;
+          const bookable = !blocked && start >= bookableFrom;
+          if (!bookable && !includeUnavailable) continue;
 
-          slots.push({ start, end });
+          slots.push({ start, end, status: bookable ? "available" : "unavailable" });
         }
       }
     }
@@ -177,15 +200,40 @@ export function generateSlots(input: SlotEngineInput): Slot[] {
     cursor = new Date(cursor.getTime() + DAY);
   }
 
-  const seen = new Set<number>();
-  return slots
-    .filter((slot) => {
-      const key = slot.start.getTime();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .sort((a, b) => a.start.getTime() - b.start.getTime());
+  // Overlapping windows can propose the same start twice; an available one
+  // always wins over an unavailable duplicate.
+  const byStart = new Map<number, GradedSlot>();
+  for (const slot of slots) {
+    const key = slot.start.getTime();
+    const kept = byStart.get(key);
+    if (!kept || (kept.status === "unavailable" && slot.status === "available")) {
+      byStart.set(key, slot);
+    }
+  }
+
+  return [...byStart.values()].sort((a, b) => a.start.getTime() - b.start.getTime());
+}
+
+/** Bookable slots only — what the booking actions re-check against. */
+export function generateSlots(input: SlotEngineInput): Slot[] {
+  return collectSlots(input, false).map(({ start, end }) => ({ start, end }));
+}
+
+/** Every slot of the window, bookable or not — what the public picker renders. */
+export function generateSlotGrid(input: SlotEngineInput): GradedSlot[] {
+  return collectSlots(input, true);
+}
+
+/**
+ * Lifts the minimum notice, keeping every other rule.
+ *
+ * The notice is a promise made to clients ("don't book me at the last
+ * minute"), not a constraint on the pro: when they move one of their own
+ * appointments from the dashboard, a slot in two hours is fair game. The
+ * buffer between sessions still applies — that one protects the day itself.
+ */
+export function withoutMinimumNotice(input: SlotEngineInput): SlotEngineInput {
+  return { ...input, minNoticeHours: 0 };
 }
 
 /** Re-validates one slot before inserting a booking. */

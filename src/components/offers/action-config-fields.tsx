@@ -16,7 +16,7 @@ import type {
 } from "@/lib/offers/schema";
 
 const DURATIONS = [15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240];
-const BUFFERS = [0, 5, 10, 15, 30, 60];
+const BUFFERS = [0, 5, 10, 15, 30, 45, 60];
 const NOTICES = [0, 1, 2, 4, 12, 24, 48, 72];
 const HORIZONS = [7, 14, 30, 60, 90, 180, 365];
 

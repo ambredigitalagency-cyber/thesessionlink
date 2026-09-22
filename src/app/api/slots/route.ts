@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getAvailableSlots } from "@/lib/public/booking-context";
+import { getPublicSlots } from "@/lib/public/booking-context";
 
 /**
  * Public slot list for one offer. Returns absolute instants; the browser
- * formats them in the visitor's timezone.
+ * formats them in the visitor's timezone. Each slot carries whether it can be
+ * booked, without saying why it cannot.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "invalid_window" }, { status: 400 });
   }
 
-  const result = await getAvailableSlots(offerId, from, to);
+  const result = await getPublicSlots(offerId, from, to);
   if (!result) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -35,6 +36,7 @@ export async function GET(request: NextRequest) {
       slots: result.slots.map((slot) => ({
         start: slot.start.toISOString(),
         end: slot.end.toISOString(),
+        status: slot.status,
       })),
     },
     { headers: { "Cache-Control": "no-store" } },

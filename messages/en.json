@@ -1062,6 +1062,7 @@
   "publicProfile": {
     "booking": {
       "addToCalendar": "Add to calendar",
+      "allTaken": "Every slot in this period is already taken.",
       "budget": "Budget",
       "budgetPlaceholder": "Around 500 €",
       "confirmationNote": "You will receive a confirmation email right away.",
@@ -1069,6 +1070,8 @@
       "email": "Email",
       "emailPlaceholder": "you@example.com",
       "increase": "One more",
+      "legendAvailable": "Available",
+      "legendUnavailable": "Unavailable",
       "loadingSlots": "Loading availability…",
       "lookFurther": "Look further ahead",
       "manageBooking": "View or cancel",
@@ -1082,6 +1085,7 @@
       "pickSlot": "Pick a time",
       "preferredDate": "Preferred date",
       "quantity": "How many",
+      "slotUnavailable": "{time} — unavailable",
       "slotsError": "Could not load availability. Please refresh.",
       "submitBooking": "Confirm booking",
       "submitMessage": "Send message",
