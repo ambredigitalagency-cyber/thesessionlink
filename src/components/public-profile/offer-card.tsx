@@ -2,11 +2,12 @@
 
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/primitives";
 import { ACTION_ICONS, minutesToLabel } from "@/lib/offers/meta";
-import { parseActionConfig, visibleFields } from "@/lib/offers/schema";
+import { fieldSummary } from "@/lib/offers/fields";
+import { parseActionConfig } from "@/lib/offers/schema";
 import { cn, formatPrice } from "@/lib/utils";
 
 import type { PublicOffer } from "./types";
@@ -38,8 +39,12 @@ export function OfferPrice({
   );
 }
 
-/** Chips summarising an offer: duration, seats, and the first custom fields. */
-export function offerChips(offer: PublicOffer, locale: string): string[] {
+/**
+ * Chips summarising an offer: duration, seats, and the first custom fields.
+ * Custom fields are formatted in the visitor's language (`fieldLocale`); the
+ * rest still follows the profile's, like the price.
+ */
+export function offerChips(offer: PublicOffer, locale: string, fieldLocale: string): string[] {
   const chips: string[] = [];
 
   if (offer.action_type === "calendar_booking") {
@@ -47,10 +52,9 @@ export function offerChips(offer: PublicOffer, locale: string): string[] {
     chips.push(minutesToLabel(config.duration_minutes, locale));
   }
 
-  for (const field of visibleFields(offer.custom_fields)) {
-    if (field.type === "images") continue;
-    const value = Array.isArray(field.value) ? field.value.join(", ") : String(field.value);
-    chips.push(field.unit ? `${value} ${field.unit}` : value);
+  for (const field of offer.custom_fields) {
+    const summary = fieldSummary(field, fieldLocale);
+    if (summary) chips.push(summary);
     if (chips.length >= 4) break;
   }
 
@@ -71,7 +75,8 @@ export function OfferCard({
   const t = useTranslations("publicProfile");
   const tActions = useTranslations("offers.actions");
   const Icon = ACTION_ICONS[offer.action_type];
-  const chips = offerChips(offer, locale);
+  const visitorLocale = useLocale();
+  const chips = offerChips(offer, locale, visitorLocale);
 
   return (
     <button

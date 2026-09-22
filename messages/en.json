@@ -414,9 +414,12 @@
     "confirmation_mismatch": "The confirmation does not match.",
     "date_required": "Pick a date.",
     "end_before_start": "The end must be after the start.",
+    "field_label_required": "Give this field a name.",
+    "form_has_errors": "A few things need fixing.",
     "invalid_currency": "Enter a 3-letter currency code.",
     "invalid_email": "Enter a valid email address.",
     "invalid_input": "Please check the highlighted fields.",
+    "invalid_number": "Enter a number.",
     "invalid_phone": "Enter a valid phone number.",
     "invalid_slug": "Use 3 to 40 letters, numbers or dashes.",
     "invalid_time": "Enter a valid time.",
@@ -425,6 +428,10 @@
     "not_found": "Not found.",
     "oauth_failed": "Google sign-in did not complete. Try again or use your email.",
     "offer_unavailable": "This offer is no longer available.",
+    "option_duplicate": "This choice already exists.",
+    "option_label_required": "This choice is empty.",
+    "option_unknown": "This choice no longer exists.",
+    "options_required": "Add at least one choice.",
     "overlapping_rules": "Two time ranges overlap on the same day.",
     "quantity_too_high": "That is more than the maximum per booking.",
     "required": "This field is required.",
@@ -435,6 +442,8 @@
     "slug_reserved": "That link is reserved.",
     "slug_taken": "That link is already taken.",
     "sold_out": "No spots left.",
+    "text_too_long": "Too long for a short text: turn on “Long text”.",
+    "time_range_order": "The end must come after the start.",
     "too_many_requests": "Too many attempts. Please wait a few minutes.",
     "too_short": "This is a bit too short.",
     "unauthenticated": "Please log in again.",
@@ -876,20 +885,79 @@
       "whatsappNumberMissing": "No number in your profile yet — add one here or in settings."
     },
     "fields": {
-      "add": "Add",
-      "addHint": "Anything clients ask you often: level, equipment, address, dress code…",
-      "addPlaceholder": "Field name",
-      "addTitle": "Add your own field",
+      "add": "Add a field",
+      "addOption": "Add a choice",
+      "cancelPick": "Cancel",
       "choose": "Choose…",
-      "labelAria": "Field name",
-      "removeField": "Remove {label}",
+      "clearAnswer": "Clear",
+      "emptyHint": "Level, equipment provided, wheelchair access… Add the fields you want, of the type you want. They show up in the offer details.",
+      "emptyTitle": "No fields yet",
+      "hours": "Hours",
+      "hoursShort": "h",
+      "ideas": "Ideas for your business",
+      "label": "Field name",
+      "limit": "Up to {max} fields per offer.",
+      "minutes": "Minutes",
+      "minutesShort": "min",
+      "moveDown": "Move {label} down",
+      "moveUp": "Move {label} up",
+      "multiline": "Long text",
+      "multilineHint": "Several lines, shown as a paragraph.",
+      "optionAria": "Choice {number}",
+      "optionPlaceholder": "Choice {number}",
+      "options": "Choices",
+      "optionsFirst": "Add some choices above first.",
+      "optionsHint": "Up to {max} choices.",
+      "pickType": "Which kind of field?",
+      "remove": "Remove {label}",
+      "removeOption": "Remove choice {label}",
+      "timeDuration": "Duration",
+      "timeEnd": "End",
+      "timeMode": "Format",
+      "timeRange": "Time range",
+      "timeStart": "Start",
       "types": {
-        "images": "Photos",
-        "number": "Number",
-        "select": "Choice",
-        "text": "Short text",
-        "textarea": "Long text"
-      }
+        "boolean": {
+          "hint": "Yes or no, shown as ✓ or ✗.",
+          "name": "Yes / no",
+          "placeholder": "e.g. Parking available"
+        },
+        "images": {
+          "hint": "Added to the offer gallery.",
+          "name": "Photos",
+          "placeholder": "e.g. The studio"
+        },
+        "multiselect": {
+          "hint": "Several ticked values.",
+          "name": "Multiple choice",
+          "placeholder": "e.g. Languages spoken"
+        },
+        "number": {
+          "hint": "A quantity, with its unit.",
+          "name": "Number",
+          "placeholder": "e.g. Group size"
+        },
+        "select": {
+          "hint": "One value from a list.",
+          "name": "Single choice",
+          "placeholder": "e.g. Level"
+        },
+        "text": {
+          "hint": "A sentence or a paragraph.",
+          "name": "Text",
+          "placeholder": "e.g. Equipment provided"
+        },
+        "time": {
+          "hint": "A time range or a duration.",
+          "name": "Time or duration",
+          "placeholder": "e.g. Class hours"
+        }
+      },
+      "unit": "Unit",
+      "unitHint": "Shown after the number.",
+      "unitPlaceholder": "m², people, km…",
+      "value": "Value shown",
+      "valueHint": "Left empty, the field does not appear on your page."
     },
     "form": {
       "actionType": "What happens when a client clicks",
@@ -902,8 +970,6 @@
       "description": "Description",
       "descriptionHint": "What the client gets. Two or three sentences is plenty.",
       "descriptionPlaceholder": "A one-to-one session built around your goals…",
-      "detailsHint": "Suggestions come from your activity. Fill what matters, drop the rest, add your own.",
-      "detailsTitle": "Details shown on the offer",
       "photos": "Photos",
       "photosHint": "The first photo is the one shown on your page. Drag to reorder.",
       "price": "Price",
@@ -912,16 +978,36 @@
       "priceFrom": "From",
       "priceOnRequest": "On request",
       "priceType": "Type",
+      "progress": "Offer creation steps",
       "save": "Save changes",
       "settingsHint": "Settings tied to the action you chose — not to your profession.",
       "settingsTitle": "How this action works",
-      "stepOne": "Essentials",
-      "stepTwo": "Details",
+      "stepHints": {
+        "details": "Only add what helps your clients choose.",
+        "essentials": "Title, price and what happens when a client clicks.",
+        "photos": "Show what your offer looks like.",
+        "review": "Check your offer the way your clients will see it."
+      },
+      "steps": {
+        "details": "Details",
+        "essentials": "Essentials",
+        "photos": "Photos",
+        "review": "Review"
+      },
       "title": "Offer title",
       "titlePlaceholder": "60-minute personal training",
       "updated": "Offer updated",
       "visible": "Visible on my page",
       "visibleHint": "Hide an offer without deleting it."
+    },
+    "review": {
+      "edit": "Edit",
+      "emptyFields": "{count, plural, one {# empty field will not be shown.} other {# empty fields will not be shown.}}",
+      "fieldsSummary": "{count, plural, one {# field} other {# fields}} · {filled} filled in",
+      "noFields": "No custom fields",
+      "noPhotos": "No photos",
+      "photos": "{count, plural, one {# photo} other {# photos}}",
+      "preview": "Client preview"
     }
   },
   "onboarding": {

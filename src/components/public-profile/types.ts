@@ -1,4 +1,5 @@
-import type { ActionType, OfferField } from "@/lib/offers/schema";
+import type { OfferField } from "@/lib/offers/fields";
+import type { ActionType } from "@/lib/offers/schema";
 import type { SocialKey, ThemeAccent } from "@/lib/validation";
 
 export type PublicOffer = {

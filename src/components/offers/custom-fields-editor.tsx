@@ -1,310 +1,745 @@
 "use client";
 
-import { GripVertical, Plus, Trash2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  CircleDot,
+  Clock,
+  Hash,
+  Images,
+  ListChecks,
+  Plus,
+  ToggleRight,
+  Trash2,
+  Type,
+  X,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { GalleryUpload } from "@/components/media/image-upload";
 import { Button } from "@/components/ui/button";
-import { Input, NativeSelect, Textarea } from "@/components/ui/field";
+import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
+import { Toggle } from "@/components/ui/primitives";
 import {
-  localized,
-  type ActionType,
-  type CategoryField,
+  FIELD_LIMITS,
+  FIELD_TYPES,
+  availableSuggestions,
+  createField,
+  fieldFromSuggestion,
+  newFieldId,
   type FieldType,
   type OfferField,
-} from "@/lib/offers/schema";
+  type OfferFieldOf,
+  type TimeRange,
+} from "@/lib/offers/fields";
+import { localized, type ActionType, type CategoryField } from "@/lib/offers/schema";
 import { cn } from "@/lib/utils";
 
-const CUSTOM_TYPES: FieldType[] = ["text", "textarea", "number", "images"];
+export const FIELD_ICONS: Record<FieldType, LucideIcon> = {
+  text: Type,
+  number: Hash,
+  select: CircleDot,
+  multiselect: ListChecks,
+  boolean: ToggleRight,
+  time: Clock,
+  images: Images,
+};
 
-/** Builds the initial field list for a category + action type. */
-export function suggestedFieldsFor(
-  categoryFields: CategoryField[],
-  actionType: ActionType,
-  locale: string,
-): OfferField[] {
-  return categoryFields
-    .filter((field) => !field.skip_for_actions?.includes(actionType))
-    .map((field) => ({
-      id: `suggested-${field.key}`,
-      key: field.key,
-      label: localized(field.label, locale, field.key),
-      type: field.type,
-      value: field.type === "images" ? [] : null,
-      unit: field.unit ?? null,
-      source: "suggested" as const,
-    }));
-}
-
-/** Merges stored values with the current category suggestions. */
-export function mergeSuggestions(
-  existing: OfferField[],
-  categoryFields: CategoryField[],
-  actionType: ActionType,
-  locale: string,
-): OfferField[] {
-  const suggestions = suggestedFieldsFor(categoryFields, actionType, locale);
-  const byKey = new Map(existing.map((field) => [field.id, field]));
-
-  const merged = suggestions.map((suggestion) => byKey.get(suggestion.id) ?? suggestion);
-  const customs = existing.filter((field) => field.source === "custom");
-  const orphans = existing.filter(
-    (field) =>
-      field.source === "suggested" &&
-      !suggestions.some((suggestion) => suggestion.id === field.id) &&
-      field.value !== null &&
-      field.value !== "",
+/** Same chip as the booking filters: a pressed state, no new style. */
+const chipClass = (active: boolean) =>
+  cn(
+    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors",
+    active
+      ? "border-ink bg-ink text-ink-inverse"
+      : "border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink",
   );
 
-  return [...merged, ...orphans, ...customs];
-}
+const iconButtonClass =
+  "text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors disabled:pointer-events-none disabled:opacity-30";
 
+/**
+ * Step 2 of the offer builder: the pro adds the fields they want, of the type
+ * they want, configures them and fills them in. Nothing is pre-added — the
+ * category only offers one-click suggestions.
+ *
+ * `errors` uses the server's keys (`custom_fields.<index>.<path>`), so client
+ * and server validation land in the same place.
+ */
 export function CustomFieldsEditor({
   fields,
   onChange,
-  categoryFields,
+  suggestions,
+  actionType,
   locale,
+  errors,
 }: {
   fields: OfferField[];
   onChange: (fields: OfferField[]) => void;
-  categoryFields: CategoryField[];
+  suggestions: CategoryField[];
+  actionType: ActionType;
   locale: string;
+  errors: Record<string, string>;
 }) {
   const t = useTranslations("offers.fields");
-  const [newLabel, setNewLabel] = useState("");
-  const [newType, setNewType] = useState<FieldType>("text");
+  const [picking, setPicking] = useState(false);
+  const [focusId, setFocusId] = useState<string | null>(null);
 
-  function update(id: string, patch: Partial<OfferField>) {
-    onChange(fields.map((field) => (field.id === id ? { ...field, ...patch } : field)));
+  const full = fields.length >= FIELD_LIMITS.fields;
+  const ideas = availableSuggestions(suggestions, fields, actionType, locale);
+
+  function add(field: OfferField) {
+    onChange([...fields, field]);
+    setFocusId(field.id);
+    setPicking(false);
   }
 
-  function remove(id: string) {
-    onChange(fields.filter((field) => field.id !== id));
+  function update(index: number, next: OfferField) {
+    onChange(fields.map((field, position) => (position === index ? next : field)));
   }
 
-  function addCustom() {
-    const label = newLabel.trim();
-    if (!label) return;
-
-    onChange([
-      ...fields,
-      {
-        id: `custom-${crypto.randomUUID().slice(0, 8)}`,
-        key:
-          label
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "_")
-            .slice(0, 40) || "field",
-        label,
-        type: newType,
-        value: newType === "images" ? [] : null,
-        source: "custom",
-      },
-    ]);
-
-    setNewLabel("");
-    setNewType("text");
+  function move(from: number, to: number) {
+    if (to < 0 || to >= fields.length) return;
+    const next = [...fields];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    onChange(next);
   }
 
   return (
     <div className="space-y-4">
-      {fields.length > 0 ? (
-        <div className="space-y-3">
-          {fields.map((field) => (
-            <FieldRow
-              key={field.id}
-              field={field}
-              categoryField={categoryFields.find((item) => item.key === field.key)}
-              locale={locale}
-              onChange={(patch) => update(field.id, patch)}
-              onRemove={() => remove(field.id)}
-            />
-          ))}
+      {fields.length === 0 ? (
+        <div className="border-line-strong rounded-[var(--radius-md)] border border-dashed px-5 py-6 text-center">
+          <p className="text-ink text-[14px] font-medium">{t("emptyTitle")}</p>
+          <p className="text-ink-muted mx-auto mt-1 max-w-sm text-[13px] leading-relaxed">
+            {t("emptyHint")}
+          </p>
         </div>
+      ) : (
+        <ol className="space-y-3">
+          {fields.map((field, index) => (
+            <li key={field.id}>
+              <FieldCard
+                field={field}
+                index={index}
+                count={fields.length}
+                locale={locale}
+                autoFocus={field.id === focusId}
+                errors={errors}
+                onChange={(next) => update(index, next)}
+                onMove={(delta) => move(index, index + delta)}
+                onRemove={() => onChange(fields.filter((_, position) => position !== index))}
+              />
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {picking ? (
+        <div className="border-line-strong rounded-[var(--radius-md)] border p-4">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-ink text-[13.5px] font-medium">{t("pickType")}</p>
+            <button
+              type="button"
+              onClick={() => setPicking(false)}
+              className={iconButtonClass}
+              aria-label={t("cancelPick")}
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {FIELD_TYPES.map((type) => {
+              const Icon = FIELD_ICONS[type];
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => add(createField(type))}
+                  className="border-line bg-surface hover:border-ink/25 flex items-start gap-3 rounded-[var(--radius-sm)] border p-3 text-left transition-colors"
+                >
+                  <span className="bg-ink/5 text-ink-muted mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
+                    <Icon className="size-4" />
+                  </span>
+                  <span>
+                    <span className="text-ink block text-[13.5px] font-medium">
+                      {t(`types.${type}.name`)}
+                    </span>
+                    <span className="text-ink-muted block text-[12.5px] leading-snug">
+                      {t(`types.${type}.hint`)}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <Button type="button" variant="secondary" onClick={() => setPicking(true)} disabled={full}>
+          <Plus className="size-4" />
+          {t("add")}
+        </Button>
+      )}
+
+      {full ? (
+        <p className="text-ink-subtle text-[12.5px]">{t("limit", { max: FIELD_LIMITS.fields })}</p>
       ) : null}
 
-      <div className="border-line-strong rounded-[var(--radius-md)] border border-dashed p-4">
-        <p className="text-ink text-[13px] font-medium">{t("addTitle")}</p>
-        <p className="text-ink-muted mt-0.5 text-[12.5px]">{t("addHint")}</p>
-
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-          <Input
-            value={newLabel}
-            placeholder={t("addPlaceholder")}
-            onChange={(event) => setNewLabel(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                addCustom();
-              }
-            }}
-            className="sm:flex-1"
-          />
-          <NativeSelect
-            value={newType}
-            onChange={(event) => setNewType(event.target.value as FieldType)}
-            className="sm:w-40"
-          >
-            {CUSTOM_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {t(`types.${type}` as "types.text")}
-              </option>
+      {ideas.length > 0 && !full ? (
+        <div className="space-y-2 pt-1">
+          <p className="text-ink-muted text-[12.5px]">{t("ideas")}</p>
+          <div className="flex flex-wrap gap-2">
+            {ideas.map((idea) => (
+              <button
+                key={idea.key}
+                type="button"
+                className={chipClass(false)}
+                onClick={() => add(fieldFromSuggestion(idea, locale))}
+              >
+                <Plus className="size-3.5" />
+                {localized(idea.label, locale, idea.key)}
+              </button>
             ))}
-          </NativeSelect>
-          <Button type="button" variant="secondary" onClick={addCustom} disabled={!newLabel.trim()}>
-            <Plus className="size-4" />
-            {t("add")}
-          </Button>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
 
-function FieldRow({
+function FieldCard({
   field,
-  categoryField,
+  index,
+  count,
   locale,
+  autoFocus,
+  errors,
   onChange,
+  onMove,
   onRemove,
 }: {
   field: OfferField;
-  categoryField?: CategoryField;
+  index: number;
+  count: number;
   locale: string;
-  onChange: (patch: Partial<OfferField>) => void;
+  autoFocus: boolean;
+  errors: Record<string, string>;
+  onChange: (field: OfferField) => void;
+  onMove: (delta: -1 | 1) => void;
   onRemove: () => void;
 }) {
   const t = useTranslations("offers.fields");
-  const placeholder = categoryField?.placeholder
-    ? localized(categoryField.placeholder, locale, "")
-    : "";
+  const tError = useTranslations("errors");
+  const Icon = FIELD_ICONS[field.type];
+  const prefix = `custom_fields.${index}`;
+  const errorFor = (path: string) => {
+    const code = errors[`${prefix}.${path}`];
+    return code ? tError(code as "unexpected") : null;
+  };
+  const name = field.definition.label || t(`types.${field.type}.name`);
 
   return (
-    <div
-      className={cn(
-        "group border-line bg-surface relative rounded-[var(--radius-md)] border p-3.5",
-        field.source === "custom" && "border-dashed",
-      )}
-    >
-      <div className="flex items-start gap-2">
-        <GripVertical className="text-ink-subtle/60 mt-2 size-4 shrink-0" aria-hidden />
-
-        <div className="min-w-0 flex-1 space-y-2">
-          {field.source === "custom" ? (
-            <Input
-              value={field.label}
-              onChange={(event) => onChange({ label: event.target.value })}
-              className="h-9 text-[13px] font-medium"
-              aria-label={t("labelAria")}
-            />
-          ) : (
-            <p className="text-ink text-[13px] font-medium">
-              {field.label}
-              {field.unit ? (
-                <span className="text-ink-subtle ml-1 text-[12px] font-normal">({field.unit})</span>
-              ) : null}
-            </p>
-          )}
-
-          <FieldControl
-            field={field}
-            categoryField={categoryField}
-            locale={locale}
-            placeholder={placeholder}
-            onChange={onChange}
-          />
+    <div className="border-line bg-surface rounded-[var(--radius-md)] border p-4">
+      <div className="flex items-center gap-2">
+        <span className="bg-ink/5 text-ink-muted flex size-7 shrink-0 items-center justify-center rounded-full">
+          <Icon className="size-3.5" />
+        </span>
+        <span className="text-ink-subtle text-[12px] font-medium tracking-[0.06em] uppercase">
+          {t(`types.${field.type}.name`)}
+        </span>
+        <div className="ml-auto flex items-center">
+          <button
+            type="button"
+            onClick={() => onMove(-1)}
+            disabled={index === 0}
+            className={iconButtonClass}
+            aria-label={t("moveUp", { label: name })}
+          >
+            <ArrowUp className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => onMove(1)}
+            disabled={index === count - 1}
+            className={iconButtonClass}
+            aria-label={t("moveDown", { label: name })}
+          >
+            <ArrowDown className="size-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="text-ink-subtle hover:bg-danger-soft hover:text-danger rounded-full p-1.5 transition-colors"
+            aria-label={t("remove", { label: name })}
+          >
+            <Trash2 className="size-3.5" />
+          </button>
         </div>
+      </div>
 
-        <button
-          type="button"
-          onClick={onRemove}
-          className="text-ink-subtle hover:bg-danger-soft hover:text-danger rounded-full p-1.5 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-          aria-label={t("removeField", { label: field.label })}
-        >
-          <Trash2 className="size-3.5" />
-        </button>
+      <div className="mt-3 space-y-4">
+        <Field label={t("label")} error={errorFor("definition.label")}>
+          <Input
+            value={field.definition.label}
+            onChange={(event) =>
+              onChange({
+                ...field,
+                definition: { ...field.definition, label: event.target.value },
+              } as OfferField)
+            }
+            placeholder={t(`types.${field.type}.placeholder`)}
+            maxLength={FIELD_LIMITS.label}
+            autoFocus={autoFocus}
+          />
+        </Field>
+
+        <DefinitionControls field={field} onChange={onChange} errorFor={errorFor} />
+
+        <Field label={t("value")} hint={t("valueHint")} error={errorFor("value")} optional>
+          <ValueControl field={field} locale={locale} onChange={onChange} />
+        </Field>
       </div>
     </div>
   );
 }
 
-function FieldControl({
+/* -------------------------------------------------------------------------- */
+/* Definition — what the field is                                              */
+/* -------------------------------------------------------------------------- */
+
+function DefinitionControls({
   field,
-  categoryField,
-  locale,
-  placeholder,
   onChange,
+  errorFor,
 }: {
   field: OfferField;
-  categoryField?: CategoryField;
-  locale: string;
-  placeholder: string;
-  onChange: (patch: Partial<OfferField>) => void;
+  onChange: (field: OfferField) => void;
+  errorFor: (path: string) => string | null;
 }) {
   const t = useTranslations("offers.fields");
 
-  if (field.type === "images") {
-    return (
-      <GalleryUpload
-        value={Array.isArray(field.value) ? field.value : []}
-        onChange={(urls) => onChange({ value: urls })}
-      />
-    );
+  switch (field.type) {
+    case "text":
+      return (
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="text-ink block text-[13.5px] font-medium">{t("multiline")}</span>
+            <span className="text-ink-muted block text-[12.5px]">{t("multilineHint")}</span>
+          </span>
+          <Toggle
+            checked={field.definition.multiline}
+            onCheckedChange={(multiline) =>
+              onChange({ ...field, definition: { ...field.definition, multiline } })
+            }
+            label={t("multiline")}
+          />
+        </label>
+      );
+
+    case "number":
+      return (
+        <Field label={t("unit")} hint={t("unitHint")} optional>
+          <Input
+            value={field.definition.unit ?? ""}
+            onChange={(event) =>
+              onChange({
+                ...field,
+                definition: { ...field.definition, unit: event.target.value || null },
+              })
+            }
+            placeholder={t("unitPlaceholder")}
+            maxLength={FIELD_LIMITS.unit}
+            className="sm:max-w-40"
+          />
+        </Field>
+      );
+
+    case "select":
+    case "multiselect":
+      return <OptionsEditor field={field} onChange={onChange} errorFor={errorFor} />;
+
+    case "time":
+      return (
+        <Field label={t("timeMode")}>
+          <NativeSelect
+            value={field.definition.mode}
+            onChange={(event) =>
+              onChange({
+                ...field,
+                definition: {
+                  ...field.definition,
+                  mode: event.target.value as "range" | "duration",
+                },
+                value: null,
+              })
+            }
+            className="sm:max-w-60"
+          >
+            <option value="range">{t("timeRange")}</option>
+            <option value="duration">{t("timeDuration")}</option>
+          </NativeSelect>
+        </Field>
+      );
+
+    default:
+      return null;
+  }
+}
+
+function OptionsEditor({
+  field,
+  onChange,
+  errorFor,
+}: {
+  field: OfferFieldOf<"select"> | OfferFieldOf<"multiselect">;
+  onChange: (field: OfferField) => void;
+  errorFor: (path: string) => string | null;
+}) {
+  const t = useTranslations("offers.fields");
+  const options = field.definition.options;
+
+  function setOptions(next: typeof options) {
+    const ids = new Set(next.map((option) => option.id));
+    // A removed option can no longer be the chosen one.
+    const value =
+      field.type === "select"
+        ? field.value && ids.has(field.value)
+          ? field.value
+          : null
+        : field.value.filter((id) => ids.has(id));
+    onChange({ ...field, definition: { ...field.definition, options: next }, value } as OfferField);
   }
 
-  if (field.type === "select" && categoryField?.options) {
-    return (
-      <NativeSelect
-        value={typeof field.value === "string" ? field.value : ""}
-        onChange={(event) => onChange({ value: event.target.value || null })}
-        className="h-10"
-      >
-        <option value="">{t("choose")}</option>
-        {categoryField.options.map((option) => {
-          const label = localized(option.label, locale, option.value);
+  const listError = errorFor("definition.options");
+
+  return (
+    <div className="space-y-2">
+      <p className="text-ink text-[13.5px] font-medium">{t("options")}</p>
+      <ul className="space-y-2">
+        {options.map((option, index) => {
+          const error = errorFor(`definition.options.${index}.label`);
           return (
-            <option key={option.value} value={label}>
-              {label}
-            </option>
+            <li key={option.id}>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={option.label}
+                  onChange={(event) =>
+                    setOptions(
+                      options.map((item) =>
+                        item.id === option.id ? { ...item, label: event.target.value } : item,
+                      ),
+                    )
+                  }
+                  placeholder={t("optionPlaceholder", { number: index + 1 })}
+                  maxLength={FIELD_LIMITS.optionLabel}
+                  aria-invalid={Boolean(error)}
+                  aria-label={t("optionAria", { number: index + 1 })}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      if (options.length < FIELD_LIMITS.options) {
+                        setOptions([...options, { id: newFieldId("o"), label: "" }]);
+                      }
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setOptions(options.filter((item) => item.id !== option.id))}
+                  disabled={options.length === 1}
+                  className={iconButtonClass}
+                  aria-label={t("removeOption", { label: option.label || index + 1 })}
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              {error ? <p className="text-danger mt-1 text-[12.5px]">{error}</p> : null}
+            </li>
           );
         })}
-      </NativeSelect>
-    );
-  }
+      </ul>
+      {options.length < FIELD_LIMITS.options ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setOptions([...options, { id: newFieldId("o"), label: "" }])}
+        >
+          <Plus className="size-3.5" />
+          {t("addOption")}
+        </Button>
+      ) : null}
+      {listError ? (
+        <p className="text-danger text-[12.5px]">{listError}</p>
+      ) : (
+        <p className="text-ink-subtle text-[12.5px]">
+          {t("optionsHint", { max: FIELD_LIMITS.options })}
+        </p>
+      )}
+    </div>
+  );
+}
 
-  if (field.type === "textarea") {
-    return (
-      <Textarea
-        rows={3}
-        value={typeof field.value === "string" ? field.value : ""}
-        placeholder={placeholder}
-        onChange={(event) => onChange({ value: event.target.value || null })}
-      />
-    );
-  }
+/* -------------------------------------------------------------------------- */
+/* Value — what the pro fills in                                               */
+/* -------------------------------------------------------------------------- */
 
-  if (field.type === "number") {
-    return (
-      <Input
-        type="number"
-        inputMode="decimal"
-        className="h-10"
-        value={typeof field.value === "number" ? field.value : ""}
-        placeholder={placeholder}
-        onChange={(event) =>
-          onChange({ value: event.target.value === "" ? null : Number(event.target.value) })
-        }
-      />
-    );
+function ValueControl({
+  field,
+  locale,
+  onChange,
+}: {
+  field: OfferField;
+  locale: string;
+  onChange: (field: OfferField) => void;
+}) {
+  const t = useTranslations("offers.fields");
+  const tCommon = useTranslations("common");
+
+  switch (field.type) {
+    case "text":
+      return field.definition.multiline ? (
+        <Textarea
+          rows={4}
+          value={field.value ?? ""}
+          maxLength={FIELD_LIMITS.longText}
+          onChange={(event) => onChange({ ...field, value: event.target.value || null })}
+        />
+      ) : (
+        <Input
+          value={field.value ?? ""}
+          maxLength={FIELD_LIMITS.shortText}
+          onChange={(event) => onChange({ ...field, value: event.target.value || null })}
+        />
+      );
+
+    case "number":
+      return (
+        <div className="flex gap-2 sm:max-w-60">
+          <Input
+            type="number"
+            inputMode="decimal"
+            step="any"
+            value={field.value ?? ""}
+            onChange={(event) =>
+              onChange({
+                ...field,
+                value: event.target.value === "" ? null : Number(event.target.value),
+              })
+            }
+          />
+          {field.definition.unit ? (
+            <span className="border-line-strong text-ink-muted flex h-11 shrink-0 items-center rounded-[var(--radius-sm)] border px-3 text-[14px]">
+              {field.definition.unit}
+            </span>
+          ) : null}
+        </div>
+      );
+
+    case "select": {
+      const options = field.definition.options.filter((option) => option.label.trim());
+      return (
+        <NativeSelect
+          value={field.value ?? ""}
+          onChange={(event) => onChange({ ...field, value: event.target.value || null })}
+          disabled={options.length === 0}
+          className="sm:max-w-80"
+        >
+          <option value="">{t("choose")}</option>
+          {options.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </NativeSelect>
+      );
+    }
+
+    case "multiselect": {
+      const options = field.definition.options.filter((option) => option.label.trim());
+      if (options.length === 0) {
+        return <p className="text-ink-subtle text-[13px]">{t("optionsFirst")}</p>;
+      }
+      return (
+        <div className="flex flex-wrap gap-2">
+          {options.map((option) => {
+            const checked = field.value.includes(option.id);
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="checkbox"
+                aria-checked={checked}
+                className={chipClass(checked)}
+                onClick={() =>
+                  onChange({
+                    ...field,
+                    // Keep the order of the options, not the order of the clicks.
+                    value: field.definition.options
+                      .map((item) => item.id)
+                      .filter((id) => (id === option.id ? !checked : field.value.includes(id))),
+                  })
+                }
+              >
+                {option.label}
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    case "boolean":
+      // Two explicit answers rather than a switch: a switch has no "not
+      // answered yet" position, and an unanswered field must stay hidden.
+      return (
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            role="radiogroup"
+            aria-label={field.definition.label || t("types.boolean.name")}
+            className="flex gap-2"
+          >
+            {([true, false] as const).map((answer) => (
+              <button
+                key={String(answer)}
+                type="button"
+                role="radio"
+                aria-checked={field.value === answer}
+                className={chipClass(field.value === answer)}
+                onClick={() => onChange({ ...field, value: answer })}
+              >
+                {answer ? tCommon("yes") : tCommon("no")}
+              </button>
+            ))}
+          </div>
+          {field.value !== null ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onChange({ ...field, value: null })}
+            >
+              {t("clearAnswer")}
+            </Button>
+          ) : null}
+        </div>
+      );
+
+    case "time":
+      return field.definition.mode === "range" ? (
+        <TimeRangeInput
+          key={`${field.id}-range`}
+          value={field.value && "start" in field.value ? field.value : null}
+          onChange={(value) => onChange({ ...field, value })}
+        />
+      ) : (
+        <DurationInput
+          key={`${field.id}-duration`}
+          minutes={field.value && "minutes" in field.value ? field.value.minutes : null}
+          locale={locale}
+          onChange={(minutes) => onChange({ ...field, value: minutes ? { minutes } : null })}
+        />
+      );
+
+    case "images":
+      return (
+        <GalleryUpload
+          value={field.value}
+          max={FIELD_LIMITS.images}
+          onChange={(urls) => onChange({ ...field, value: urls })}
+        />
+      );
+  }
+}
+
+/**
+ * Keeps half-typed input locally: the field only gets a value once both ends
+ * are set, but the pro must still see what they typed.
+ */
+function TimeRangeInput({
+  value,
+  onChange,
+}: {
+  value: TimeRange | null;
+  onChange: (value: TimeRange | null) => void;
+}) {
+  const t = useTranslations("offers.fields");
+  const [start, setStart] = useState(value?.start ?? "");
+  const [end, setEnd] = useState(value?.end ?? "");
+  // The first input takes the Field's id; the second needs its own.
+  const endId = useId();
+
+  function commit(nextStart: string, nextEnd: string) {
+    setStart(nextStart);
+    setEnd(nextEnd);
+    onChange(nextStart && nextEnd ? { start: nextStart, end: nextEnd } : null);
   }
 
   return (
-    <Input
-      className="h-10"
-      value={typeof field.value === "string" ? field.value : ""}
-      placeholder={placeholder}
-      onChange={(event) => onChange({ value: event.target.value || null })}
-    />
+    <div className="flex items-center gap-2 sm:max-w-80">
+      <Input
+        type="time"
+        value={start}
+        onChange={(event) => commit(event.target.value, end)}
+        aria-label={t("timeStart")}
+      />
+      <span className="text-ink-subtle">–</span>
+      <Input
+        type="time"
+        id={endId}
+        value={end}
+        onChange={(event) => commit(start, event.target.value)}
+        aria-label={t("timeEnd")}
+      />
+    </div>
+  );
+}
+
+function DurationInput({
+  minutes,
+  locale,
+  onChange,
+}: {
+  minutes: number | null;
+  locale: string;
+  onChange: (minutes: number | null) => void;
+}) {
+  const t = useTranslations("offers.fields");
+  const [hours, setHours] = useState(minutes ? String(Math.floor(minutes / 60)) : "");
+  const [rest, setRest] = useState(minutes ? String(minutes % 60) : "");
+  const minutesId = useId();
+
+  function commit(nextHours: string, nextRest: string) {
+    setHours(nextHours);
+    setRest(nextRest);
+    const total = (Number(nextHours) || 0) * 60 + (Number(nextRest) || 0);
+    onChange(total > 0 ? Math.round(total) : null);
+  }
+
+  return (
+    <div className="flex items-center gap-2 sm:max-w-80" lang={locale}>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={0}
+        max={168}
+        value={hours}
+        onChange={(event) => commit(event.target.value, rest)}
+        aria-label={t("hours")}
+      />
+      <span className="text-ink-muted text-[14px]">{t("hoursShort")}</span>
+      <Input
+        type="number"
+        inputMode="numeric"
+        min={0}
+        max={59}
+        id={minutesId}
+        value={rest}
+        onChange={(event) => commit(hours, event.target.value)}
+        aria-label={t("minutes")}
+      />
+      <span className="text-ink-muted text-[14px]">{t("minutesShort")}</span>
+    </div>
   );
 }

@@ -30,6 +30,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
     ...BASE_NAMESPACES,
     "dashboard",
     "offers",
+    "publicProfile.gallery",
     "media",
     "share",
     "bookingStatus",

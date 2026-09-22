@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-import { actionTypeSchema, offerFieldsSchema } from "@/lib/offers/schema";
+import { offerFieldsSchema } from "@/lib/offers/fields";
+import { actionTypeSchema } from "@/lib/offers/schema";
 
 /* -------------------------------------------------------------------------- */
 /* Shared                                                                      */

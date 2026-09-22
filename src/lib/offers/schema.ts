@@ -112,59 +112,26 @@ export function requiresConfirmation(actionType: ActionType, config: AnyActionCo
 }
 
 /* -------------------------------------------------------------------------- */
-/* custom_fields — category suggestions + free-form fields added by the pro     */
-/* -------------------------------------------------------------------------- */
-
-export const FIELD_TYPES = ["text", "textarea", "number", "select", "images"] as const;
-export type FieldType = (typeof FIELD_TYPES)[number];
-
-export const offerFieldSchema = z.object({
-  id: z.string().min(1).max(40),
-  key: z.string().min(1).max(60),
-  label: z.string().min(1).max(60),
-  type: z.enum(FIELD_TYPES),
-  value: z.union([
-    z.string().max(2000),
-    z.number(),
-    z.array(z.string().max(500)).max(12),
-    z.null(),
-  ]),
-  unit: z.string().max(16).nullish(),
-  source: z.enum(["suggested", "custom"]).default("custom"),
-});
-
-export type OfferField = z.infer<typeof offerFieldSchema>;
-
-export const offerFieldsSchema = z.array(offerFieldSchema).max(24);
-
-export function parseOfferFields(raw: unknown): OfferField[] {
-  const result = offerFieldsSchema.safeParse(raw);
-  return result.success ? result.data : [];
-}
-
-/** Drops fields the pro left empty so the public page stays clean. */
-export function visibleFields(fields: OfferField[]): OfferField[] {
-  return fields.filter((field) => {
-    if (field.value === null || field.value === "") return false;
-    if (Array.isArray(field.value)) return field.value.length > 0;
-    return true;
-  });
-}
-
-/* -------------------------------------------------------------------------- */
 /* Category config (activity_categories.config)                                */
 /* -------------------------------------------------------------------------- */
 
 const localizedTextSchema = z.record(z.string(), z.string());
 
+/**
+ * Field suggestions a category offers in the offer builder. They keep their
+ * own, localized format and are converted into offer fields only when the pro
+ * picks one — see fieldFromSuggestion() in ./fields.
+ */
+export const CATEGORY_FIELD_TYPES = ["text", "textarea", "number", "select", "images"] as const;
+
 export const categoryFieldSchema = z.object({
   key: z.string(),
-  type: z.enum(FIELD_TYPES),
+  type: z.enum(CATEGORY_FIELD_TYPES),
   label: localizedTextSchema,
   placeholder: localizedTextSchema.optional(),
   unit: z.string().optional(),
   options: z.array(z.object({ value: z.string(), label: localizedTextSchema })).optional(),
-  /** Hidden for these action types (e.g. duration is already in action_config). */
+  /** Not suggested for these action types (e.g. duration is already in action_config). */
   skip_for_actions: z.array(actionTypeSchema).optional(),
 });
 

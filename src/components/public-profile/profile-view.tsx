@@ -10,12 +10,13 @@ import { SocialIcon, socialUrl } from "@/components/brand/social-icons";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/overlays";
 import { Badge, ProfileAvatar } from "@/components/ui/primitives";
-import { parseActionConfig, visibleFields } from "@/lib/offers/schema";
+import { parseActionConfig } from "@/lib/offers/schema";
 import { cn, whatsappLink } from "@/lib/utils";
 import { SOCIAL_KEYS, type SocialKey } from "@/lib/validation";
 
 import { BookingPanel } from "./booking-panel";
 import { OfferCard, OfferPrice } from "./offer-card";
+import { OfferDetails } from "./offer-details";
 import { OfferGallery } from "./offer-gallery";
 import type { PublicOffer, PublicProfile } from "./types";
 
@@ -214,9 +215,6 @@ function OfferSheet({
 
   if (!offer) return null;
 
-  const fields = visibleFields(offer.custom_fields);
-  const gallery = fields.filter((field) => field.type === "images");
-  const details = fields.filter((field) => field.type !== "images");
   const isCalendar = offer.action_type === "calendar_booking";
   const calendarClosed = isCalendar && !profile.calendar_visible;
 
@@ -252,35 +250,7 @@ function OfferSheet({
           </p>
         ) : null}
 
-        {details.length > 0 ? (
-          <dl className="divide-line border-line divide-y border-y">
-            {details.map((field) => (
-              <div key={field.id} className="flex items-baseline justify-between gap-6 py-2.5">
-                <dt className="text-ink-muted text-[13.5px]">{field.label}</dt>
-                <dd className="text-ink text-right text-[14px] font-medium">
-                  {Array.isArray(field.value) ? field.value.join(", ") : String(field.value)}
-                  {field.unit ? ` ${field.unit}` : ""}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
-
-        {gallery.map((field) => (
-          <div key={field.id} className="space-y-2">
-            <p className="text-ink text-[13px] font-medium">{field.label}</p>
-            <div className="grid grid-cols-2 gap-2">
-              {(field.value as string[]).map((url) => (
-                <div
-                  key={url}
-                  className="bg-ink/5 relative aspect-[4/3] overflow-hidden rounded-[var(--radius-xs)]"
-                >
-                  <Image src={url} alt="" fill sizes="240px" className="object-cover" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+        <OfferDetails fields={offer.custom_fields} />
 
         <div className={cn("border-line border-t pt-6")}>
           {calendarClosed ? (

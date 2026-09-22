@@ -3,7 +3,7 @@
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { createOffer, updateOffer } from "@/actions/offers";
@@ -11,19 +11,21 @@ import { OfferPhotosUpload } from "@/components/media/offer-photos-upload";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
 import { ToggleRow } from "@/components/ui/primitives";
+import { offerFieldsSchema, type OfferField } from "@/lib/offers/fields";
 import {
   defaultActionConfig,
   parseActionConfig,
   type ActionType,
   type AnyActionConfig,
   type CategoryField,
-  type OfferField,
 } from "@/lib/offers/schema";
 import { cn } from "@/lib/utils";
+import { fieldErrorsFrom } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
 import { ActionTypePicker } from "./action-type-picker";
-import { CustomFieldsEditor, mergeSuggestions, suggestedFieldsFor } from "./custom-fields-editor";
+import { CustomFieldsEditor } from "./custom-fields-editor";
+import { OfferReview, type ReviewDraft } from "./offer-review";
 
 export type OfferInitialValues = {
   id: string;
@@ -38,10 +40,17 @@ export type OfferInitialValues = {
   is_active: boolean;
 };
 
+const STEPS = ["essentials", "details", "photos", "review"] as const;
+export type OfferStep = (typeof STEPS)[number];
+
 type Props = {
   mode: "create" | "edit";
-  /** Onboarding walks through the two steps; the dashboard shows both at once. */
-  layout: "wizard" | "stacked";
+  /**
+   * Creating walks through the steps and ends on a review; editing an offer
+   * that already exists shows every section on one page, so a small change is
+   * one scroll and one save.
+   */
+  layout: "wizard" | "sections";
   categoryFields: CategoryField[];
   suggestedActionType?: ActionType | null;
   currency: string;
@@ -52,6 +61,13 @@ type Props = {
   onSaved?: (offerId: string) => void;
   onCancel?: () => void;
 };
+
+/** Which step owns an error key, so a rejected save lands on it. */
+function stepForError(key: string): OfferStep {
+  if (key.startsWith("custom_fields")) return "details";
+  if (key.startsWith("photos")) return "photos";
+  return "essentials";
+}
 
 export function OfferForm({
   mode,
@@ -72,7 +88,8 @@ export function OfferForm({
   const startingActionType =
     initial?.action_type ?? suggestedActionType ?? ("calendar_booking" as ActionType);
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<OfferStep>("essentials");
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [priceType, setPriceType] = useState(initial?.price_type ?? "fixed");
@@ -80,6 +97,7 @@ export function OfferForm({
   const [photos, setPhotos] = useState<string[]>(initial?.photos ?? []);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [actionType, setActionType] = useState<ActionType>(startingActionType);
+  const [fields, setFields] = useState<OfferField[]>(initial?.custom_fields ?? []);
 
   // Keep per-type settings around so switching back and forth is not destructive.
   const [configs, setConfigs] = useState<Partial<Record<ActionType, AnyActionConfig>>>(() => ({
@@ -88,14 +106,9 @@ export function OfferForm({
       : defaultActionConfig(startingActionType),
   }));
 
-  const [fields, setFields] = useState<OfferField[]>(() =>
-    initial
-      ? mergeSuggestions(initial.custom_fields, categoryFields, startingActionType, locale)
-      : suggestedFieldsFor(categoryFields, startingActionType, locale),
-  );
-
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   const config = useMemo(
     () => configs[actionType] ?? defaultActionConfig(actionType),
@@ -108,26 +121,79 @@ export function OfferForm({
       ...current,
       [next]: current[next] ?? defaultActionConfig(next),
     }));
-    setFields((current) => mergeSuggestions(current, categoryFields, next, locale));
   }
 
-  function validateStepOne() {
-    const nextErrors: Record<string, string> = {};
-    if (title.trim().length < 2) nextErrors.title = "too_short";
+  function essentialsErrors() {
+    const found: Record<string, string> = {};
+    if (title.trim().length < 2) found.title = "too_short";
     if (
       (priceType === "fixed" || priceType === "from") &&
       price !== "" &&
       Number.isNaN(Number(price))
     ) {
-      nextErrors.price = "invalid_input";
+      found.price = "invalid_input";
     }
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    return found;
+  }
+
+  /** The same rules the server applies, run before leaving the step. */
+  function detailsErrors(list = fields): Record<string, string> {
+    const result = offerFieldsSchema.safeParse(list);
+    if (result.success) return {};
+    return Object.fromEntries(
+      Object.entries(fieldErrorsFrom(result.error)).map(([key, code]) => [
+        key === "form" ? "custom_fields" : `custom_fields.${key}`,
+        code,
+      ]),
+    );
+  }
+
+  function validate(scope: "essentials" | "details" | "all") {
+    const found = {
+      ...(scope !== "details" ? essentialsErrors() : {}),
+      ...(scope !== "essentials" ? detailsErrors() : {}),
+    };
+    setErrors(found);
+    return found;
+  }
+
+  /**
+   * Once the details show errors, re-check them on every change so a fixed
+   * field clears its message right away instead of on the next "Continue".
+   */
+  function changeFields(next: OfferField[]) {
+    setFields(next);
+    setErrors((current) => {
+      const keys = Object.keys(current);
+      if (!keys.some((key) => key.startsWith("custom_fields"))) return current;
+      const kept = Object.fromEntries(
+        keys.filter((key) => !key.startsWith("custom_fields")).map((key) => [key, current[key]]),
+      );
+      return { ...kept, ...detailsErrors(next) };
+    });
+  }
+
+  function goTo(target: OfferStep) {
+    setDirection(STEPS.indexOf(target) >= STEPS.indexOf(step) ? 1 : -1);
+    setStep(target);
+    // Move focus with the content, so keyboard and screen reader users follow.
+    requestAnimationFrame(() => {
+      headingRef.current?.focus({ preventScroll: true });
+      headingRef.current?.scrollIntoView({ block: "nearest" });
+    });
+  }
+
+  function next() {
+    if (step === "essentials" && Object.keys(validate("essentials")).length > 0) return;
+    if (step === "details" && Object.keys(validate("details")).length > 0) return;
+    goTo(STEPS[STEPS.indexOf(step) + 1]);
   }
 
   function submit() {
-    if (!validateStepOne()) {
-      setStep(1);
+    const firstError = Object.keys(validate("all"))[0];
+    if (firstError) {
+      if (layout === "wizard") goTo(stepForError(firstError));
+      toast.error(tError("form_has_errors"));
       return;
     }
 
@@ -159,7 +225,10 @@ export function OfferForm({
             : ((result.data as { id: string } | undefined)?.id ?? ""),
         );
       } else {
-        setErrors(result.fieldErrors ?? {});
+        const serverErrors = result.fieldErrors ?? {};
+        setErrors(serverErrors);
+        const first = Object.keys(serverErrors)[0];
+        if (first && layout === "wizard") goTo(stepForError(first));
         toast.error(tError(result.error as "unexpected"));
       }
     });
@@ -221,10 +290,6 @@ export function OfferForm({
         </Field>
       </div>
 
-      <Field label={t("photos")} hint={t("photosHint")} optional>
-        <OfferPhotosUpload value={photos} onChange={setPhotos} />
-      </Field>
-
       <Field label={t("actionType")} hint={t("actionTypeHint")}>
         <ActionTypePicker
           value={actionType}
@@ -232,11 +297,7 @@ export function OfferForm({
           suggested={suggestedActionType}
         />
       </Field>
-    </div>
-  );
 
-  const details = (
-    <div className="space-y-7">
       <section className="space-y-4">
         <div>
           <h3 className="text-ink text-[15px] font-semibold">{t("settingsTitle")}</h3>
@@ -247,42 +308,53 @@ export function OfferForm({
           config={config}
           locale={locale}
           profileWhatsapp={profileWhatsapp}
-          onChange={(next) => setConfigs((current) => ({ ...current, [actionType]: next }))}
+          onChange={(nextConfig) =>
+            setConfigs((current) => ({ ...current, [actionType]: nextConfig }))
+          }
         />
       </section>
-
-      <section className="space-y-4">
-        <div>
-          <h3 className="text-ink text-[15px] font-semibold">{t("detailsTitle")}</h3>
-          <p className="text-ink-muted mt-0.5 text-[13px]">{t("detailsHint")}</p>
-        </div>
-        <CustomFieldsEditor
-          fields={fields}
-          onChange={setFields}
-          categoryFields={categoryFields}
-          locale={locale}
-        />
-      </section>
-
-      {mode === "edit" ? (
-        <section className="divide-line border-line divide-y border-y">
-          <ToggleRow
-            title={t("visible")}
-            description={t("visibleHint")}
-            checked={isActive}
-            onCheckedChange={setIsActive}
-          />
-        </section>
-      ) : null}
     </div>
   );
 
-  if (layout === "stacked") {
+  const details = (
+    <CustomFieldsEditor
+      fields={fields}
+      onChange={changeFields}
+      suggestions={categoryFields}
+      actionType={actionType}
+      locale={locale}
+      errors={errors}
+    />
+  );
+
+  const photosSection = (
+    <Field label={t("photos")} hint={t("photosHint")} optional>
+      <OfferPhotosUpload value={photos} onChange={setPhotos} />
+    </Field>
+  );
+
+  if (layout === "sections") {
     return (
-      <div className="space-y-8">
-        {essentials}
-        <hr className="border-line" />
-        {details}
+      <div className="space-y-10">
+        <FormSection title={t("steps.essentials")} hint={t("stepHints.essentials")}>
+          {essentials}
+        </FormSection>
+        <FormSection title={t("steps.details")} hint={t("stepHints.details")}>
+          {details}
+        </FormSection>
+        <FormSection title={t("steps.photos")} hint={t("stepHints.photos")}>
+          {photosSection}
+        </FormSection>
+        {mode === "edit" ? (
+          <section className="divide-line border-line divide-y border-y">
+            <ToggleRow
+              title={t("visible")}
+              description={t("visibleHint")}
+              checked={isActive}
+              onCheckedChange={setIsActive}
+            />
+          </section>
+        ) : null}
         <div className="flex flex-wrap justify-end gap-2">
           {onCancel ? (
             <Button type="button" variant="ghost" onClick={onCancel}>
@@ -297,46 +369,83 @@ export function OfferForm({
     );
   }
 
+  const draft: ReviewDraft = {
+    title: title.trim(),
+    description: description.trim() || null,
+    price:
+      priceType === "free" || priceType === "on_request" || price === "" ? null : Number(price),
+    price_type: priceType,
+    photos,
+    action_type: actionType,
+    action_config: config,
+    custom_fields: fields,
+  };
+
+  const index = STEPS.indexOf(step);
+
   return (
     <div className="space-y-6">
-      <StepHeader step={step} />
+      <StepHeader
+        step={step}
+        onSelect={(target) => {
+          // Only steps already reached can be revisited from the header.
+          if (STEPS.indexOf(target) < index) goTo(target);
+        }}
+      />
 
+      <div>
+        <h2
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-ink scroll-mt-24 text-[18px] font-semibold tracking-[-0.01em] focus:outline-none"
+        >
+          {t(`steps.${step}`)}
+        </h2>
+        <p className="text-ink-muted mt-1 text-[14px]">{t(`stepHints.${step}`)}</p>
+      </div>
+
+      {/* Transforms are dropped under prefers-reduced-motion by MotionProvider;
+          the cross-fade stays so the change of step is still visible. */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={step}
-          initial={{ opacity: 0, x: step === 1 ? -12 : 12 }}
+          initial={{ opacity: 0, x: 12 * direction }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: step === 1 ? 12 : -12 }}
+          exit={{ opacity: 0, x: -12 * direction }}
           transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         >
-          {step === 1 ? essentials : details}
+          {step === "essentials" ? essentials : null}
+          {step === "details" ? details : null}
+          {step === "photos" ? photosSection : null}
+          {step === "review" ? (
+            <OfferReview draft={draft} currency={currency} locale={locale} onEdit={goTo} />
+          ) : null}
         </motion.div>
       </AnimatePresence>
 
       <div className="border-line flex items-center justify-between gap-3 border-t pt-5">
-        {step === 2 ? (
-          <Button type="button" variant="ghost" onClick={() => setStep(1)}>
+        {index > 0 ? (
+          <Button type="button" variant="ghost" onClick={() => goTo(STEPS[index - 1])}>
             <ArrowLeft className="size-4" />
             {t("back")}
+          </Button>
+        ) : onCancel ? (
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            {t("cancel")}
           </Button>
         ) : (
           <span />
         )}
 
-        {step === 1 ? (
-          <Button
-            type="button"
-            onClick={() => {
-              if (validateStepOne()) setStep(2);
-            }}
-          >
-            {t("continue")}
-            <ArrowRight className="size-4" />
-          </Button>
-        ) : (
+        {step === "review" ? (
           <Button type="button" onClick={submit} loading={pending}>
             <Check className="size-4" />
             {submitLabel ?? t("create")}
+          </Button>
+        ) : (
+          <Button type="button" onClick={next}>
+            {t("continue")}
+            <ArrowRight className="size-4" />
           </Button>
         )}
       </div>
@@ -344,29 +453,62 @@ export function OfferForm({
   );
 }
 
-function StepHeader({ step }: { step: 1 | 2 }) {
+function FormSection({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-5">
+      <div className="border-line border-b pb-3">
+        <h2 className="text-ink text-[17px] font-semibold tracking-[-0.01em]">{title}</h2>
+        <p className="text-ink-muted mt-0.5 text-[13.5px]">{hint}</p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function StepHeader({ step, onSelect }: { step: OfferStep; onSelect: (step: OfferStep) => void }) {
   const t = useTranslations("offers.form");
+  const current = STEPS.indexOf(step);
 
   return (
-    <div className="flex gap-2">
-      {[1, 2].map((item) => (
-        <div key={item} className="flex-1 space-y-1.5">
-          <div
-            className={cn(
-              "h-1 rounded-full transition-colors duration-300",
-              item <= step ? "bg-ink" : "bg-ink/10",
-            )}
-          />
-          <p
-            className={cn(
-              "text-[12px] font-medium transition-colors",
-              item <= step ? "text-ink" : "text-ink-subtle",
-            )}
-          >
-            {item === 1 ? t("stepOne") : t("stepTwo")}
-          </p>
-        </div>
-      ))}
-    </div>
+    <ol className="flex gap-2" aria-label={t("progress")}>
+      {STEPS.map((item, index) => {
+        const done = index < current;
+        return (
+          <li key={item} className="flex-1">
+            <button
+              type="button"
+              onClick={() => onSelect(item)}
+              disabled={!done}
+              aria-current={index === current ? "step" : undefined}
+              className="w-full space-y-1.5 text-left disabled:cursor-default"
+            >
+              <span
+                className={cn(
+                  "block h-1 rounded-full transition-colors duration-300",
+                  index <= current ? "bg-ink" : "bg-ink/10",
+                )}
+              />
+              <span
+                className={cn(
+                  "block truncate text-[12px] font-medium transition-colors",
+                  index <= current ? "text-ink" : "text-ink-subtle",
+                  done && "hover:text-ink-muted",
+                )}
+              >
+                {t(`steps.${item}`)}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+    </ol>
   );
 }

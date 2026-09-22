@@ -414,9 +414,12 @@
     "confirmation_mismatch": "La confirmation ne correspond pas.",
     "date_required": "Choisissez une date.",
     "end_before_start": "La fin doit être après le début.",
+    "field_label_required": "Donnez un nom à ce champ.",
+    "form_has_errors": "Quelques informations sont à corriger.",
     "invalid_currency": "Saisissez un code devise à 3 lettres.",
     "invalid_email": "Saisissez une adresse e-mail valide.",
     "invalid_input": "Vérifiez les champs en surbrillance.",
+    "invalid_number": "Entrez un nombre.",
     "invalid_phone": "Saisissez un numéro de téléphone valide.",
     "invalid_slug": "3 à 40 lettres, chiffres ou tirets.",
     "invalid_time": "Saisissez une heure valide.",
@@ -425,6 +428,10 @@
     "not_found": "Introuvable.",
     "oauth_failed": "La connexion avec Google n'a pas abouti. Réessayez ou utilisez votre e-mail.",
     "offer_unavailable": "Cette offre n'est plus disponible.",
+    "option_duplicate": "Ce choix existe déjà.",
+    "option_label_required": "Ce choix est vide.",
+    "option_unknown": "Ce choix n'existe plus.",
+    "options_required": "Ajoutez au moins un choix.",
     "overlapping_rules": "Deux plages se chevauchent le même jour.",
     "quantity_too_high": "C'est au-delà du maximum par réservation.",
     "required": "Ce champ est obligatoire.",
@@ -435,6 +442,8 @@
     "slug_reserved": "Ce lien est réservé.",
     "slug_taken": "Ce lien est déjà pris.",
     "sold_out": "Plus de place disponible.",
+    "text_too_long": "Trop long pour un texte court : activez « Texte long ».",
+    "time_range_order": "La fin doit être après le début.",
     "too_many_requests": "Trop de tentatives. Patientez quelques minutes.",
     "too_short": "C'est un peu trop court.",
     "unauthenticated": "Reconnectez-vous.",
@@ -876,20 +885,79 @@
       "whatsappNumberMissing": "Aucun numéro dans votre profil — ajoutez-le ici ou dans les paramètres."
     },
     "fields": {
-      "add": "Ajouter",
-      "addHint": "Tout ce qu'on vous demande souvent : niveau, matériel, adresse, tenue…",
-      "addPlaceholder": "Nom du champ",
-      "addTitle": "Ajouter votre propre champ",
+      "add": "Ajouter un champ",
+      "addOption": "Ajouter un choix",
+      "cancelPick": "Annuler",
       "choose": "Choisir…",
-      "labelAria": "Nom du champ",
-      "removeField": "Retirer {label}",
+      "clearAnswer": "Effacer",
+      "emptyHint": "Niveau, matériel fourni, accès PMR… Ajoutez les champs que vous voulez, du type que vous voulez. Ils s'afficheront dans le détail de l'offre.",
+      "emptyTitle": "Aucun champ pour l'instant",
+      "hours": "Heures",
+      "hoursShort": "h",
+      "ideas": "Idées pour votre activité",
+      "label": "Nom du champ",
+      "limit": "{max} champs maximum par offre.",
+      "minutes": "Minutes",
+      "minutesShort": "min",
+      "moveDown": "Descendre {label}",
+      "moveUp": "Monter {label}",
+      "multiline": "Texte long",
+      "multilineHint": "Plusieurs lignes, affichées comme un paragraphe.",
+      "optionAria": "Choix {number}",
+      "optionPlaceholder": "Choix {number}",
+      "options": "Choix proposés",
+      "optionsFirst": "Ajoutez d'abord des choix ci-dessus.",
+      "optionsHint": "Jusqu'à {max} choix.",
+      "pickType": "Quel type de champ ?",
+      "remove": "Supprimer {label}",
+      "removeOption": "Retirer le choix {label}",
+      "timeDuration": "Durée",
+      "timeEnd": "Fin",
+      "timeMode": "Format",
+      "timeRange": "Plage horaire",
+      "timeStart": "Début",
       "types": {
-        "images": "Photos",
-        "number": "Nombre",
-        "select": "Choix",
-        "text": "Texte court",
-        "textarea": "Texte long"
-      }
+        "boolean": {
+          "hint": "Oui ou non, affiché ✓ ou ✗.",
+          "name": "Oui / non",
+          "placeholder": "Ex. Parking disponible"
+        },
+        "images": {
+          "hint": "Ajoutées à la galerie de l'offre.",
+          "name": "Photos",
+          "placeholder": "Ex. Le studio"
+        },
+        "multiselect": {
+          "hint": "Plusieurs valeurs cochées.",
+          "name": "Choix multiple",
+          "placeholder": "Ex. Langues parlées"
+        },
+        "number": {
+          "hint": "Une quantité, avec son unité.",
+          "name": "Nombre",
+          "placeholder": "Ex. Taille du groupe"
+        },
+        "select": {
+          "hint": "Une valeur parmi une liste.",
+          "name": "Choix unique",
+          "placeholder": "Ex. Niveau"
+        },
+        "text": {
+          "hint": "Une phrase ou un paragraphe.",
+          "name": "Texte",
+          "placeholder": "Ex. Matériel fourni"
+        },
+        "time": {
+          "hint": "Une plage horaire ou une durée.",
+          "name": "Horaire ou durée",
+          "placeholder": "Ex. Horaires du cours"
+        }
+      },
+      "unit": "Unité",
+      "unitHint": "Affichée après le nombre.",
+      "unitPlaceholder": "m², pers., km…",
+      "value": "Valeur affichée",
+      "valueHint": "Laissée vide, le champ n'apparaît pas sur votre page."
     },
     "form": {
       "actionType": "Ce qui se passe quand un client clique",
@@ -902,8 +970,6 @@
       "description": "Description",
       "descriptionHint": "Ce que le client obtient. Deux ou trois phrases suffisent.",
       "descriptionPlaceholder": "Une séance individuelle construite autour de vos objectifs…",
-      "detailsHint": "Les suggestions viennent de votre activité. Remplissez l'utile, supprimez le reste, ajoutez les vôtres.",
-      "detailsTitle": "Détails affichés sur l'offre",
       "photos": "Photos",
       "photosHint": "La première photo est celle qui s'affiche sur ta page. Glisse-les pour les réordonner.",
       "price": "Prix",
@@ -912,16 +978,36 @@
       "priceFrom": "À partir de",
       "priceOnRequest": "Sur demande",
       "priceType": "Type",
+      "progress": "Étapes de création de l'offre",
       "save": "Enregistrer",
       "settingsHint": "Réglages liés à l'action choisie — pas à votre métier.",
       "settingsTitle": "Fonctionnement de cette action",
-      "stepOne": "L'essentiel",
-      "stepTwo": "Les détails",
+      "stepHints": {
+        "details": "Ajoutez uniquement les informations qui aident vos clients à choisir.",
+        "essentials": "Titre, prix et ce qui se passe quand un client clique.",
+        "photos": "Montrez à quoi ressemble votre offre.",
+        "review": "Vérifiez votre offre telle que vos clients la verront."
+      },
+      "steps": {
+        "details": "Les détails",
+        "essentials": "L'essentiel",
+        "photos": "Photos",
+        "review": "Récapitulatif"
+      },
       "title": "Titre de l'offre",
       "titlePlaceholder": "Coaching personnel — 60 minutes",
       "updated": "Offre mise à jour",
       "visible": "Visible sur ma page",
       "visibleHint": "Masquez une offre sans la supprimer."
+    },
+    "review": {
+      "edit": "Modifier",
+      "emptyFields": "{count, plural, one {# champ vide ne sera pas affiché.} other {# champs vides ne seront pas affichés.}}",
+      "fieldsSummary": "{count, plural, one {# champ} other {# champs}} · {filled} rempli(s)",
+      "noFields": "Aucun champ personnalisé",
+      "noPhotos": "Aucune photo",
+      "photos": "{count, plural, one {# photo} other {# photos}}",
+      "preview": "Aperçu client"
     }
   },
   "onboarding": {

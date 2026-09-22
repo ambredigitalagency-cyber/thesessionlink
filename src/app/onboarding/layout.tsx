@@ -13,6 +13,7 @@ export default async function OnboardingLayout({ children }: LayoutProps<"/onboa
     ...BASE_NAMESPACES,
     "onboarding",
     "offers",
+    "publicProfile.gallery",
     "media",
     "share",
   ]);

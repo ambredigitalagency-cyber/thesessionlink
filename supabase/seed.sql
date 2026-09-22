@@ -64,8 +64,8 @@ values
     'A one-to-one session built around your goals. Gym, park or your place.',
     60, 'fixed', 'calendar_booking',
     '{"duration_minutes": 60, "buffer_minutes": 15, "min_notice_hours": 4, "max_days_ahead": 45, "requires_confirmation": false, "ask_phone": "optional"}',
-    '[{"id":"suggested-format","key":"format","label":"Format","type":"select","value":"In person","source":"suggested"},
-      {"id":"suggested-level","key":"level","label":"Level","type":"select","value":"All levels","source":"suggested"}]',
+    '[{"id":"f_format","type":"select","definition":{"label":"Format","options":[{"id":"in_person","label":"In person"},{"id":"online","label":"Online"},{"id":"at_home","label":"At your home"}]},"value":"in_person"},
+      {"id":"f_level","type":"select","definition":{"label":"Level","options":[{"id":"all","label":"All levels"},{"id":"beginner","label":"Beginner"},{"id":"intermediate","label":"Intermediate"},{"id":"advanced","label":"Advanced"}]},"value":"all"}]',
     0, true
   ),
   (
@@ -75,7 +75,7 @@ values
     'Outdoor circuit training. Bring water, we bring everything else.',
     18, 'fixed', 'direct_reservation',
     '{"capacity": 4, "date_mode": "required", "max_quantity_per_booking": 2, "quantity_label": "spots", "requires_confirmation": true, "ask_phone": "optional"}',
-    '[{"id":"suggested-location","key":"location","label":"Location","type":"text","value":"Parc de la Tête d''Or","source":"suggested"}]',
+    '[{"id":"f_location","type":"text","definition":{"label":"Location","multiline":false},"value":"Parc de la Tête d''Or"}]',
     1, true
   ),
   (

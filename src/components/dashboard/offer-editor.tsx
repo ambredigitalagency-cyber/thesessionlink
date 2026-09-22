@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { OfferForm, type OfferInitialValues } from "@/components/offers/offer-form";
 import type { ActionType, CategoryField } from "@/lib/offers/schema";
 
-/** Dashboard wrapper: both steps at once, then back to the list. */
+/**
+ * Dashboard wrapper: a new offer goes through the builder's steps, an existing
+ * one is edited on a single page. Either way, back to the list once saved.
+ */
 export function DashboardOfferForm({
   mode,
   categoryFields,
@@ -28,7 +31,7 @@ export function DashboardOfferForm({
   return (
     <OfferForm
       mode={mode}
-      layout="stacked"
+      layout={mode === "create" ? "wizard" : "sections"}
       categoryFields={categoryFields}
       suggestedActionType={suggestedActionType}
       currency={currency}

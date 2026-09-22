@@ -8,7 +8,8 @@ import { PublicProfileView } from "@/components/public-profile/profile-view";
 import type { PublicOffer, PublicProfile } from "@/components/public-profile/types";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
-import { localized, parseOfferFields } from "@/lib/offers/schema";
+import { parseOfferFields } from "@/lib/offers/fields";
+import { localized } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ThemeAccent } from "@/lib/validation";
 

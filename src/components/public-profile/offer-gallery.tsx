@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { galleryPhotos } from "@/lib/offers/fields";
 import { cn } from "@/lib/utils";
 
 import type { PublicOffer } from "./types";
@@ -12,14 +13,17 @@ import type { PublicOffer } from "./types";
 /**
  * Photos inside the offer sheet: the main one stays the hero (same framing as
  * before), the rest become a strip of thumbnails underneath. With a single
- * photo this renders exactly what the sheet used to.
+ * photo this renders exactly what the sheet used to. Photos from the offer's
+ * photo fields follow the offer's own photos, captioned with the field's name.
  */
 export function OfferGallery({ offer }: { offer: PublicOffer }) {
   const t = useTranslations("publicProfile");
 
   // Older offers only have main_photo_url; treat it as a one-photo gallery.
-  const photos =
-    offer.photos.length > 0 ? offer.photos : offer.main_photo_url ? [offer.main_photo_url] : [];
+  const photos = galleryPhotos(
+    offer.photos.length > 0 ? offer.photos : offer.main_photo_url ? [offer.main_photo_url] : [],
+    offer.custom_fields,
+  );
 
   const [index, setIndex] = useState(0);
   if (photos.length === 0) return null;
@@ -32,30 +36,35 @@ export function OfferGallery({ offer }: { offer: PublicOffer }) {
 
   return (
     <div className="space-y-2">
-      <div className="bg-ink/5 relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)]">
-        <Image
-          src={current}
-          alt=""
-          fill
-          sizes="(max-width: 640px) 100vw, 480px"
-          className="object-cover"
-        />
+      <figure className="space-y-1.5">
+        <div className="bg-ink/5 relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)]">
+          <Image
+            src={current.url}
+            alt={current.caption ?? ""}
+            fill
+            sizes="(max-width: 640px) 100vw, 480px"
+            className="object-cover"
+          />
 
-        {photos.length > 1 ? (
-          <>
-            <GalleryArrow side="left" label={t("gallery.previous")} onClick={() => step(-1)} />
-            <GalleryArrow side="right" label={t("gallery.next")} onClick={() => step(1)} />
-            <span className="bg-ink/70 absolute right-2.5 bottom-2.5 rounded-full px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
-              {index + 1}/{photos.length}
-            </span>
-          </>
+          {photos.length > 1 ? (
+            <>
+              <GalleryArrow side="left" label={t("gallery.previous")} onClick={() => step(-1)} />
+              <GalleryArrow side="right" label={t("gallery.next")} onClick={() => step(1)} />
+              <span className="bg-ink/70 absolute right-2.5 bottom-2.5 rounded-full px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
+                {index + 1}/{photos.length}
+              </span>
+            </>
+          ) : null}
+        </div>
+        {current.caption ? (
+          <figcaption className="text-ink-muted text-[13px]">{current.caption}</figcaption>
         ) : null}
-      </div>
+      </figure>
 
       {photos.length > 1 ? (
         <ul className="grid grid-cols-5 gap-2">
-          {photos.map((url, position) => (
-            <li key={url}>
+          {photos.map((photo, position) => (
+            <li key={photo.url}>
               <button
                 type="button"
                 onClick={() => setIndex(position)}
@@ -66,7 +75,13 @@ export function OfferGallery({ offer }: { offer: PublicOffer }) {
                   position === index ? "ring-ink ring-2" : "opacity-70 hover:opacity-100",
                 )}
               >
-                <Image src={url} alt="" fill sizes="80px" className="object-cover" />
+                <Image
+                  src={photo.url}
+                  alt={photo.caption ?? ""}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
               </button>
             </li>
           ))}

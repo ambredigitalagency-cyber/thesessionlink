@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Label } from "radix-ui";
 import { createContext, use, useId, type ComponentProps, type ReactNode } from "react";
 
@@ -22,6 +23,7 @@ type FieldProps = {
 
 /** Label + control + hint/error, wired with matching ids and aria attributes. */
 export function Field({ label, hint, error, optional, className, children }: FieldProps) {
+  const t = useTranslations("common");
   const id = useId();
   const invalid = Boolean(error);
 
@@ -34,7 +36,9 @@ export function Field({ label, hint, error, optional, className, children }: Fie
               {label}
             </Label.Root>
             {optional ? (
-              <span className="text-ink-subtle text-[11px] tracking-wide uppercase">optional</span>
+              <span className="text-ink-subtle text-[11px] tracking-wide uppercase">
+                {t("optional")}
+              </span>
             ) : null}
           </div>
         ) : null}
