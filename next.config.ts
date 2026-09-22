@@ -9,12 +9,21 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
  * only "Invalid URL" to go on. Remote images are a nice-to-have, so warn and
  * carry on instead.
  */
-function readSupabaseHost(): string | undefined {
+function readSupabaseStorage():
+  { protocol: "http" | "https"; hostname: string; port: string } | undefined {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!raw) return undefined;
 
   try {
-    return new URL(raw).hostname;
+    const url = new URL(raw);
+    // The local stack is served over http on a non-default port; hard-coding
+    // https here made every uploaded image throw "hostname is not configured"
+    // in development, which crashes the page that renders it.
+    return {
+      protocol: url.protocol === "http:" ? "http" : "https",
+      hostname: url.hostname,
+      port: url.port,
+    };
   } catch {
     console.warn(
       `[next.config] NEXT_PUBLIC_SUPABASE_URL is not a valid URL (${raw}). ` +
@@ -25,12 +34,12 @@ function readSupabaseHost(): string | undefined {
   }
 }
 
-const supabaseHost = readSupabaseHost();
+const supabaseStorage = readSupabaseStorage();
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseHost
-      ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
+    remotePatterns: supabaseStorage
+      ? [{ ...supabaseStorage, pathname: "/storage/v1/object/public/**" }]
       : [],
     // Local Supabase storage during development.
     dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
