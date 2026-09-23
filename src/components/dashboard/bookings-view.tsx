@@ -9,13 +9,19 @@ import {
   Phone,
   Trash2,
   UserRound,
+  UserRoundX,
 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { deleteBooking, saveBookingNotes, updateBookingStatus } from "@/actions/bookings";
+import {
+  deleteBooking,
+  markNoShow,
+  saveBookingNotes,
+  updateBookingStatus,
+} from "@/actions/bookings";
 import { BookingsKanban } from "@/components/dashboard/bookings-kanban";
 import { BookingsToolbar } from "@/components/dashboard/bookings-toolbar";
 import { useBookingPrefs } from "@/lib/bookings/prefs";
@@ -50,6 +56,7 @@ export type BookingRow = {
   requested_date: string | null;
   quantity: number;
   status: "pending" | "confirmed" | "cancelled";
+  no_show: boolean;
   internal_notes: string | null;
   details: unknown;
   created_at: string;
@@ -157,6 +164,7 @@ export function BookingsView({
         booking={open}
         timezone={timezone}
         locale={locale}
+        now={now}
         onClose={() => setOpenId(null)}
       />
     </div>
@@ -285,11 +293,13 @@ function BookingSheet({
   booking,
   timezone,
   locale,
+  now,
   onClose,
 }: {
   booking: BookingRow | null;
   timezone: string;
   locale: string;
+  now: number;
   onClose: () => void;
 }) {
   const t = useTranslations("dashboard.bookings");
@@ -312,6 +322,22 @@ function BookingSheet({
 
   const when = formatWhen(booking, timezone, locale);
   const budget = (booking.details as { budget?: string } | null)?.budget;
+
+  // Nobody is absent from a session that has not happened yet.
+  const isPast = Boolean(booking.starts_at && new Date(booking.starts_at).getTime() < now);
+  const canMarkAbsent = booking.status === "confirmed" && isPast;
+
+  function toggleNoShow() {
+    startTransition(async () => {
+      const result = await markNoShow(booking!.id, !booking!.no_show);
+      if (result.ok) {
+        toast.success(t(booking!.no_show ? "noShowCleared" : "noShowMarked"));
+        onClose();
+      } else {
+        toast.error(tError(result.error as "unexpected"));
+      }
+    });
+  }
 
   function setStatus(status: "confirmed" | "cancelled") {
     startTransition(async () => {
@@ -340,6 +366,12 @@ function BookingSheet({
                 {t("confirm")}
               </Button>
             ) : null}
+            {canMarkAbsent ? (
+              <Button variant="secondary" onClick={toggleNoShow} loading={pending}>
+                <UserRoundX className="size-4" />
+                {t(booking.no_show ? "noShowUndo" : "noShowMark")}
+              </Button>
+            ) : null}
             <Button variant="secondary" onClick={() => setStatus("cancelled")} loading={pending}>
               <Ban className="size-4" />
               {t("cancelBooking")}
@@ -356,6 +388,7 @@ function BookingSheet({
       <div className="space-y-6">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={BOOKING_STATUS_TONE[booking.status]}>{tStatus(booking.status)}</Badge>
+          {booking.no_show ? <Badge tone="warning">{t("noShowBadge")}</Badge> : null}
           <span className="text-ink-muted text-[13px]">
             {when.date}
             {when.time ? ` · ${when.time}` : ""}

@@ -51,6 +51,45 @@ export async function updateBookingStatus(
 }
 
 /**
+ * Marks a client as absent, or takes the mark back.
+ *
+ * Only a confirmed session that has already started can be marked: before it
+ * happens nobody is absent yet, and a cancelled session freed the slot instead.
+ * The client is not emailed — this is the pro's own bookkeeping.
+ */
+export async function markNoShow(id: string, noShow: boolean): Promise<ActionResult> {
+  const profile = await requireProfileForAction();
+  const supabase = await createSupabaseServerClient();
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, status, starts_at")
+    .eq("id", id)
+    .eq("profile_id", profile.id)
+    .maybeSingle();
+
+  if (!booking) return { ok: false, error: "not_found" };
+  if (booking.status !== "confirmed" || !booking.starts_at) {
+    return { ok: false, error: "not_available" };
+  }
+  if (new Date(booking.starts_at) > new Date()) return { ok: false, error: "session_not_past" };
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ no_show: noShow })
+    .eq("id", id)
+    .eq("profile_id", profile.id);
+
+  if (error) {
+    console.error("[bookings] no-show update failed", error);
+    return { ok: false, error: "unexpected" };
+  }
+
+  revalidatePath("/dashboard", "layout");
+  return { ok: true };
+}
+
+/**
  * Moves a confirmed or pending session to another slot, from the calendar.
  *
  * Re-runs the exact validation a public booking goes through — same context,

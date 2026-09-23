@@ -135,6 +135,11 @@
       "nextMonth": "Next month",
       "nextWeek": "Next week",
       "noBookingsThatDay": "Nothing booked that day.",
+      "noShowBadge": "Absent",
+      "noShowCleared": "Absence removed",
+      "noShowMark": "Mark as absent",
+      "noShowMarked": "Client marked absent",
+      "noShowUndo": "Remove absence",
       "noTime": "No time",
       "offerFilter": "Offer",
       "openClient": "Open client file",
@@ -207,7 +212,8 @@
       "bookings": "Bookings",
       "offers": "Offers",
       "profile": "Profile",
-      "settings": "Settings"
+      "settings": "Settings",
+      "stats": "Statistics"
     },
     "offers": {
       "deleteBody": "\"{title}\" will disappear from your page. Past bookings stay in your CRM.",
@@ -316,6 +322,64 @@
       "timezoneHint": "All your slots and bookings are computed in this timezone.",
       "title": "Settings",
       "whatsapp": "WhatsApp number"
+    },
+    "stats": {
+      "emptyBody": "Your statistics show up with your first booking. Share your link to get things going.",
+      "emptyTitle": "Nothing to measure yet",
+      "fill": {
+        "caption": "{booked} h booked out of {open} h open, based on your current hours.",
+        "label": "Time booked",
+        "noHours": "Set your hours in Bookings > Availability to measure your fill rate.",
+        "title": "Calendar fill rate"
+      },
+      "kpi": {
+        "bookings": "Bookings received",
+        "bookingsHint": "{confirmed} confirmed",
+        "fill": "Fill rate",
+        "fillHint": "{booked} h booked out of {open} h open",
+        "fillNoHours": "No opening hours set",
+        "missed": "Sessions lost",
+        "missedHint": "{cancelled} cancelled, {noShow} absent",
+        "revenue": "Estimated revenue",
+        "revenueHint": "Declarative: price of confirmed offers"
+      },
+      "missed": {
+        "cancelled": "Cancellations",
+        "caption": "{missed} session(s) lost out of {total} bookings received.",
+        "cause": "Cause",
+        "count": "Count",
+        "label": "Cancellations and absences",
+        "noShow": "Absences",
+        "share": "Share",
+        "tableCaption": "Sessions lost, by cause",
+        "title": "Sessions lost",
+        "total": "Total"
+      },
+      "noData": "No data in this period",
+      "offers": {
+        "count": "{count, plural, one {# booking} other {# bookings}}",
+        "hint": "What your clients book most.",
+        "title": "Split by offer"
+      },
+      "otherOffers": "Other offers",
+      "range": {
+        "30d": "30 days",
+        "7d": "7 days",
+        "90d": "90 days",
+        "all": "All time"
+      },
+      "rangeLabel": "Period",
+      "revenue": {
+        "empty": "No estimated revenue in this period",
+        "hint": "Offer price × confirmed bookings. No payment is tracked in the app: this amount is declarative, and free or quote-based offers are left out.",
+        "title": "Estimated revenue"
+      },
+      "subtitle": "What your activity says over the period you pick.",
+      "title": "Statistics",
+      "trend": {
+        "hint": "When your clients book, not when the session happens.",
+        "title": "Bookings received"
+      }
     },
     "yourLink": "Your link"
   },
@@ -436,6 +500,7 @@
     "quantity_too_high": "That is more than the maximum per booking.",
     "required": "This field is required.",
     "send_failed": "We could not send the email. Please try again.",
+    "session_not_past": "That session has not happened yet.",
     "slot_required": "Pick a time slot.",
     "slot_taken": "That time slot is no longer free.",
     "slot_unavailable": "That time slot was just taken. Pick another one.",

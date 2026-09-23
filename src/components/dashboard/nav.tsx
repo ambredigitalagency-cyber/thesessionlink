@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, LayoutGrid, Settings, UserRound } from "lucide-react";
+import { CalendarDays, ChartNoAxesColumn, LayoutGrid, Settings, UserRound } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -12,6 +12,7 @@ const ITEMS = [
   { href: "/dashboard/profile", key: "profile", icon: UserRound },
   { href: "/dashboard/offers", key: "offers", icon: LayoutGrid },
   { href: "/dashboard/bookings", key: "bookings", icon: CalendarDays },
+  { href: "/dashboard/stats", key: "stats", icon: ChartNoAxesColumn },
   { href: "/dashboard/settings", key: "settings", icon: Settings },
 ] as const;
 

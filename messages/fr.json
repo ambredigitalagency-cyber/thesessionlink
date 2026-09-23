@@ -135,6 +135,11 @@
       "nextMonth": "Mois suivant",
       "nextWeek": "Semaine suivante",
       "noBookingsThatDay": "Rien de prévu ce jour-là.",
+      "noShowBadge": "Absent",
+      "noShowCleared": "Absence retirée",
+      "noShowMark": "Marquer absent",
+      "noShowMarked": "Client marqué absent",
+      "noShowUndo": "Retirer l'absence",
       "noTime": "Sans heure",
       "offerFilter": "Offre",
       "openClient": "Ouvrir la fiche client",
@@ -207,7 +212,8 @@
       "bookings": "Réservations",
       "offers": "Offres",
       "profile": "Profil",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "stats": "Statistiques"
     },
     "offers": {
       "deleteBody": "« {title} » disparaîtra de votre page. Les réservations passées restent dans votre CRM.",
@@ -316,6 +322,64 @@
       "timezoneHint": "Tous vos créneaux et réservations sont calculés dans ce fuseau.",
       "title": "Paramètres",
       "whatsapp": "Numéro WhatsApp"
+    },
+    "stats": {
+      "emptyBody": "Vos statistiques apparaîtront dès votre première réservation. Partagez votre lien pour lancer la machine.",
+      "emptyTitle": "Rien à mesurer pour l'instant",
+      "fill": {
+        "caption": "{booked} h réservées sur {open} h ouvertes, calculées avec vos horaires actuels.",
+        "label": "Temps réservé",
+        "noHours": "Définissez vos horaires dans Réservations > Disponibilités pour mesurer votre remplissage.",
+        "title": "Remplissage du calendrier"
+      },
+      "kpi": {
+        "bookings": "Réservations reçues",
+        "bookingsHint": "{confirmed} confirmée(s)",
+        "fill": "Taux de remplissage",
+        "fillHint": "{booked} h réservées sur {open} h ouvertes",
+        "fillNoHours": "Aucun horaire d'ouverture défini",
+        "missed": "Séances perdues",
+        "missedHint": "{cancelled} annulée(s), {noShow} absence(s)",
+        "revenue": "Revenu estimé",
+        "revenueHint": "Déclaratif : prix des offres confirmées"
+      },
+      "missed": {
+        "cancelled": "Annulations",
+        "caption": "{missed} séance(s) perdue(s) sur {total} réservation(s) reçues.",
+        "cause": "Cause",
+        "count": "Nombre",
+        "label": "Annulations et absences",
+        "noShow": "Absences",
+        "share": "Part",
+        "tableCaption": "Détail des séances perdues",
+        "title": "Séances perdues",
+        "total": "Total"
+      },
+      "noData": "Aucune donnée sur cette période",
+      "offers": {
+        "count": "{count, plural, one {# réservation} other {# réservations}}",
+        "hint": "Ce que vos clients réservent le plus.",
+        "title": "Répartition par offre"
+      },
+      "otherOffers": "Autres offres",
+      "range": {
+        "30d": "30 jours",
+        "7d": "7 jours",
+        "90d": "90 jours",
+        "all": "Tout"
+      },
+      "rangeLabel": "Période",
+      "revenue": {
+        "empty": "Aucun revenu estimé sur cette période",
+        "hint": "Prix de l'offre × réservations confirmées. Aucun paiement n'est suivi dans l'app : ce montant est déclaratif, et les offres gratuites ou sur devis n'y figurent pas.",
+        "title": "Revenu estimé"
+      },
+      "subtitle": "Ce que votre activité raconte sur la période choisie.",
+      "title": "Statistiques",
+      "trend": {
+        "hint": "Quand vos clients réservent, pas quand la séance a lieu.",
+        "title": "Réservations reçues"
+      }
     },
     "yourLink": "Votre lien"
   },
@@ -436,6 +500,7 @@
     "quantity_too_high": "C'est au-delà du maximum par réservation.",
     "required": "Ce champ est obligatoire.",
     "send_failed": "Impossible d'envoyer l'e-mail. Réessayez.",
+    "session_not_past": "La séance n'a pas encore eu lieu.",
     "slot_required": "Choisissez un créneau.",
     "slot_taken": "Ce créneau n'est plus libre.",
     "slot_unavailable": "Ce créneau vient d'être pris. Choisissez-en un autre.",

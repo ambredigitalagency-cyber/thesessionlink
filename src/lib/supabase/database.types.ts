@@ -109,6 +109,7 @@ export type Database = {
           internal_notes: string | null;
           locale: string;
           manage_token: string;
+          no_show: boolean;
           offer_id: string | null;
           offer_title: string;
           profile_id: string;
@@ -136,6 +137,7 @@ export type Database = {
           internal_notes?: string | null;
           locale?: string;
           manage_token?: string;
+          no_show?: boolean;
           offer_id?: string | null;
           offer_title: string;
           profile_id: string;
@@ -163,6 +165,7 @@ export type Database = {
           internal_notes?: string | null;
           locale?: string;
           manage_token?: string;
+          no_show?: boolean;
           offer_id?: string | null;
           offer_title?: string;
           profile_id?: string;
@@ -619,6 +622,7 @@ export type Database = {
           internal_notes: string | null;
           locale: string;
           manage_token: string;
+          no_show: boolean;
           offer_id: string | null;
           offer_title: string;
           profile_id: string;
