@@ -174,55 +174,6 @@ export async function saveBookingNotes(id: string, notes: string | null): Promis
   return { ok: true };
 }
 
-export async function saveClientNotes(
-  clientId: string,
-  notes: string | null,
-): Promise<ActionResult> {
-  const profile = await requireProfileForAction();
-
-  const parsed = notesSchema.safeParse(notes);
-  if (!parsed.success) return { ok: false, error: "invalid_input" };
-
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("clients")
-    .update({ notes: parsed.data || null })
-    .eq("id", clientId)
-    .eq("profile_id", profile.id);
-
-  if (error) return { ok: false, error: "unexpected" };
-
-  revalidatePath("/dashboard", "layout");
-  return { ok: true };
-}
-
-export async function updateClientDetails(
-  clientId: string,
-  input: { name: string; phone: string | null },
-): Promise<ActionResult> {
-  const profile = await requireProfileForAction();
-  const parsed = z
-    .object({
-      name: z.string().trim().min(1).max(120),
-      phone: z.string().trim().max(30).nullish(),
-    })
-    .safeParse(input);
-
-  if (!parsed.success) return { ok: false, error: "invalid_input" };
-
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("clients")
-    .update({ name: parsed.data.name, phone: parsed.data.phone || null })
-    .eq("id", clientId)
-    .eq("profile_id", profile.id);
-
-  if (error) return { ok: false, error: "unexpected" };
-
-  revalidatePath("/dashboard", "layout");
-  return { ok: true };
-}
-
 export async function deleteBooking(id: string): Promise<ActionResult> {
   const profile = await requireProfileForAction();
   const supabase = await createSupabaseServerClient();

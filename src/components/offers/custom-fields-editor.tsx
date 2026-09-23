@@ -60,9 +60,11 @@ const iconButtonClass =
   "text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors disabled:pointer-events-none disabled:opacity-30";
 
 /**
- * Step 2 of the offer builder: the pro adds the fields they want, of the type
- * they want, configures them and fills them in. Nothing is pre-added — the
- * category only offers one-click suggestions.
+ * The free-field editor: the pro adds the fields they want, of the type they
+ * want, configures them and fills them in. Nothing is pre-added.
+ *
+ * Used by step 2 of the offer builder, where the category offers one-click
+ * suggestions, and by the client record, where it is used without them.
  *
  * `errors` uses the server's keys (`custom_fields.<index>.<path>`), so client
  * and server validation land in the same place.
@@ -70,15 +72,16 @@ const iconButtonClass =
 export function CustomFieldsEditor({
   fields,
   onChange,
-  suggestions,
+  suggestions = [],
   actionType,
   locale,
   errors,
 }: {
   fields: OfferField[];
   onChange: (fields: OfferField[]) => void;
-  suggestions: CategoryField[];
-  actionType: ActionType;
+  /** Category suggestions; omitted outside the offer builder. */
+  suggestions?: CategoryField[];
+  actionType?: ActionType;
   locale: string;
   errors: Record<string, string>;
 }) {
@@ -87,7 +90,7 @@ export function CustomFieldsEditor({
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const full = fields.length >= FIELD_LIMITS.fields;
-  const ideas = availableSuggestions(suggestions, fields, actionType, locale);
+  const ideas = actionType ? availableSuggestions(suggestions, fields, actionType, locale) : [];
 
   function add(field: OfferField) {
     onChange([...fields, field]);

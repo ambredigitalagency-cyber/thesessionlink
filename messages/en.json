@@ -193,10 +193,21 @@
       "weekHint": "Drag a session to another slot. Availability rules and the buffer between sessions are re-checked; a refused slot puts the session back."
     },
     "clients": {
+      "address": "Address",
       "backToList": "All clients",
+      "birthDate": "Date of birth",
       "bookingsCount": "{count, plural, =0 {no booking} one {# booking} other {# bookings}}",
       "emptyBody": "Everyone who books or writes to you appears here automatically.",
       "emptyTitle": "No clients yet",
+      "fieldsHint": "Whatever you want to track for this client: goal, programme, equipment…",
+      "fieldsTitle": "Custom fields",
+      "filterAll": "All",
+      "filterNone": "No client matches this filter.",
+      "filterSegments": "Segments",
+      "filterTags": "Tags",
+      "healthHint": "Visible to you only. Fill it in with the client's agreement.",
+      "healthLabel": "Health and allergies",
+      "healthPlaceholder": "Right knee operated in 2024, peanut allergy…",
       "historyCount": "{count, plural, =0 {No booking yet} one {# booking} other {# bookings}}",
       "historyTitle": "History",
       "last": "Last: {date}",
@@ -206,7 +217,25 @@
       "notesLabel": "Private notes",
       "notesPlaceholder": "Prefers Tuesday mornings. Training for a marathon in April.",
       "phone": "Phone",
-      "searchPlaceholder": "Search a client…"
+      "searchPlaceholder": "Search a client…",
+      "segments": {
+        "inactive": "Inactive",
+        "loyal": "Loyal",
+        "top_spender": "Top spender"
+      },
+      "segmentsHint": {
+        "inactive": "No booking for {days} days",
+        "loyal": "{count} bookings or more over the last 180 days",
+        "top_spender": "Among the top {percent}% by spend"
+      },
+      "tagAdd": "Add",
+      "tagPlaceholder": "VIP, beginner, corporate…",
+      "tagRemove": "Remove tag {tag}",
+      "tagsEmpty": "No tags yet.",
+      "tagsHint": "Your own labels, to find and group your clients.",
+      "tagsLimit": "Up to {max} tags per client.",
+      "tagsReuse": "Already used:",
+      "tagsTitle": "Tags"
     },
     "nav": {
       "bookings": "Bookings",

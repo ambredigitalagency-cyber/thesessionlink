@@ -5,10 +5,14 @@ import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import { saveClientNotes, updateClientDetails } from "@/actions/bookings";
+import { updateClientRecord } from "@/actions/clients";
+import { ClientTags, SegmentBadges } from "@/components/dashboard/client-tags";
+import { CustomFieldsEditor } from "@/components/offers/custom-fields-editor";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { Badge, Card, CardHeader, ProfileAvatar } from "@/components/ui/primitives";
+import type { Segment } from "@/lib/crm/segments";
+import { parseOfferFields, type OfferField } from "@/lib/offers/fields";
 import { ACTION_ICONS, BOOKING_STATUS_TONE } from "@/lib/offers/meta";
 import type { ActionType } from "@/lib/offers/schema";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -27,11 +31,16 @@ type ClientBooking = {
 export function ClientDetail({
   client,
   bookings,
+  segments,
+  tagVocabulary,
   timezone,
   locale,
 }: {
   client: Tables<"clients">;
   bookings: ClientBooking[];
+  /** Computed on the server from the coach's whole client list. */
+  segments: Segment[];
+  tagVocabulary: string[];
   timezone: string;
   locale: string;
 }) {
@@ -43,22 +52,32 @@ export function ClientDetail({
 
   const [name, setName] = useState(client.name);
   const [phone, setPhone] = useState(client.phone ?? "");
+  const [birthDate, setBirthDate] = useState(client.birth_date ?? "");
+  const [address, setAddress] = useState(client.address ?? "");
+  const [healthNotes, setHealthNotes] = useState(client.health_notes ?? "");
   const [notes, setNotes] = useState(client.notes ?? "");
+  const [fields, setFields] = useState<OfferField[]>(() => parseOfferFields(client.custom_fields));
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
 
   function saveDetails() {
     startTransition(async () => {
-      const [details, noteResult] = await Promise.all([
-        updateClientDetails(client.id, { name: name.trim(), phone: phone.trim() || null }),
-        saveClientNotes(client.id, notes),
-      ]);
+      const result = await updateClientRecord(client.id, {
+        name: name.trim(),
+        phone: phone.trim() || null,
+        birth_date: birthDate || null,
+        address: address.trim() || null,
+        health_notes: healthNotes.trim() || null,
+        notes,
+        custom_fields: fields,
+      });
 
-      const failure = !details.ok ? details : !noteResult.ok ? noteResult : null;
-
-      if (failure) {
-        toast.error(tError(failure.error as "unexpected"));
-      } else {
+      if (result.ok) {
+        setErrors({});
         toast.success(tCommon("saved"));
+      } else {
+        setErrors(result.fieldErrors ?? {});
+        toast.error(tError(result.error as "unexpected"));
       }
     });
   }
@@ -87,7 +106,12 @@ export function ClientDetail({
         <div className="flex items-start gap-4">
           <ProfileAvatar name={client.name} className="size-14 text-[16px]" />
           <div className="min-w-0 flex-1">
-            <h1 className="text-ink text-[22px] font-semibold tracking-[-0.02em]">{client.name}</h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-ink text-[22px] font-semibold tracking-[-0.02em]">
+                {client.name}
+              </h1>
+              <SegmentBadges segments={segments} />
+            </div>
             <div className="text-ink-muted mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13.5px]">
               <a
                 href={`mailto:${client.email}`}
@@ -121,6 +145,32 @@ export function ClientDetail({
               inputMode="tel"
             />
           </Field>
+          <Field label={t("birthDate")} optional>
+            <Input
+              type="date"
+              value={birthDate}
+              onChange={(event) => setBirthDate(event.target.value)}
+            />
+          </Field>
+          <Field label={t("address")} optional>
+            <Input
+              value={address}
+              onChange={(event) => setAddress(event.target.value)}
+              maxLength={500}
+              autoComplete="off"
+            />
+          </Field>
+        </div>
+
+        <div className="mt-4">
+          <Field label={t("healthLabel")} hint={t("healthHint")} optional>
+            <Textarea
+              rows={3}
+              value={healthNotes}
+              onChange={(event) => setHealthNotes(event.target.value)}
+              placeholder={t("healthPlaceholder")}
+            />
+          </Field>
         </div>
 
         <div className="mt-4">
@@ -133,13 +183,34 @@ export function ClientDetail({
             />
           </Field>
         </div>
+      </Card>
 
-        <div className="mt-4 flex justify-end">
-          <Button onClick={saveDetails} loading={pending}>
-            {tCommon("save")}
-          </Button>
+      <Card className="p-5 sm:p-7">
+        <CardHeader title={t("tagsTitle")} description={t("tagsHint")} />
+        <div className="mt-5">
+          <ClientTags clientId={client.id} tags={client.tags} vocabulary={tagVocabulary} />
         </div>
       </Card>
+
+      <Card className="p-5 sm:p-7">
+        <CardHeader title={t("fieldsTitle")} description={t("fieldsHint")} />
+        <div className="mt-5">
+          <CustomFieldsEditor
+            fields={fields}
+            onChange={setFields}
+            locale={locale}
+            errors={errors}
+          />
+        </div>
+      </Card>
+
+      {/* One save for the whole record: the cards above are sections of a
+          single form. Tags are the exception — they write on their own. */}
+      <div className="flex justify-end">
+        <Button onClick={saveDetails} loading={pending}>
+          {tCommon("save")}
+        </Button>
+      </div>
 
       <Card className="p-5 sm:p-7">
         <CardHeader

@@ -216,33 +216,48 @@ export type Database = {
       };
       clients: {
         Row: {
+          address: string | null;
+          birth_date: string | null;
           created_at: string;
+          custom_fields: Json;
           email: string;
+          health_notes: string | null;
           id: string;
           name: string;
           notes: string | null;
           phone: string | null;
           profile_id: string;
+          tags: string[];
           updated_at: string;
         };
         Insert: {
+          address?: string | null;
+          birth_date?: string | null;
           created_at?: string;
+          custom_fields?: Json;
           email: string;
+          health_notes?: string | null;
           id?: string;
           name: string;
           notes?: string | null;
           phone?: string | null;
           profile_id: string;
+          tags?: string[];
           updated_at?: string;
         };
         Update: {
+          address?: string | null;
+          birth_date?: string | null;
           created_at?: string;
+          custom_fields?: Json;
           email?: string;
+          health_notes?: string | null;
           id?: string;
           name?: string;
           notes?: string | null;
           phone?: string | null;
           profile_id?: string;
+          tags?: string[];
           updated_at?: string;
         };
         Relationships: [
@@ -507,6 +522,9 @@ export type Database = {
           pending_count: number | null;
           phone: string | null;
           profile_id: string | null;
+          recent_bookings_count: number | null;
+          spent: number | null;
+          tags: string[] | null;
           updated_at: string | null;
         };
         Relationships: [

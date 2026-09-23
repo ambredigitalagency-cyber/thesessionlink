@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Badge, EmptyState, ProfileAvatar } from "@/components/ui/primitives";
+import { SEGMENTS, segmentsByClient, tagVocabulary, type Segment } from "@/lib/crm/segments";
+import { cn } from "@/lib/utils";
 
 export type ClientSummary = {
   id: string;
@@ -14,11 +16,18 @@ export type ClientSummary = {
   email: string;
   phone: string | null;
   notes: string | null;
+  tags: string[];
   bookings_count: number;
   pending_count: number;
+  recent_bookings_count: number;
   last_booking_at: string | null;
   next_session_at: string | null;
+  /** Declarative, like the statistics page: offer price × confirmed bookings. */
+  spent: number;
 };
+
+type Filter =
+  { kind: "all" } | { kind: "tag"; value: string } | { kind: "segment"; value: Segment };
 
 export function ClientsList({
   clients,
@@ -32,14 +41,39 @@ export function ClientsList({
   const t = useTranslations("dashboard.clients");
   const tag = locale === "fr" ? "fr-FR" : "en-US";
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<Filter>({ kind: "all" });
+
+  // One ranking pass for the whole list: "top spender" is relative to the others.
+  const segments = useMemo(() => segmentsByClient(clients), [clients]);
+  const tags = useMemo(() => tagVocabulary(clients), [clients]);
+  const usedSegments = useMemo(
+    () => SEGMENTS.filter((segment) => clients.some((c) => segments.get(c.id)?.includes(segment))),
+    [clients, segments],
+  );
 
   const filtered = useMemo(() => {
     const search = query.trim().toLowerCase();
-    if (!search) return clients;
-    return clients.filter((client) =>
-      `${client.name} ${client.email} ${client.phone ?? ""}`.toLowerCase().includes(search),
+
+    return clients.filter((client) => {
+      if (
+        search &&
+        !`${client.name} ${client.email} ${client.phone ?? ""}`.toLowerCase().includes(search)
+      ) {
+        return false;
+      }
+      if (filter.kind === "tag") return client.tags.includes(filter.value);
+      if (filter.kind === "segment") return segments.get(client.id)?.includes(filter.value);
+      return true;
+    });
+  }, [clients, query, filter, segments]);
+
+  const chip = (active: boolean) =>
+    cn(
+      "shrink-0 rounded-full border px-3 py-1.5 text-[13px] font-medium whitespace-nowrap transition-colors",
+      active
+        ? "border-ink bg-ink text-ink-inverse"
+        : "border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink",
     );
-  }, [clients, query]);
 
   const format = (value: string, withTime = false) =>
     new Intl.DateTimeFormat(tag, {
@@ -61,11 +95,57 @@ export function ClientsList({
         />
       </div>
 
+      {tags.length > 0 || usedSegments.length > 0 ? (
+        <div className="-mx-4 flex scrollbar-none items-center gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
+          <button
+            type="button"
+            onClick={() => setFilter({ kind: "all" })}
+            className={chip(filter.kind === "all")}
+          >
+            {t("filterAll")}
+          </button>
+
+          {usedSegments.map((segment) => (
+            <button
+              key={segment}
+              type="button"
+              onClick={() =>
+                setFilter(
+                  filter.kind === "segment" && filter.value === segment
+                    ? { kind: "all" }
+                    : { kind: "segment", value: segment },
+                )
+              }
+              className={chip(filter.kind === "segment" && filter.value === segment)}
+            >
+              {t(`segments.${segment}` as "segments.loyal")}
+            </button>
+          ))}
+
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() =>
+                setFilter(
+                  filter.kind === "tag" && filter.value === tag
+                    ? { kind: "all" }
+                    : { kind: "tag", value: tag },
+                )
+              }
+              className={chip(filter.kind === "tag" && filter.value === tag)}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
       {filtered.length === 0 ? (
         <EmptyState
           icon={<UserRound className="size-5" />}
-          title={t("emptyTitle")}
-          description={t("emptyBody")}
+          title={filter.kind === "all" ? t("emptyTitle") : t("filterNone")}
+          description={filter.kind === "all" ? t("emptyBody") : undefined}
         />
       ) : (
         <ul className="space-y-2">
@@ -80,6 +160,20 @@ export function ClientsList({
                 <div className="min-w-0 flex-1">
                   <p className="text-ink truncate text-[15px] font-medium">{client.name}</p>
                   <p className="text-ink-muted truncate text-[13px]">{client.email}</p>
+                  {client.tags.length > 0 || (segments.get(client.id) ?? []).length > 0 ? (
+                    <p className="mt-1 flex flex-wrap items-center gap-1.5">
+                      {(segments.get(client.id) ?? []).map((segment) => (
+                        <Badge key={segment} tone={segment === "inactive" ? "neutral" : "accent"}>
+                          {t(`segments.${segment}` as "segments.loyal")}
+                        </Badge>
+                      ))}
+                      {client.tags.map((tag) => (
+                        <Badge key={tag} tone="outline">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="hidden text-right sm:block">

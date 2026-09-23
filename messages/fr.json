@@ -193,10 +193,21 @@
       "weekHint": "Glisse une séance vers un autre créneau. Les règles de disponibilité et le battement entre séances sont revérifiés ; un créneau refusé remet la séance à sa place."
     },
     "clients": {
+      "address": "Adresse",
       "backToList": "Tous les clients",
+      "birthDate": "Date de naissance",
       "bookingsCount": "{count, plural, =0 {aucune réservation} one {# réservation} other {# réservations}}",
       "emptyBody": "Toute personne qui réserve ou vous écrit apparaît ici automatiquement.",
       "emptyTitle": "Aucun client pour l'instant",
+      "fieldsHint": "Ce que vous voulez suivre pour ce client : objectif, programme, matériel…",
+      "fieldsTitle": "Champs personnalisés",
+      "filterAll": "Tous",
+      "filterNone": "Aucun client ne correspond à ce filtre.",
+      "filterSegments": "Segments",
+      "filterTags": "Étiquettes",
+      "healthHint": "Visible uniquement par vous. À ne remplir qu'avec l'accord du client.",
+      "healthLabel": "Santé et allergies",
+      "healthPlaceholder": "Genou droit opéré en 2024, allergie aux arachides…",
       "historyCount": "{count, plural, =0 {Aucune réservation} one {# réservation} other {# réservations}}",
       "historyTitle": "Historique",
       "last": "Dernier : {date}",
@@ -206,7 +217,25 @@
       "notesLabel": "Notes privées",
       "notesPlaceholder": "Préfère le mardi matin. Prépare un marathon en avril.",
       "phone": "Téléphone",
-      "searchPlaceholder": "Chercher un client…"
+      "searchPlaceholder": "Chercher un client…",
+      "segments": {
+        "inactive": "Inactif",
+        "loyal": "Fidèle",
+        "top_spender": "Gros budget"
+      },
+      "segmentsHint": {
+        "inactive": "Aucune réservation depuis {days} jours",
+        "loyal": "{count} réservations ou plus sur les 180 derniers jours",
+        "top_spender": "Dans les {percent} % qui dépensent le plus"
+      },
+      "tagAdd": "Ajouter",
+      "tagPlaceholder": "VIP, débutant, entreprise…",
+      "tagRemove": "Retirer l'étiquette {tag}",
+      "tagsEmpty": "Aucune étiquette pour l'instant.",
+      "tagsHint": "Vos propres libellés, pour retrouver et regrouper vos clients.",
+      "tagsLimit": "{max} étiquettes maximum par client.",
+      "tagsReuse": "Déjà utilisées :",
+      "tagsTitle": "Étiquettes"
     },
     "nav": {
       "bookings": "Réservations",
