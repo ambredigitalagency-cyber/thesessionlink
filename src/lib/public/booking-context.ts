@@ -46,6 +46,8 @@ export async function getBookingContext(
     .select("*")
     .eq("id", offer.profile_id)
     .not("onboarding_completed_at", "is", null)
+    // A suspended coach takes no bookings, whatever link is still circulating.
+    .is("suspended_at", null)
     .maybeSingle();
 
   if (!profile) return null;

@@ -4,10 +4,11 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 
 import { signOut } from "@/actions/auth";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { Logo } from "@/components/brand/logo";
 import { DashboardSidebarNav, DashboardTabBar } from "@/components/dashboard/nav";
 import { ShareLink } from "@/components/share/share-link";
-import { requireOnboardedProfile } from "@/lib/auth";
+import { getImpersonatedProfile, requireOnboardedProfile } from "@/lib/auth";
 import { siteUrl } from "@/lib/env";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,6 +16,7 @@ import { absoluteUrl } from "@/lib/utils";
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const profile = await requireOnboardedProfile();
+  const impersonated = await getImpersonatedProfile();
   const t = await getTranslations("dashboard");
   const tCommon = await getTranslations("common");
 
@@ -34,10 +36,13 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
     "media",
     "share",
     "bookingStatus",
+    // Only shipped while an admin is looking through this account.
+    ...(impersonated ? ["admin.banner"] : []),
   ]);
 
   return (
     <NextIntlClientProvider messages={messages}>
+      {impersonated ? <ImpersonationBanner coachName={impersonated.display_name} /> : null}
       <div className="flex min-h-dvh">
         {/* Desktop sidebar */}
         <aside className="border-line bg-surface/60 sticky top-0 hidden h-dvh w-[17.5rem] shrink-0 flex-col border-r px-5 py-6 lg:flex">

@@ -1,4 +1,121 @@
 {
+  "admin": {
+    "audit": {
+      "action": "Action",
+      "actions": {
+        "extend_trial": "Trial extended",
+        "impersonate_start": "Impersonation started",
+        "impersonate_stop": "Impersonation ended",
+        "set_subscription": "Subscription changed",
+        "suspend": "Account suspended",
+        "unsuspend": "Account reinstated"
+      },
+      "details": "Details",
+      "empty": "No intervention recorded.",
+      "forCoach": "Intervention history",
+      "forCoachHint": "The last 50 actions on this account.",
+      "noTarget": "—",
+      "subtitle": "Who did what, when, to which account. Append-only.",
+      "target": "Coach",
+      "title": "Audit log",
+      "when": "Date"
+    },
+    "banner": {
+      "readOnly": "Read-only session: no change will be saved.",
+      "stop": "Back to my admin account",
+      "title": "You are signed in as {name}"
+    },
+    "coach": {
+      "back": "All coaches",
+      "bookings": "Bookings received",
+      "daysLeft": "{count} day(s) left",
+      "lastBooking": "Last booking",
+      "offers": "Offers published",
+      "signedUp": "Signed up",
+      "subscription": "Subscription",
+      "subscriptionOff": "Inactive",
+      "subscriptionOn": "Active (manual)",
+      "suspendedSince": "Account suspended on {date} — reason: {reason}",
+      "trialEnds": "Trial ends"
+    },
+    "coaches": {
+      "all": "All",
+      "bookings": "Bookings",
+      "name": "Coach",
+      "none": "No coach matches.",
+      "offers": "Offers",
+      "search": "Name, email, link…",
+      "signedUp": "Signed up",
+      "status": "Status",
+      "title": "Coaches ({count})"
+    },
+    "controls": {
+      "adminProtected": "Admin account: suspension is refused, including on your own. Remove it from platform_admins first.",
+      "cancel": "Cancel",
+      "days": "{count} days",
+      "extend": "Extend",
+      "extendLabel": "Extend the trial by",
+      "extended": "Trial extended",
+      "impersonate": "Sign in as this coach",
+      "impersonateHint": "Read-only session, flagged by a banner and recorded.",
+      "impersonating": "You are now seeing the product as this coach",
+      "markPaid": "Mark as subscribed",
+      "markUnpaid": "Remove subscription",
+      "reasonHint": "Kept in the audit log. The coach sees this text on their suspension page.",
+      "reasonLabel": "Reason",
+      "reasonPlaceholder": "Commercial gesture, dispute…",
+      "subscriptionOff": "Subscription removed",
+      "subscriptionOn": "Account marked as subscribed",
+      "subtitle": "Every action is written to the audit log, with its author.",
+      "suspend": "Suspend account",
+      "suspendBody": "The coach loses access to their dashboard and their public page stops resolving. Their data is kept.",
+      "suspendHint": "Blocks the dashboard and takes the public page down.",
+      "suspendTitle": "Suspend this account?",
+      "suspended": "Account suspended",
+      "title": "Interventions",
+      "unsuspend": "Reinstate account",
+      "unsuspended": "Account reinstated"
+    },
+    "nav": {
+      "audit": "Audit log",
+      "coaches": "Coaches",
+      "myDashboard": "My dashboard",
+      "signOut": "Sign out"
+    },
+    "stats": {
+      "categories": "Split by activity",
+      "categoriesHint": "The category chosen at signup.",
+      "coaches": "Coaches signed up",
+      "inactive": "Inactive accounts",
+      "inactiveHint": "of which {suspended} suspended",
+      "noCategory": "No category",
+      "noData": "No data",
+      "otherCategories": "Other activities",
+      "revenue": "Theoretical monthly revenue",
+      "revenueHint": "Subscribers × €{price} — declarative, no payment is tracked",
+      "signups": "Signups per month",
+      "signupsHint": "The last twelve months.",
+      "statuses": "Breakdown: {list}",
+      "subscribed": "Subscribers",
+      "subtitle": "Who signs up, who stays, what it adds up to.",
+      "title": "Platform overview",
+      "trialCount": "{count} on trial"
+    },
+    "status": {
+      "expired": "Expired",
+      "subscribed": "Subscribed",
+      "suspended": "Suspended",
+      "trial": "On trial"
+    },
+    "suspended": {
+      "body": "Your dashboard and public page are switched off until the situation is settled. Your data is kept.",
+      "contact": "Contact us",
+      "reason": "Reason given: {reason}",
+      "signOut": "Sign out",
+      "title": "Your account is suspended"
+    },
+    "title": "Console"
+  },
   "auth": {
     "emailLabel": "Email address",
     "emailPlaceholder": "you@example.com",
@@ -503,12 +620,14 @@
     "title": "Something broke on our side"
   },
   "errors": {
+    "admin_account_protected": "This account is a platform admin: it cannot be suspended.",
     "calendar_closed": "Bookings are paused right now.",
     "confirmation_mismatch": "The confirmation does not match.",
     "date_required": "Pick a date.",
     "end_before_start": "The end must be after the start.",
     "field_label_required": "Give this field a name.",
     "form_has_errors": "A few things need fixing.",
+    "impersonation_is_read_only": "Read-only session: changes are not possible.",
     "invalid_currency": "Enter a 3-letter currency code.",
     "invalid_email": "Enter a valid email address.",
     "invalid_input": "Please check the highlighted fields.",

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { impersonationTarget } from "@/lib/admin/impersonation";
 import { getCurrentUser, requireProfileForAction } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
@@ -71,6 +72,10 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
 export async function deleteAccount(confirmation: string): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: "unauthenticated" };
+  // This one does not go through requireProfileForAction, and it deletes the
+  // *signed-in* account — an admin clicking it while impersonating would erase
+  // their own. Refuse outright.
+  if (await impersonationTarget()) return { ok: false, error: "impersonation_is_read_only" };
 
   if (confirmation.trim().toLowerCase() !== (user.email ?? "").toLowerCase()) {
     return { ok: false, error: "confirmation_mismatch" };

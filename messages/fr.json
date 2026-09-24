@@ -1,4 +1,121 @@
 {
+  "admin": {
+    "audit": {
+      "action": "Action",
+      "actions": {
+        "extend_trial": "Essai prolongé",
+        "impersonate_start": "Impersonation démarrée",
+        "impersonate_stop": "Impersonation terminée",
+        "set_subscription": "Abonnement modifié",
+        "suspend": "Compte suspendu",
+        "unsuspend": "Compte réactivé"
+      },
+      "details": "Détail",
+      "empty": "Aucune intervention enregistrée.",
+      "forCoach": "Historique des interventions",
+      "forCoachHint": "Les 50 dernières actions sur ce compte.",
+      "noTarget": "—",
+      "subtitle": "Qui a fait quoi, quand, sur quel compte. Ajoutable, jamais modifiable.",
+      "target": "Coach",
+      "title": "Journal des interventions",
+      "when": "Date"
+    },
+    "banner": {
+      "readOnly": "Session en lecture seule : aucune modification ne sera enregistrée.",
+      "stop": "Revenir à mon compte admin",
+      "title": "Vous êtes connecté en tant que {name}"
+    },
+    "coach": {
+      "back": "Tous les coachs",
+      "bookings": "Réservations reçues",
+      "daysLeft": "{count} jour(s) restant(s)",
+      "lastBooking": "Dernière réservation",
+      "offers": "Offres publiées",
+      "signedUp": "Inscription",
+      "subscription": "Abonnement",
+      "subscriptionOff": "Inactif",
+      "subscriptionOn": "Actif (manuel)",
+      "suspendedSince": "Compte suspendu le {date} — motif : {reason}",
+      "trialEnds": "Fin d'essai"
+    },
+    "coaches": {
+      "all": "Tous",
+      "bookings": "Réservations",
+      "name": "Coach",
+      "none": "Aucun coach ne correspond.",
+      "offers": "Offres",
+      "search": "Nom, e-mail, lien…",
+      "signedUp": "Inscrit le",
+      "status": "Statut",
+      "title": "Coachs ({count})"
+    },
+    "controls": {
+      "adminProtected": "Compte administrateur : la suspension est refusée, y compris sur votre propre compte. Retirez-le de platform_admins d'abord.",
+      "cancel": "Annuler",
+      "days": "{count} jours",
+      "extend": "Prolonger",
+      "extendLabel": "Prolonger l'essai de",
+      "extended": "Essai prolongé",
+      "impersonate": "Se connecter en tant que ce coach",
+      "impersonateHint": "Session en lecture seule, signalée par un bandeau et enregistrée.",
+      "impersonating": "Vous voyez maintenant le produit comme ce coach",
+      "markPaid": "Marquer comme abonné",
+      "markUnpaid": "Retirer l'abonnement",
+      "reasonHint": "Conservé dans le journal. Le coach voit ce texte sur sa page de suspension.",
+      "reasonLabel": "Motif",
+      "reasonPlaceholder": "Geste commercial, litige…",
+      "subscriptionOff": "Abonnement retiré",
+      "subscriptionOn": "Compte marqué abonné",
+      "subtitle": "Chaque action est enregistrée dans le journal, avec son auteur.",
+      "suspend": "Suspendre le compte",
+      "suspendBody": "Le coach perd l'accès à son dashboard et sa page publique cesse de répondre. Ses données sont conservées.",
+      "suspendHint": "Bloque le dashboard et désactive la page publique.",
+      "suspendTitle": "Suspendre ce compte ?",
+      "suspended": "Compte suspendu",
+      "title": "Interventions",
+      "unsuspend": "Réactiver le compte",
+      "unsuspended": "Compte réactivé"
+    },
+    "nav": {
+      "audit": "Journal",
+      "coaches": "Coachs",
+      "myDashboard": "Mon dashboard",
+      "signOut": "Se déconnecter"
+    },
+    "stats": {
+      "categories": "Répartition par activité",
+      "categoriesHint": "La catégorie choisie à l'inscription.",
+      "coaches": "Coachs inscrits",
+      "inactive": "Comptes inactifs",
+      "inactiveHint": "dont {suspended} suspendu(s)",
+      "noCategory": "Sans catégorie",
+      "noData": "Aucune donnée",
+      "otherCategories": "Autres activités",
+      "revenue": "Revenu mensuel théorique",
+      "revenueHint": "Abonnés × {price} € — déclaratif, aucun paiement n'est suivi",
+      "signups": "Inscriptions par mois",
+      "signupsHint": "Les douze derniers mois.",
+      "statuses": "Répartition : {list}",
+      "subscribed": "Abonnés",
+      "subtitle": "Qui s'inscrit, qui reste, ce que ça représente.",
+      "title": "Pilotage de la plateforme",
+      "trialCount": "{count} en essai"
+    },
+    "status": {
+      "expired": "Expiré",
+      "subscribed": "Abonné",
+      "suspended": "Suspendu",
+      "trial": "En essai"
+    },
+    "suspended": {
+      "body": "Votre dashboard et votre page publique sont désactivés le temps que la situation soit réglée. Vos données sont conservées.",
+      "contact": "Nous écrire",
+      "reason": "Motif indiqué : {reason}",
+      "signOut": "Se déconnecter",
+      "title": "Votre compte est suspendu"
+    },
+    "title": "Console"
+  },
   "auth": {
     "emailLabel": "Adresse e-mail",
     "emailPlaceholder": "vous@exemple.com",
@@ -503,12 +620,14 @@
     "title": "Quelque chose a cassé de notre côté"
   },
   "errors": {
+    "admin_account_protected": "Ce compte est administrateur de la plateforme : il ne peut pas être suspendu.",
     "calendar_closed": "Les réservations sont en pause.",
     "confirmation_mismatch": "La confirmation ne correspond pas.",
     "date_required": "Choisissez une date.",
     "end_before_start": "La fin doit être après le début.",
     "field_label_required": "Donnez un nom à ce champ.",
     "form_has_errors": "Quelques informations sont à corriger.",
+    "impersonation_is_read_only": "Session d'observation : aucune modification n'est possible.",
     "invalid_currency": "Saisissez un code devise à 3 lettres.",
     "invalid_email": "Saisissez une adresse e-mail valide.",
     "invalid_input": "Vérifiez les champs en surbrillance.",

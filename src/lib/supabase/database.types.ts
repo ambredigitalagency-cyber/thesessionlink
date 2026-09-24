@@ -39,6 +39,55 @@ export type Database = {
         };
         Relationships: [];
       };
+      admin_audit_log: {
+        Row: {
+          action: string;
+          admin_user_id: string;
+          created_at: string;
+          details: Json;
+          id: string;
+          target_profile_id: string | null;
+        };
+        Insert: {
+          action: string;
+          admin_user_id: string;
+          created_at?: string;
+          details?: Json;
+          id?: string;
+          target_profile_id?: string | null;
+        };
+        Update: {
+          action?: string;
+          admin_user_id?: string;
+          created_at?: string;
+          details?: Json;
+          id?: string;
+          target_profile_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_log_target_profile_id_fkey";
+            columns: ["target_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admin_audit_log_target_profile_id_fkey";
+            columns: ["target_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admin_audit_log_target_profile_id_fkey";
+            columns: ["target_profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       availabilities: {
         Row: {
           created_at: string;
@@ -73,6 +122,13 @@ export type Database = {
             columns: ["offer_id"];
             isOneToOne: false;
             referencedRelation: "offers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "availabilities_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
             referencedColumns: ["id"];
           },
           {
@@ -202,6 +258,13 @@ export type Database = {
             foreignKeyName: "bookings_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -261,6 +324,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "clients_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "clients_profile_id_fkey";
             columns: ["profile_id"];
@@ -334,6 +404,13 @@ export type Database = {
             foreignKeyName: "offers_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "offers_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -345,6 +422,24 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      platform_admins: {
+        Row: {
+          created_at: string;
+          note: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          note?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          note?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       profiles: {
         Row: {
@@ -370,6 +465,9 @@ export type Database = {
           slug: string;
           social_links: Json;
           subscription_active: boolean;
+          suspended_at: string | null;
+          suspended_by: string | null;
+          suspension_reason: string | null;
           theme: Json;
           timezone: string;
           trial_ends_at: string;
@@ -400,6 +498,9 @@ export type Database = {
           slug: string;
           social_links?: Json;
           subscription_active?: boolean;
+          suspended_at?: string | null;
+          suspended_by?: string | null;
+          suspension_reason?: string | null;
           theme?: Json;
           timezone?: string;
           trial_ends_at?: string;
@@ -430,6 +531,9 @@ export type Database = {
           slug?: string;
           social_links?: Json;
           subscription_active?: boolean;
+          suspended_at?: string | null;
+          suspended_by?: string | null;
+          suspension_reason?: string | null;
           theme?: Json;
           timezone?: string;
           trial_ends_at?: string;
@@ -495,6 +599,13 @@ export type Database = {
             foreignKeyName: "time_off_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "time_off_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
@@ -509,6 +620,36 @@ export type Database = {
       };
     };
     Views: {
+      admin_coach_overview: {
+        Row: {
+          bookings_count: number | null;
+          category_id: string | null;
+          category_name: Json | null;
+          contact_email: string | null;
+          created_at: string | null;
+          display_name: string | null;
+          id: string | null;
+          last_booking_at: string | null;
+          locale: string | null;
+          offers_count: number | null;
+          onboarding_completed_at: string | null;
+          slug: string | null;
+          subscription_active: boolean | null;
+          suspended_at: string | null;
+          suspension_reason: string | null;
+          trial_ends_at: string | null;
+          user_id: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profiles_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "activity_categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       client_summaries: {
         Row: {
           bookings_count: number | null;
@@ -528,6 +669,13 @@ export type Database = {
           updated_at: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "clients_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "clients_profile_id_fkey";
             columns: ["profile_id"];
@@ -660,6 +808,7 @@ export type Database = {
       };
       current_profile_id: { Args: never; Returns: string };
       dispatch_reminders: { Args: never; Returns: undefined };
+      is_platform_admin: { Args: never; Returns: boolean };
       is_public_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_reserved_slug: { Args: { p_slug: string }; Returns: boolean };
       is_slug_available: { Args: { p_slug: string }; Returns: boolean };
