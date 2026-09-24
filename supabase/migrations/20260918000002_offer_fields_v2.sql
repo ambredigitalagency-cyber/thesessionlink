@@ -27,8 +27,14 @@
 --   * images          -> images
 --   * select          -> select; options rebuilt from the category suggestion
 --     in the profile's language, value matched back from the stored label.
---     A label that matches no option becomes an option of its own, so nothing
---     the pro wrote is lost.
+--     The lookup spans every category, not just the profile's own: a real
+--     estate agent can perfectly well have kept a hairdressing offer from a
+--     category they browsed earlier, and that offer deserves its full list of
+--     options too. The profile's own category is tried first, and a template
+--     whose options actually contain the stored value wins over one that
+--     merely shares the key.
+--     A label that matches no option at all becomes an option of its own, so
+--     nothing the pro wrote is lost.
 --   * fields left empty are dropped: they were imposed suggestions, not
 --     something the pro chose to show.
 -- =============================================================================
@@ -106,10 +112,30 @@ begin
   if v_type = 'select' then
     v_chosen := left(btrim(v_value #>> '{}'), 60);
 
+    -- Candidates are ordered by the caller, the profile's own category first.
+    -- Among them, prefer one whose options actually contain the stored value.
     select s into v_template
-      from jsonb_array_elements(coalesce(suggestions, '[]'::jsonb)) s
-     where s->>'key' = f->>'key' and s->>'type' = 'select'
+      from jsonb_array_elements(coalesce(suggestions, '[]'::jsonb)) with ordinality as x(s, ord)
+     where s->>'key' = f->>'key'
+       and s->>'type' = 'select'
+       and exists (
+         select 1
+           from jsonb_array_elements(s->'options') o
+          where o->>'value' = v_chosen
+             or exists (select 1 from jsonb_each_text(o->'label') l where l.value = v_chosen)
+       )
+     order by ord
      limit 1;
+
+    -- No list holds that value: fall back to the first list with the same key,
+    -- so the pro still gets the real options alongside their own value.
+    if v_template is null then
+      select s into v_template
+        from jsonb_array_elements(coalesce(suggestions, '[]'::jsonb)) with ordinality as x(s, ord)
+       where s->>'key' = f->>'key' and s->>'type' = 'select'
+       order by ord
+       limit 1;
+    end if;
 
     if v_template is not null then
       select jsonb_agg(
@@ -153,14 +179,24 @@ update public.offers o
            cross join lateral (
              select public.tmp_offer_field_v2(
                       e.f,
-                      c.config->'suggested_fields',
+                      candidates.fields,
                       coalesce(p.locale, 'en')
                     ) as converted
            ) c2
           where converted is not null
        ), '[]'::jsonb)
   from public.profiles p
-  left join public.activity_categories c on c.id = p.category_id
+  cross join lateral (
+         -- Every category's suggestions, the profile's own first.
+         select coalesce(
+                  jsonb_agg(entry.field order by (c.id = p.category_id) desc, c.position, entry.ord),
+                  '[]'::jsonb
+                ) as fields
+           from public.activity_categories c
+           cross join lateral jsonb_array_elements(
+                  coalesce(c.config->'suggested_fields', '[]'::jsonb)
+                ) with ordinality as entry(field, ord)
+       ) candidates
  where p.id = o.profile_id
    and jsonb_array_length(o.custom_fields) > 0;
 
