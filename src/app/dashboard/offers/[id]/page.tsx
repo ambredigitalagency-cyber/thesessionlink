@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
 import { OfferAvailability } from "@/components/dashboard/offer-availability";
 import { requireOnboardedProfile } from "@/lib/auth";
+import { gatewayStates } from "@/lib/payments/accounts";
 import { parseOfferFields } from "@/lib/offers/fields";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -13,6 +14,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export default async function EditOfferPage({ params }: PageProps<"/dashboard/offers/[id]">) {
   const { id } = await params;
   const profile = await requireOnboardedProfile();
+  const gateways = await gatewayStates(profile.id);
   const t = await getTranslations("dashboard.offers");
 
   const supabase = await createSupabaseServerClient();
@@ -61,6 +63,7 @@ export default async function EditOfferPage({ params }: PageProps<"/dashboard/of
           currency={profile.currency}
           locale={profile.locale}
           profileWhatsapp={profile.whatsapp_number}
+          gatewayReady={gateways.some((gateway) => gateway.ready)}
           initial={{
             id: offer.id,
             title: offer.title,

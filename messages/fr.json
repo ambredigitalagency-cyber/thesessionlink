@@ -389,6 +389,47 @@
       "subtitle": "Ce que vos clients peuvent réserver, demander ou acheter.",
       "title": "Offres"
     },
+    "payments": {
+      "amountLabel": "Paiement",
+      "blurb": {
+        "stripe": "Carte bancaire, Apple Pay et Google Pay.",
+        "paypal": "Compte PayPal et carte via PayPal."
+      },
+      "cancel": "Annuler",
+      "connect": "Connecter",
+      "disconnect": "Déconnecter",
+      "disconnectBody": "Vos clients ne pourront plus payer avec ce moyen. Les paiements déjà reçus ne sont pas affectés.",
+      "disconnectBodyPaypal": "Vos clients ne pourront plus payer avec PayPal. Les paiements déjà reçus ne sont pas affectés. PayPal ne permet pas de couper l'autorisation depuis notre côté : pour la retirer complètement, faites-le depuis votre compte PayPal.",
+      "disconnectTitle": "Déconnecter {provider} ?",
+      "disconnected": "{provider} déconnecté",
+      "notReady": "Compte connecté, mais pas encore autorisé à encaisser. Terminez la vérification chez le prestataire.",
+      "notice": {
+        "connected": "Compte connecté. Vous pouvez activer le paiement en ligne sur vos offres.",
+        "pending": "Compte reçu. Le prestataire termine la vérification : le paiement s'activera dès qu'il aura confirmé.",
+        "declined": "La connexion a été interrompue. Vous pouvez réessayer.",
+        "not_configured": "Ce moyen de paiement n'est pas encore configuré sur cette plateforme.",
+        "error": "La connexion n'a pas abouti. Réessayez dans un instant."
+      },
+      "payoutNote": "TheSessionLink ne touche jamais l'argent de vos clients : les paiements arrivent sur votre propre compte Stripe ou PayPal, avec vos délais de versement habituels. Aucune commission n'est prélevée par la plateforme.",
+      "paypalManualRevoke": "Nous n'envoyons plus rien à PayPal. Pour retirer aussi l'autorisation de votre côté :",
+      "paypalManualRevokeLink": "paramètres de votre compte PayPal",
+      "providers": {
+        "stripe": "Stripe",
+        "paypal": "PayPal"
+      },
+      "status": {
+        "connected": "Connecté",
+        "disabled": "Déconnecté",
+        "failed": "Paiement échoué",
+        "notConnected": "Non connecté",
+        "paid": "Payé",
+        "pending": "Paiement en attente",
+        "refunded": "Remboursé"
+      },
+      "subtitle": "Connectez votre compte pour encaisser en ligne. L'argent va directement chez vous.",
+      "title": "Paiements",
+      "unavailable": "Bientôt disponible"
+    },
     "profile": {
       "accents": {
         "amber": "Ambre",
@@ -497,6 +538,7 @@
         "missed": "Séances perdues",
         "missedHint": "{cancelled} annulée(s), {noShow} absence(s)",
         "revenue": "Revenu estimé",
+        "revenueCollected": "dont {amount} encaissés en ligne",
         "revenueHint": "Déclaratif : prix des offres confirmées"
       },
       "missed": {
@@ -581,6 +623,7 @@
       "client": "Client",
       "email": "E-mail",
       "offer": "Offre",
+      "paid": "Payé",
       "phone": "Téléphone",
       "quantity": "Quantité",
       "requestedDate": "Date souhaitée",
@@ -647,6 +690,8 @@
     "end_before_start": "La fin doit être après le début.",
     "field_label_required": "Donnez un nom à ce champ.",
     "form_has_errors": "Quelques informations sont à corriger.",
+    "gateway_error": "Le prestataire de paiement n'a pas répondu. Réessayez dans un instant.",
+    "gateway_unavailable": "Ce moyen de paiement n'est pas disponible pour le moment.",
     "impersonation_is_read_only": "Session d'observation : aucune modification n'est possible.",
     "invalid_currency": "Saisissez un code devise à 3 lettres.",
     "invalid_email": "Saisissez une adresse e-mail valide.",
@@ -666,6 +711,8 @@
     "option_unknown": "Ce choix n'existe plus.",
     "options_required": "Ajoutez au moins un choix.",
     "overlapping_rules": "Deux plages se chevauchent le même jour.",
+    "payment_choice_required": "Choisissez un moyen de paiement.",
+    "payment_required": "Cette offre doit être réglée en ligne.",
     "quantity_too_high": "C'est au-delà du maximum par réservation.",
     "required": "Ce champ est obligatoire.",
     "send_failed": "Impossible d'envoyer l'e-mail. Réessayez.",
@@ -1003,6 +1050,12 @@
     "confirmedBody": "Tout est en place. En cas d'empêchement, annuler tôt libère le créneau pour quelqu'un d'autre.",
     "contactPro": "Contacter",
     "footer": "Cette page est privée — le lien vous a été envoyé par e-mail.",
+    "payment": {
+      "cancelled": "Paiement annulé. Aucun montant n'a été débité.",
+      "checking": "Nous vérifions votre paiement auprès du prestataire. Cette page se mettra à jour dans quelques instants.",
+      "failed": "Le paiement n'a pas abouti. Aucun montant n'a été débité.",
+      "paid": "Paiement reçu. Merci !"
+    },
     "pendingBody": "Cette demande attend confirmation. Vous recevrez un e-mail dès qu'elle est confirmée.",
     "title": "Votre réservation"
   },
@@ -1234,6 +1287,21 @@
       "visible": "Visible sur ma page",
       "visibleHint": "Masquez une offre sans la supprimer."
     },
+    "payment": {
+      "hint": "Le client règle au moment de réserver. L'argent arrive directement sur votre compte.",
+      "noFirmPrice": "Le paiement en ligne demande un prix ferme. « À partir de », « sur devis » et « gratuit » ne peuvent pas être encaissés à la réservation.",
+      "noGateway": "Connectez d'abord Stripe ou PayPal pour activer le paiement sur cette offre.",
+      "noGatewayLink": "Aller aux Paramètres",
+      "optional": {
+        "hint": "Le client peut payer en ligne ou choisir de régler sur place.",
+        "label": "Optionnel"
+      },
+      "required": {
+        "hint": "La réservation n'est enregistrée qu'une fois le paiement confirmé.",
+        "label": "Obligatoire à la réservation"
+      },
+      "title": "Paiement en ligne"
+    },
     "review": {
       "edit": "Modifier",
       "emptyFields": "{count, plural, one {# champ vide ne sera pas affiché.} other {# champs vides ne seront pas affichés.}}",
@@ -1323,6 +1391,7 @@
       "slotsError": "Impossible de charger les disponibilités. Actualisez la page.",
       "submitBooking": "Confirmer la réservation",
       "submitMessage": "Envoyer le message",
+      "submitPay": "Payer et réserver",
       "submitQuote": "Demander un devis",
       "submitReservation": "Envoyer la réservation",
       "successConfirmed": "C'est réservé",
@@ -1351,6 +1420,24 @@
       "show": "Voir la photo {index}"
     },
     "offersTitle": "Offres",
+    "payment": {
+      "options": {
+        "stripe": {
+          "hint": "Paiement sécurisé par Stripe.",
+          "label": "Carte bancaire"
+        },
+        "paypal": {
+          "hint": "Compte PayPal ou carte via PayPal.",
+          "label": "PayPal"
+        },
+        "on_site": {
+          "hint": "Vous réglez directement au professionnel.",
+          "label": "Payer sur place"
+        }
+      },
+      "securityNote": "Le paiement se fait sur la page sécurisée du prestataire. Aucune coordonnée bancaire ne transite par TheSessionLink.",
+      "title": "Comment souhaitez-vous régler ?"
+    },
     "poweredBy": "Créé avec TheSessionLink",
     "unavailable": {
       "home": "Aller à l'accueil",

@@ -168,6 +168,11 @@ export type Database = {
           no_show: boolean;
           offer_id: string | null;
           offer_title: string;
+          payment_amount_cents: number | null;
+          payment_currency: string | null;
+          payment_due_at: string | null;
+          payment_provider: string | null;
+          payment_status: string;
           profile_id: string;
           quantity: number;
           reminder_sent_at: string | null;
@@ -196,6 +201,11 @@ export type Database = {
           no_show?: boolean;
           offer_id?: string | null;
           offer_title: string;
+          payment_amount_cents?: number | null;
+          payment_currency?: string | null;
+          payment_due_at?: string | null;
+          payment_provider?: string | null;
+          payment_status?: string;
           profile_id: string;
           quantity?: number;
           reminder_sent_at?: string | null;
@@ -224,6 +234,11 @@ export type Database = {
           no_show?: boolean;
           offer_id?: string | null;
           offer_title?: string;
+          payment_amount_cents?: number | null;
+          payment_currency?: string | null;
+          payment_due_at?: string | null;
+          payment_provider?: string | null;
+          payment_status?: string;
           profile_id?: string;
           quantity?: number;
           reminder_sent_at?: string | null;
@@ -416,6 +431,160 @@ export type Database = {
           },
           {
             foreignKeyName: "offers_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payment_accounts: {
+        Row: {
+          charges_enabled: boolean;
+          connected_at: string | null;
+          created_at: string;
+          details: Json;
+          external_id: string | null;
+          id: string;
+          onboarding_ref: string | null;
+          payouts_enabled: boolean;
+          profile_id: string;
+          provider: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          charges_enabled?: boolean;
+          connected_at?: string | null;
+          created_at?: string;
+          details?: Json;
+          external_id?: string | null;
+          id?: string;
+          onboarding_ref?: string | null;
+          payouts_enabled?: boolean;
+          profile_id: string;
+          provider: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          charges_enabled?: boolean;
+          connected_at?: string | null;
+          created_at?: string;
+          details?: Json;
+          external_id?: string | null;
+          id?: string;
+          onboarding_ref?: string | null;
+          payouts_enabled?: boolean;
+          profile_id?: string;
+          provider?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_accounts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_accounts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_accounts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payments: {
+        Row: {
+          amount_cents: number;
+          booking_id: string | null;
+          capture_id: string | null;
+          created_at: string;
+          currency: string;
+          external_id: string | null;
+          failure_reason: string | null;
+          id: string;
+          offer_id: string | null;
+          paid_at: string | null;
+          profile_id: string;
+          provider: string;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          amount_cents: number;
+          booking_id?: string | null;
+          capture_id?: string | null;
+          created_at?: string;
+          currency: string;
+          external_id?: string | null;
+          failure_reason?: string | null;
+          id?: string;
+          offer_id?: string | null;
+          paid_at?: string | null;
+          profile_id: string;
+          provider: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          amount_cents?: number;
+          booking_id?: string | null;
+          capture_id?: string | null;
+          created_at?: string;
+          currency?: string;
+          external_id?: string | null;
+          failure_reason?: string | null;
+          id?: string;
+          offer_id?: string | null;
+          paid_at?: string | null;
+          profile_id?: string;
+          provider?: string;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payments_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_offer_id_fkey";
+            columns: ["offer_id"];
+            isOneToOne: false;
+            referencedRelation: "offers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
@@ -699,6 +868,35 @@ export type Database = {
           },
         ];
       };
+      public_payment_options: {
+        Row: {
+          profile_id: string | null;
+          provider: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_accounts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_accounts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payment_accounts_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       public_profiles: {
         Row: {
           avatar_url: string | null;
@@ -842,6 +1040,11 @@ export type Database = {
           no_show: boolean;
           offer_id: string | null;
           offer_title: string;
+          payment_amount_cents: number | null;
+          payment_currency: string | null;
+          payment_due_at: string | null;
+          payment_provider: string | null;
+          payment_status: string;
           profile_id: string;
           quantity: number;
           reminder_sent_at: string | null;
@@ -860,6 +1063,7 @@ export type Database = {
       current_profile_id: { Args: never; Returns: string };
       dispatch_deletion_warnings: { Args: never; Returns: undefined };
       dispatch_reminders: { Args: never; Returns: undefined };
+      expire_unpaid_bookings: { Args: never; Returns: number };
       is_platform_admin: { Args: never; Returns: boolean };
       is_public_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_reserved_slug: { Args: { p_slug: string }; Returns: boolean };

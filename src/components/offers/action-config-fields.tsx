@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
-import { ToggleRow } from "@/components/ui/primitives";
+import { Toggle, ToggleRow } from "@/components/ui/primitives";
 import { minutesToLabel } from "@/lib/offers/meta";
 import type {
   ActionType,
@@ -11,6 +12,7 @@ import type {
   CalendarBookingConfig,
   ContactRequestConfig,
   DirectReservationConfig,
+  OnlinePayment,
   QuoteRequestConfig,
   WhatsappDirectConfig,
 } from "@/lib/offers/schema";
@@ -22,6 +24,14 @@ const HORIZONS = [7, 14, 30, 60, 90, 180, 365];
 
 type Patch<T> = (patch: Partial<T>) => void;
 
+/** Whether online payment can even be offered on this offer, and why not. */
+export type PaymentReadiness = {
+  /** The coach has at least one gateway connected and cleared to charge. */
+  gatewayReady: boolean;
+  /** The price is a firm amount — not "from", not "on request", not free. */
+  priceIsFirm: boolean;
+};
+
 /** Settings that depend on the action type — never on the profession. */
 export function ActionConfigFields({
   actionType,
@@ -29,12 +39,14 @@ export function ActionConfigFields({
   onChange,
   locale,
   profileWhatsapp,
+  payments,
 }: {
   actionType: ActionType;
   config: AnyActionConfig;
   onChange: (config: AnyActionConfig) => void;
   locale: string;
   profileWhatsapp?: string | null;
+  payments: PaymentReadiness;
 }) {
   const patch = (values: Record<string, unknown>) =>
     onChange({ ...(config as Record<string, unknown>), ...values } as AnyActionConfig);
@@ -46,6 +58,7 @@ export function ActionConfigFields({
           config={config as CalendarBookingConfig}
           patch={patch as Patch<CalendarBookingConfig>}
           locale={locale}
+          payments={payments}
         />
       );
     case "direct_reservation":
@@ -53,6 +66,7 @@ export function ActionConfigFields({
         <ReservationFields
           config={config as DirectReservationConfig}
           patch={patch as Patch<DirectReservationConfig>}
+          payments={payments}
         />
       );
     case "contact_request":
@@ -107,10 +121,12 @@ function CalendarFields({
   config,
   patch,
   locale,
+  payments,
 }: {
   config: CalendarBookingConfig;
   patch: Patch<CalendarBookingConfig>;
   locale: string;
+  payments: PaymentReadiness;
 }) {
   const t = useTranslations("offers.config");
 
@@ -200,6 +216,12 @@ function CalendarFields({
           onCheckedChange={(requires_confirmation) => patch({ requires_confirmation })}
         />
       </div>
+
+      <OnlinePaymentField
+        value={config.online_payment}
+        onChange={(online_payment) => patch({ online_payment })}
+        readiness={payments}
+      />
     </div>
   );
 }
@@ -207,9 +229,11 @@ function CalendarFields({
 function ReservationFields({
   config,
   patch,
+  payments,
 }: {
   config: DirectReservationConfig;
   patch: Patch<DirectReservationConfig>;
+  payments: PaymentReadiness;
 }) {
   const t = useTranslations("offers.config");
 
@@ -272,6 +296,12 @@ function ReservationFields({
           onCheckedChange={(requires_confirmation) => patch({ requires_confirmation })}
         />
       </div>
+
+      <OnlinePaymentField
+        value={config.online_payment}
+        onChange={(online_payment) => patch({ online_payment })}
+        readiness={payments}
+      />
     </div>
   );
 }
@@ -404,6 +434,85 @@ function QuoteFields({
       </div>
 
       <AskPhoneField value={config.ask_phone} onChange={(ask_phone) => patch({ ask_phone })} />
+    </div>
+  );
+}
+
+/**
+ * The online-payment switch, on the two action types that carry an amount.
+ *
+ * It refuses to turn on rather than silently doing nothing: without a
+ * connected gateway there is nobody to pay, and without a firm price there is
+ * no amount to charge. Both cases say which one it is, and where to fix it.
+ */
+function OnlinePaymentField({
+  value,
+  onChange,
+  readiness,
+}: {
+  value: OnlinePayment;
+  onChange: (value: OnlinePayment) => void;
+  readiness: PaymentReadiness;
+}) {
+  const t = useTranslations("offers.payment");
+  const blocked = !readiness.gatewayReady || !readiness.priceIsFirm;
+
+  return (
+    <div className="border-line rounded-[var(--radius-md)] border p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-ink text-[14px] font-medium">{t("title")}</p>
+          <p className="text-ink-muted mt-0.5 text-[13px] leading-relaxed">{t("hint")}</p>
+        </div>
+        <Toggle
+          checked={value !== "off"}
+          disabled={blocked}
+          onCheckedChange={(on) => onChange(on ? "required" : "off")}
+          label={t("title")}
+        />
+      </div>
+
+      {blocked ? (
+        <p className="bg-ink/[0.03] text-ink-muted mt-3 rounded-[var(--radius-sm)] px-3.5 py-2.5 text-[12.5px] leading-relaxed">
+          {!readiness.gatewayReady ? (
+            <>
+              {t("noGateway")}{" "}
+              <Link href="/dashboard/settings" className="text-ink underline underline-offset-4">
+                {t("noGatewayLink")}
+              </Link>
+            </>
+          ) : (
+            t("noFirmPrice")
+          )}
+        </p>
+      ) : null}
+
+      {value !== "off" ? (
+        <div className="mt-4 space-y-2">
+          {(["required", "optional"] as const).map((option) => (
+            <label
+              key={option}
+              className="border-line hover:border-ink/25 flex cursor-pointer items-start gap-3 rounded-[var(--radius-sm)] border p-3 transition-colors"
+            >
+              <input
+                type="radio"
+                name="online-payment-mode"
+                className="accent-ink mt-0.5"
+                checked={value === option}
+                onChange={() => onChange(option)}
+              />
+              <span>
+                <span className="text-ink block text-[13.5px] font-medium">
+                  {t(`${option}.label` as "required.label")}
+                </span>
+                <span className="text-ink-muted mt-0.5 block text-[12.5px] leading-relaxed">
+                  {t(`${option}.hint` as "required.hint")}
+                </span>
+              </span>
+            </label>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

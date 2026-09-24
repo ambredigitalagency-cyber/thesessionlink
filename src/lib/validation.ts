@@ -246,6 +246,13 @@ export const publicBookingSchema = z.object({
   budget: optionalText(60),
   client_timezone: optionalText(60),
   locale: localeSchema.default("en"),
+  /**
+   * How the client chose to pay, on an offer that offers the choice.
+   *
+   * "on_site" is a real answer, not the absence of one: it says the client saw
+   * the payment step and chose to settle with the coach in person.
+   */
+  payment_choice: z.enum(["stripe", "paypal", "on_site"]).nullish(),
   /** Honeypot: humans never see this field, so anything in it is a bot. */
   company: z.string().max(200).optional(),
 });

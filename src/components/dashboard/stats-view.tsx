@@ -109,7 +109,15 @@ export function StatsView({
             <StatTile
               label={t("kpi.revenue")}
               value={money(stats.totals.revenue)}
-              hint={t("kpi.revenueHint")}
+              // Collected is stated beside the declarative figure, never
+              // instead of it: most sessions are still settled in person, and
+              // a coach who reads only the gateway total would think their
+              // business shrank the day they switched payment on.
+              hint={
+                stats.totals.collected > 0
+                  ? t("kpi.revenueCollected", { amount: money(stats.totals.collected) })
+                  : t("kpi.revenueHint")
+              }
             />
             <StatTile
               label={t("kpi.fill")}

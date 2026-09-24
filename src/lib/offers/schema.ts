@@ -19,6 +19,19 @@ export const actionTypeSchema = z.enum(ACTION_TYPES);
 const askPhoneSchema = z.enum(["hidden", "optional", "required"]);
 export type AskPhone = z.infer<typeof askPhoneSchema>;
 
+/**
+ * Online payment, on the two action types that are a transaction.
+ *
+ * "off"      — nothing changes; the client books and pays the coach as before.
+ * "optional" — the client may pay online or choose to pay on site.
+ * "required" — the booking is only confirmed once the payment settles.
+ *
+ * A contact request, a WhatsApp click and a quote request are conversations,
+ * not transactions: they carry no amount, so they carry no payment.
+ */
+const onlinePaymentSchema = z.enum(["off", "optional", "required"]);
+export type OnlinePayment = z.infer<typeof onlinePaymentSchema>;
+
 /* -------------------------------------------------------------------------- */
 /* action_config — settings that depend on the action type, never on the niche  */
 /* -------------------------------------------------------------------------- */
@@ -32,6 +45,7 @@ export const calendarBookingConfigSchema = z.object({
   max_days_ahead: z.number().int().min(1).max(365).default(60),
   requires_confirmation: z.boolean().default(false),
   ask_phone: askPhoneSchema.default("optional"),
+  online_payment: onlinePaymentSchema.default("off"),
 });
 
 export const directReservationConfigSchema = z.object({
@@ -42,6 +56,7 @@ export const directReservationConfigSchema = z.object({
   quantity_label: z.string().max(40).nullable().default(null),
   requires_confirmation: z.boolean().default(true),
   ask_phone: askPhoneSchema.default("optional"),
+  online_payment: onlinePaymentSchema.default("off"),
 });
 
 export const contactRequestConfigSchema = z.object({
@@ -103,6 +118,19 @@ export function defaultActionConfig<T extends ActionType>(actionType: T): Action
 /** Action types that need a phone number question in the public form. */
 export function askPhoneFor(actionType: ActionType, config: AnyActionConfig): AskPhone {
   return "ask_phone" in config ? config.ask_phone : "hidden";
+}
+
+/** Action types that can carry an amount, and so can be paid online. */
+export const PAYABLE_ACTION_TYPES = ["calendar_booking", "direct_reservation"] as const;
+
+export function supportsOnlinePayment(actionType: ActionType): boolean {
+  return (PAYABLE_ACTION_TYPES as readonly ActionType[]).includes(actionType);
+}
+
+/** How this offer is set up to be paid, "off" for the types that cannot be. */
+export function onlinePaymentFor(actionType: ActionType, config: AnyActionConfig): OnlinePayment {
+  if (!supportsOnlinePayment(actionType)) return "off";
+  return "online_payment" in config ? config.online_payment : "off";
 }
 
 export function requiresConfirmation(actionType: ActionType, config: AnyActionConfig): boolean {

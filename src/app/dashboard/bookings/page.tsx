@@ -13,7 +13,7 @@ export default async function BookingsPage() {
   const { data } = await supabase
     .from("bookings")
     .select(
-      "id, offer_title, action_type, client_id, client_name, client_email, client_phone, client_message, starts_at, ends_at, requested_date, quantity, status, no_show, internal_notes, details, created_at",
+      "id, offer_title, action_type, client_id, client_name, client_email, client_phone, client_message, starts_at, ends_at, requested_date, quantity, status, no_show, payment_status, payment_provider, payment_amount_cents, payment_currency, internal_notes, details, created_at",
     )
     .eq("profile_id", profile.id)
     .order("created_at", { ascending: false })

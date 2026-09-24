@@ -56,6 +56,8 @@ type Props = {
   currency: string;
   locale: string;
   profileWhatsapp?: string | null;
+  /** True when the coach has a gateway connected and cleared to charge. */
+  gatewayReady?: boolean;
   initial?: OfferInitialValues;
   submitLabel?: string;
   onSaved?: (offerId: string) => void;
@@ -77,6 +79,7 @@ export function OfferForm({
   currency,
   locale,
   profileWhatsapp,
+  gatewayReady = false,
   initial,
   submitLabel,
   onSaved,
@@ -308,6 +311,13 @@ export function OfferForm({
           config={config}
           locale={locale}
           profileWhatsapp={profileWhatsapp}
+          payments={{
+            gatewayReady,
+            // A price the client can act on: a firm number, not "from" and not
+            // "on request". Read live, so switching the price type off a firm
+            // amount closes the payment options in the same breath.
+            priceIsFirm: priceType === "fixed" && price !== "" && Number(price) > 0,
+          }}
           onChange={(nextConfig) =>
             setConfigs((current) => ({ ...current, [actionType]: nextConfig }))
           }

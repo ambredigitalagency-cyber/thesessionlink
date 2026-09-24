@@ -7,6 +7,7 @@ import { Resend } from "resend";
 import { isEmailConfigured, serverEnv, siteUrl } from "@/lib/env";
 import { toLocale, type Locale } from "@/lib/i18n/config";
 import { getTranslator } from "@/lib/i18n/server";
+import { formatAmount } from "@/lib/payments/amount";
 import { buildIcs } from "@/lib/scheduling/ics";
 import type { Tables } from "@/lib/supabase/database.types";
 import { absoluteUrl } from "@/lib/utils";
@@ -167,6 +168,18 @@ async function bookingRows(
 
   if (booking.quantity > 1) {
     rows.push({ label: t("quantity"), value: String(booking.quantity) });
+  }
+
+  // Only a settled payment is worth stating. "Pending" would be news that goes
+  // stale between writing the email and reading it.
+  if (booking.payment_status === "paid" && booking.payment_amount_cents !== null) {
+    const provider = booking.payment_provider
+      ? ` · ${booking.payment_provider === "stripe" ? "Stripe" : "PayPal"}`
+      : "";
+    rows.push({
+      label: t("paid"),
+      value: `${formatAmount(booking.payment_amount_cents, booking.payment_currency ?? "EUR", locale)}${provider}`,
+    });
   }
 
   if (audience === "pro") {

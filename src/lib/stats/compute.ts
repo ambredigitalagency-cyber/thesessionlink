@@ -30,6 +30,10 @@ export type StatsBooking = {
   ends_at: string | null;
   created_at: string;
   no_show: boolean;
+  /** Set only when the client paid online; cash and transfers stay "none". */
+  payment_status?: string | null;
+  payment_amount_cents?: number | null;
+  payment_currency?: string | null;
 };
 
 export type StatsOffer = {
@@ -60,6 +64,14 @@ export type Stats = {
     missed: number;
     /** Declarative: offer price × confirmed bookings. */
     revenue: number;
+    /**
+     * Actually collected: the sum of payments the gateways confirmed.
+     *
+     * A different question from `revenue`, not a better answer to the same
+     * one — most sessions are still settled in person, and those are real
+     * money that no gateway will ever report.
+     */
+    collected: number;
     /** 0–1, or null when the pro has no opening hours to measure against. */
     fillRate: number | null;
     /** 0–1 of the period's bookings that ended up cancelled. */
@@ -220,6 +232,7 @@ export function computeStats(input: {
   });
 
   let revenue = 0;
+  let collected = 0;
   let confirmed = 0;
   let cancelled = 0;
   let noShow = 0;
@@ -235,6 +248,9 @@ export function computeStats(input: {
     }
 
     revenue += value;
+    if (booking.payment_status === "paid" && booking.payment_amount_cents) {
+      collected += booking.payment_amount_cents / 100;
+    }
     if (booking.status === "confirmed") confirmed += 1;
     if (booking.status === "cancelled") cancelled += 1;
     // A booking cancelled after being marked absent counts once, as a
@@ -294,6 +310,7 @@ export function computeStats(input: {
       noShow,
       missed: cancelled + noShow,
       revenue,
+      collected,
       fillRate: openMinutes > 0 ? Math.min(1, bookedMinutes / openMinutes) : null,
       cancellationRate: inRange.length > 0 ? cancelled / inRange.length : 0,
       missedRate: inRange.length > 0 ? (cancelled + noShow) / inRange.length : 0,

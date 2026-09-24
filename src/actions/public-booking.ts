@@ -9,7 +9,12 @@ import {
   sendBookingNotificationToPro,
   sendClientCancellationToPro,
 } from "@/lib/emails/send";
-import { parseActionConfig } from "@/lib/offers/schema";
+import { onlinePaymentFor, parseActionConfig } from "@/lib/offers/schema";
+import { chargeableAmount, offerIsPayable } from "@/lib/payments/amount";
+import { payableProvidersAsAdmin } from "@/lib/payments/accounts";
+import { startCheckout } from "@/lib/payments/checkout";
+import { decideCheckout } from "@/lib/payments/decide";
+import { CHECKOUT_HOLD_MINUTES, type PaymentProvider } from "@/lib/payments/config";
 import { clampWindow, getBookingContext, slotInputFrom } from "@/lib/public/booking-context";
 import { isSlotBookable } from "@/lib/scheduling/slots";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -21,6 +26,8 @@ type BookingSuccess = {
   status: Tables<"bookings">["status"];
   startsAt: string | null;
   endsAt: string | null;
+  /** Set when the client must be sent to a gateway to finish paying. */
+  redirectUrl?: string;
 };
 
 async function rateLimit(bucket: string, limit: number, window: string) {
@@ -124,6 +131,23 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
     booking.details = values.budget ? { budget: values.budget } : {};
   }
 
+  const checkout = await resolveCheckout(offer, profile, values);
+  if ("error" in checkout) return { ok: false, error: checkout.error };
+
+  if (checkout.provider) {
+    // Insert the booking *before* sending the client to the gateway: it holds
+    // the slot for the length of the checkout, so nobody can take it while
+    // they are typing their card in. payment_due_at is what releases it again
+    // if they never come back — see expire_unpaid_bookings().
+    booking.payment_status = "pending";
+    booking.payment_amount_cents = checkout.amountCents;
+    booking.payment_currency = checkout.currency;
+    booking.payment_provider = checkout.provider;
+    booking.payment_due_at = new Date(Date.now() + CHECKOUT_HOLD_MINUTES * 60_000).toISOString();
+    // Nothing is confirmed until the money lands, whatever the offer says.
+    booking.status = "pending";
+  }
+
   const supabase = createSupabaseAdminClient();
   const { data: created, error } = await supabase
     .from("bookings")
@@ -136,6 +160,53 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
     if (error?.message?.includes("capacity_exceeded")) return { ok: false, error: "sold_out" };
     console.error("[booking] insert failed", error);
     return { ok: false, error: "unexpected" };
+  }
+
+  if (checkout.provider) {
+    const opened = await startCheckout({
+      bookingId: created.id,
+      profileId: profile.id,
+      offerId: offer.id,
+      provider: checkout.provider,
+      amountCents: checkout.amountCents,
+      currency: checkout.currency,
+      description: offer.title,
+      clientEmail: values.client_email,
+      manageToken: created.manage_token,
+      locale: values.locale,
+    });
+
+    if (!opened.ok) {
+      // The gateway refused before the client ever saw it. Take the slot back
+      // rather than leave a booking nobody can pay.
+      await supabase
+        .from("bookings")
+        .update({
+          status: "cancelled",
+          cancelled_at: new Date().toISOString(),
+          cancelled_by: "client",
+          payment_status: "failed",
+          payment_due_at: null,
+        })
+        .eq("id", created.id);
+
+      return { ok: false, error: opened.error };
+    }
+
+    // No email yet: a booking that is not paid for is not news worth sending.
+    // settlePayment() sends the pair once the money lands.
+    revalidatePath("/dashboard", "layout");
+
+    return {
+      ok: true,
+      data: {
+        manageToken: created.manage_token,
+        status: created.status,
+        startsAt: created.starts_at,
+        endsAt: created.ends_at,
+        redirectUrl: opened.redirectUrl,
+      },
+    };
   }
 
   after(async () => {
@@ -161,6 +232,41 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
       endsAt: created.ends_at,
     },
   };
+}
+
+/**
+ * Whether this booking has to be paid now, and with what.
+ *
+ * The rule itself lives in decideCheckout(), pure and unit-tested; this only
+ * gathers what it needs. The client's request chooses between the options they
+ * were legitimately offered — it never decides whether payment applies.
+ */
+async function resolveCheckout(
+  offer: Tables<"offers">,
+  profile: Tables<"profiles">,
+  values: { payment_choice?: "stripe" | "paypal" | "on_site" | null; quantity: number },
+): Promise<
+  { provider: PaymentProvider | null; amountCents: number; currency: string } | { error: string }
+> {
+  const config = parseActionConfig(offer.action_type, offer.action_config);
+  const mode = onlinePaymentFor(offer.action_type, config);
+  const currency = profile.currency ?? "EUR";
+  const nothing = { provider: null, amountCents: 0, currency };
+
+  if (mode === "off") return nothing;
+
+  const amountCents = chargeableAmount(offer, currency, values.quantity);
+  const decision = decideCheckout({
+    mode,
+    payable: offerIsPayable(offer) && amountCents !== null && amountCents > 0,
+    available: await payableProvidersAsAdmin(profile.id),
+    choice: values.payment_choice,
+  });
+
+  if (decision.kind === "refused") return { error: decision.error };
+  if (decision.kind === "none" || amountCents === null) return nothing;
+
+  return { provider: decision.provider, amountCents, currency };
 }
 
 async function resolveProEmail(profile: Tables<"profiles">) {

@@ -35,4 +35,11 @@ export type PublicProfile = {
   currency: string;
   accent: ThemeAccent;
   locale: "en" | "fr";
+  /**
+   * Gateways this coach can actually be paid through, right now.
+   *
+   * Names only — the account identifiers stay on the server. An empty list
+   * means the payment step is not shown at all, whatever an offer asks for.
+   */
+  paymentProviders: ("stripe" | "paypal")[];
 };

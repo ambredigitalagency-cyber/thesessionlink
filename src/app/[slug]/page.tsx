@@ -10,6 +10,7 @@ import type { PublicOffer, PublicProfile } from "@/components/public-profile/typ
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { parseOfferFields } from "@/lib/offers/fields";
+import { payableProviders } from "@/lib/payments/accounts";
 import { localized } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ThemeAccent } from "@/lib/validation";
@@ -142,6 +143,7 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     currency: profile.currency ?? "EUR",
     accent: theme.accent ?? "coral",
     locale: isLocale(profile.locale) ? profile.locale : "en",
+    paymentProviders: await payableProviders(profile.id as string),
   };
 
   const viewOffers: PublicOffer[] = offers.map((offer) => ({

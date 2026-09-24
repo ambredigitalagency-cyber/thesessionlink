@@ -35,7 +35,9 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
 
   const bookingsQuery = supabase
     .from("bookings")
-    .select("offer_id, offer_title, status, no_show, quantity, starts_at, ends_at, created_at")
+    .select(
+      "offer_id, offer_title, status, no_show, quantity, starts_at, ends_at, created_at, payment_status, payment_amount_cents, payment_currency",
+    )
     .eq("profile_id", profile.id)
     .order("created_at", { ascending: false })
     .limit(MAX_ROWS);

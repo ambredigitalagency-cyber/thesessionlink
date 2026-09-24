@@ -4,6 +4,7 @@ import {
   Ban,
   CalendarClock,
   Check,
+  CreditCard,
   Mail,
   MessageSquare,
   Phone,
@@ -39,6 +40,7 @@ import { Modal, Sheet } from "@/components/ui/overlays";
 import { Badge, EmptyState } from "@/components/ui/primitives";
 import { Field, Textarea } from "@/components/ui/field";
 import { ACTION_ICONS, BOOKING_STATUS_TONE } from "@/lib/offers/meta";
+import { formatAmount } from "@/lib/payments/amount";
 import type { ActionType } from "@/lib/offers/schema";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +59,10 @@ export type BookingRow = {
   quantity: number;
   status: "pending" | "confirmed" | "cancelled";
   no_show: boolean;
+  payment_status: "none" | "pending" | "paid" | "failed" | "refunded";
+  payment_provider: "stripe" | "paypal" | null;
+  payment_amount_cents: number | null;
+  payment_currency: string | null;
   internal_notes: string | null;
   details: unknown;
   created_at: string;
@@ -304,6 +310,7 @@ function BookingSheet({
 }) {
   const t = useTranslations("dashboard.bookings");
   const tStatus = useTranslations("bookingStatus");
+  const tPayment = useTranslations("dashboard.payments");
   const tCommon = useTranslations("common");
   const tError = useTranslations("errors");
 
@@ -389,6 +396,19 @@ function BookingSheet({
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={BOOKING_STATUS_TONE[booking.status]}>{tStatus(booking.status)}</Badge>
           {booking.no_show ? <Badge tone="warning">{t("noShowBadge")}</Badge> : null}
+          {booking.payment_status !== "none" ? (
+            <Badge
+              tone={
+                booking.payment_status === "paid"
+                  ? "success"
+                  : booking.payment_status === "pending"
+                    ? "accent"
+                    : "warning"
+              }
+            >
+              {tPayment(`status.${booking.payment_status}` as "status.paid")}
+            </Badge>
+          ) : null}
           <span className="text-ink-muted text-[13px]">
             {when.date}
             {when.time ? ` · ${when.time}` : ""}
@@ -413,6 +433,24 @@ function BookingSheet({
           {budget ? (
             <DetailRow icon={<MessageSquare className="size-3.5" />} label={t("fields.budget")}>
               {budget}
+            </DetailRow>
+          ) : null}
+
+          {booking.payment_status !== "none" && booking.payment_amount_cents !== null ? (
+            <DetailRow icon={<CreditCard className="size-3.5" />} label={tPayment("amountLabel")}>
+              <span className="tabular-nums">
+                {formatAmount(
+                  booking.payment_amount_cents,
+                  booking.payment_currency ?? "EUR",
+                  locale,
+                )}
+              </span>
+              {booking.payment_provider ? (
+                <span className="text-ink-muted">
+                  {" · "}
+                  {tPayment(`providers.${booking.payment_provider}` as "providers.stripe")}
+                </span>
+              ) : null}
             </DetailRow>
           ) : null}
 

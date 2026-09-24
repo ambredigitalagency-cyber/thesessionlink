@@ -17,8 +17,13 @@ export async function generateMetadata() {
   return { title: t("title"), robots: { index: false, follow: false } };
 }
 
-export default async function ManageBookingPage({ params }: PageProps<"/booking/[token]">) {
+export default async function ManageBookingPage({
+  params,
+  searchParams,
+}: PageProps<"/booking/[token]">) {
   const { token } = await params;
+  const query = await searchParams;
+  const rawPayment = Array.isArray(query.payment) ? query.payment[0] : query.payment;
 
   // The token is the credential: it is only in the client's confirmation email.
   const supabase = createSupabaseAdminClient();
@@ -44,6 +49,26 @@ export default async function ManageBookingPage({ params }: PageProps<"/booking/
   ]);
   const t = await getTranslations({ locale, namespace: "manageBooking" });
   const tStatus = await getTranslations({ locale, namespace: "bookingStatus" });
+
+  /**
+   * What to say about the payment, if anything.
+   *
+   * The URL only says the client came back from a gateway; the booking row
+   * says whether the money actually arrived. When a webhook is still in
+   * flight the honest answer is "we are checking", not "paid".
+   */
+  const paymentNotice =
+    rawPayment === "cancelled"
+      ? "cancelled"
+      : rawPayment === "done"
+        ? booking.payment_status === "paid"
+          ? "paid"
+          : booking.payment_status === "pending"
+            ? "checking"
+            : "failed"
+        : booking.payment_status === "paid"
+          ? "paid"
+          : null;
 
   const timezone = booking.client_timezone || profile?.timezone || "UTC";
   const tag = locale === "fr" ? "fr-FR" : "en-US";
@@ -85,6 +110,18 @@ export default async function ManageBookingPage({ params }: PageProps<"/booking/
                 {tStatus(booking.status)}
               </Badge>
             </div>
+
+            {paymentNotice ? (
+              <p
+                className={
+                  paymentNotice === "paid"
+                    ? "bg-success-soft text-success mt-4 rounded-[var(--radius-sm)] px-4 py-3 text-[13.5px]"
+                    : "bg-warning-soft text-warning mt-4 rounded-[var(--radius-sm)] px-4 py-3 text-[13.5px]"
+                }
+              >
+                {t(`payment.${paymentNotice}` as "payment.paid")}
+              </p>
+            ) : null}
 
             <h1 className="text-ink mt-2 text-[24px] font-semibold tracking-[-0.03em]">
               {booking.offer_title}

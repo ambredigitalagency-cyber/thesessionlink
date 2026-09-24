@@ -8,11 +8,13 @@ import { useState, useTransition } from "react";
 import { createPublicBooking } from "@/actions/public-booking";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
-import { parseActionConfig, type AskPhone } from "@/lib/offers/schema";
+import { onlinePaymentFor, parseActionConfig, type AskPhone } from "@/lib/offers/schema";
+import { chargeableAmount } from "@/lib/payments/amount";
 import { googleCalendarUrl } from "@/lib/scheduling/ics";
 import { toLocale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
+import { PaymentChoice, type PaymentOption } from "./payment-choice";
 import { SlotPicker } from "./slot-picker";
 import type { PublicOffer, PublicProfile } from "./types";
 
@@ -36,6 +38,7 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
   const [budget, setBudget] = useState("");
   const [date, setDate] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const [paymentChoice, setPaymentChoice] = useState<PaymentOption | null>(null);
   const [company, setCompany] = useState(""); // honeypot
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -68,6 +71,20 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
   const messagePrompt = contactConfig?.message_prompt ?? quoteConfig?.brief_prompt ?? null;
   const messageRequired = isContact || isQuote;
 
+  /* ---- Paying ------------------------------------------------------------ */
+
+  // Only the two transaction types carry a payment setting; for the others
+  // onlinePaymentFor() answers "off" whatever it is handed.
+  const payableConfig = calendarConfig ?? reservationConfig;
+  const paymentMode = payableConfig ? onlinePaymentFor(offer.action_type, payableConfig) : "off";
+  const amountCents = chargeableAmount(offer, profile.currency, isReservation ? quantity : 1);
+
+  // Every condition has to hold: the offer asks for it, the amount is real, and
+  // the coach has somewhere for the money to land.
+  const showPayment =
+    paymentMode !== "off" && amountCents !== null && profile.paymentProviders.length > 0;
+  const paymentRequired = showPayment && paymentMode === "required";
+
   function submit(event: React.FormEvent) {
     event.preventDefault();
     setFormError(null);
@@ -81,6 +98,7 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
     if (isReservation && reservationConfig?.date_mode === "required" && !date) {
       nextErrors.requested_date = "required";
     }
+    if (showPayment && !paymentChoice) nextErrors.payment_choice = "payment_choice_required";
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -98,10 +116,15 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
         budget: isQuote && quoteConfig?.ask_budget ? budget.trim() || null : null,
         client_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         locale,
+        payment_choice: showPayment ? paymentChoice : null,
         company,
       });
 
-      if (result.ok && result.data) {
+      if (result.ok && result.data?.redirectUrl) {
+        // Off to the gateway. The booking exists and is holding the slot; it
+        // is confirmed only once the provider tells our server it was paid.
+        window.location.assign(result.data.redirectUrl);
+      } else if (result.ok && result.data) {
         setSuccess(result.data);
       } else if (!result.ok) {
         setErrors(result.fieldErrors ?? {});
@@ -261,6 +284,28 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
         </label>
       </div>
 
+      {showPayment ? (
+        <PaymentChoice
+          amountCents={amountCents}
+          currency={profile.currency}
+          locale={locale}
+          providers={profile.paymentProviders}
+          allowOnSite={!paymentRequired}
+          value={paymentChoice}
+          onChange={(choice) => {
+            setPaymentChoice(choice);
+            // Clearing the error the moment they answer it.
+            setErrors((current) => {
+              if (!current.payment_choice) return current;
+              const next = { ...current };
+              delete next.payment_choice;
+              return next;
+            });
+          }}
+          error={errorFor("payment_choice")}
+        />
+      ) : null}
+
       {formError ? (
         <p className="bg-danger-soft text-danger rounded-[var(--radius-sm)] px-3.5 py-2.5 text-[13.5px]">
           {tError(formError as "unexpected")}
@@ -268,13 +313,15 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
       ) : null}
 
       <Button type="submit" variant="accent" size="lg" block loading={pending}>
-        {isCalendar
-          ? t("submitBooking")
-          : isReservation
-            ? t("submitReservation")
-            : isQuote
-              ? t("submitQuote")
-              : t("submitMessage")}
+        {showPayment && paymentChoice && paymentChoice !== "on_site"
+          ? t("submitPay")
+          : isCalendar
+            ? t("submitBooking")
+            : isReservation
+              ? t("submitReservation")
+              : isQuote
+                ? t("submitQuote")
+                : t("submitMessage")}
       </Button>
 
       <p className="text-ink-subtle text-center text-[12px]">{t("confirmationNote")}</p>

@@ -1,9 +1,9 @@
 "use client";
 
-import { CreditCard, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { deleteAccount, updateSettings } from "@/actions/settings";
@@ -27,9 +27,12 @@ function timezoneOptions(current: string) {
 export function SettingsForm({
   profile,
   accountEmail,
+  payments,
 }: {
   profile: Tables<"profiles">;
   accountEmail: string;
+  /** Rendered by the page: the gateways read a table this form never touches. */
+  payments?: ReactNode;
 }) {
   const t = useTranslations("dashboard.settings");
   const tCommon = useTranslations("common");
@@ -207,13 +210,7 @@ export function SettingsForm({
         </div>
       </Card>
 
-      <Card className="p-5 sm:p-7">
-        <CardHeader title={t("paymentsTitle")} description={t("paymentsHint")} />
-        <div className="bg-ink/[0.03] mt-4 flex items-start gap-3 rounded-[var(--radius-md)] p-4">
-          <CreditCard className="text-ink-muted mt-0.5 size-4 shrink-0" />
-          <p className="text-ink-muted text-[13.5px] leading-relaxed">{t("paymentsSoon")}</p>
-        </div>
-      </Card>
+      {payments}
 
       <Card className="border-danger/20 p-5 sm:p-7">
         <CardHeader

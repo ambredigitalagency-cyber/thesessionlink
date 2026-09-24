@@ -389,6 +389,47 @@
       "subtitle": "What clients can book, reserve or ask about.",
       "title": "Offers"
     },
+    "payments": {
+      "amountLabel": "Payment",
+      "blurb": {
+        "stripe": "Cards, Apple Pay and Google Pay.",
+        "paypal": "PayPal balance and cards through PayPal."
+      },
+      "cancel": "Cancel",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "disconnectBody": "Your clients will no longer be able to pay this way. Payments already received are unaffected.",
+      "disconnectBodyPaypal": "Your clients will no longer be able to pay with PayPal. Payments already received are unaffected. PayPal offers no way for us to withdraw the authorisation from our side: to remove it completely, do it from your PayPal account.",
+      "disconnectTitle": "Disconnect {provider}?",
+      "disconnected": "{provider} disconnected",
+      "notReady": "Account connected, but not cleared to take payments yet. Finish the verification with the provider.",
+      "notice": {
+        "connected": "Account connected. You can now switch online payment on for your offers.",
+        "pending": "Account received. The provider is finishing its checks: payment turns on as soon as they confirm.",
+        "declined": "The connection was interrupted. You can try again.",
+        "not_configured": "This payment method is not set up on this platform yet.",
+        "error": "The connection did not go through. Try again in a moment."
+      },
+      "payoutNote": "TheSessionLink never holds your clients' money: payments land in your own Stripe or PayPal account, on your usual payout schedule. The platform takes no commission.",
+      "paypalManualRevoke": "We no longer send anything to PayPal. To withdraw the authorisation on your side too:",
+      "paypalManualRevokeLink": "your PayPal account settings",
+      "providers": {
+        "stripe": "Stripe",
+        "paypal": "PayPal"
+      },
+      "status": {
+        "connected": "Connected",
+        "disabled": "Disconnected",
+        "failed": "Payment failed",
+        "notConnected": "Not connected",
+        "paid": "Paid",
+        "pending": "Payment pending",
+        "refunded": "Refunded"
+      },
+      "subtitle": "Connect your account to get paid online. The money goes straight to you.",
+      "title": "Payments",
+      "unavailable": "Coming soon"
+    },
     "profile": {
       "accents": {
         "amber": "Amber",
@@ -497,6 +538,7 @@
         "missed": "Sessions lost",
         "missedHint": "{cancelled} cancelled, {noShow} absent",
         "revenue": "Estimated revenue",
+        "revenueCollected": "including {amount} collected online",
         "revenueHint": "Declarative: price of confirmed offers"
       },
       "missed": {
@@ -581,6 +623,7 @@
       "client": "Client",
       "email": "Email",
       "offer": "Offer",
+      "paid": "Paid",
       "phone": "Phone",
       "quantity": "Quantity",
       "requestedDate": "Requested date",
@@ -647,6 +690,8 @@
     "end_before_start": "The end must be after the start.",
     "field_label_required": "Give this field a name.",
     "form_has_errors": "A few things need fixing.",
+    "gateway_error": "The payment provider did not answer. Try again in a moment.",
+    "gateway_unavailable": "That payment method is not available right now.",
     "impersonation_is_read_only": "Read-only session: changes are not possible.",
     "invalid_currency": "Enter a 3-letter currency code.",
     "invalid_email": "Enter a valid email address.",
@@ -666,6 +711,8 @@
     "option_unknown": "This choice no longer exists.",
     "options_required": "Add at least one choice.",
     "overlapping_rules": "Two time ranges overlap on the same day.",
+    "payment_choice_required": "Choose a payment method.",
+    "payment_required": "This offer has to be paid online.",
     "quantity_too_high": "That is more than the maximum per booking.",
     "required": "This field is required.",
     "send_failed": "We could not send the email. Please try again.",
@@ -1003,6 +1050,12 @@
     "confirmedBody": "Everything is set. If you cannot make it, cancelling early frees the slot for someone else.",
     "contactPro": "Contact",
     "footer": "This page is private — the link was sent to you by email.",
+    "payment": {
+      "cancelled": "Payment cancelled. You have not been charged.",
+      "checking": "We are checking your payment with the provider. This page will update in a moment.",
+      "failed": "The payment did not go through. You have not been charged.",
+      "paid": "Payment received. Thank you!"
+    },
     "pendingBody": "This request is waiting for confirmation. You will get an email as soon as it is confirmed.",
     "title": "Your booking"
   },
@@ -1234,6 +1287,21 @@
       "visible": "Visible on my page",
       "visibleHint": "Hide an offer without deleting it."
     },
+    "payment": {
+      "hint": "The client pays when they book. The money goes straight to your account.",
+      "noFirmPrice": "Online payment needs a firm price. “From”, “on request” and “free” cannot be charged at booking time.",
+      "noGateway": "Connect Stripe or PayPal first to switch payment on for this offer.",
+      "noGatewayLink": "Go to Settings",
+      "optional": {
+        "hint": "The client can pay online or choose to settle in person.",
+        "label": "Optional"
+      },
+      "required": {
+        "hint": "The booking is only recorded once the payment is confirmed.",
+        "label": "Required to book"
+      },
+      "title": "Online payment"
+    },
     "review": {
       "edit": "Edit",
       "emptyFields": "{count, plural, one {# empty field will not be shown.} other {# empty fields will not be shown.}}",
@@ -1323,6 +1391,7 @@
       "slotsError": "Could not load availability. Please refresh.",
       "submitBooking": "Confirm booking",
       "submitMessage": "Send message",
+      "submitPay": "Pay and book",
       "submitQuote": "Request a quote",
       "submitReservation": "Send reservation",
       "successConfirmed": "You're booked",
@@ -1351,6 +1420,24 @@
       "show": "Show photo {index}"
     },
     "offersTitle": "Offers",
+    "payment": {
+      "options": {
+        "stripe": {
+          "hint": "Secure payment by Stripe.",
+          "label": "Card"
+        },
+        "paypal": {
+          "hint": "PayPal balance or card through PayPal.",
+          "label": "PayPal"
+        },
+        "on_site": {
+          "hint": "You settle directly with the professional.",
+          "label": "Pay in person"
+        }
+      },
+      "securityNote": "Payment happens on the provider's secure page. No card details ever pass through TheSessionLink.",
+      "title": "How would you like to pay?"
+    },
     "poweredBy": "Made with TheSessionLink",
     "unavailable": {
       "home": "Go to the homepage",

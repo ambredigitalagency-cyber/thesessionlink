@@ -16,6 +16,7 @@ export function DashboardOfferForm({
   currency,
   locale,
   profileWhatsapp,
+  gatewayReady,
   initial,
 }: {
   mode: "create" | "edit";
@@ -24,6 +25,8 @@ export function DashboardOfferForm({
   currency: string;
   locale: string;
   profileWhatsapp: string | null;
+  /** Decides whether the online-payment switch can be turned on at all. */
+  gatewayReady: boolean;
   initial?: OfferInitialValues;
 }) {
   const router = useRouter();
@@ -37,6 +40,7 @@ export function DashboardOfferForm({
       currency={currency}
       locale={locale}
       profileWhatsapp={profileWhatsapp}
+      gatewayReady={gatewayReady}
       initial={initial}
       onSaved={() => {
         router.push("/dashboard/offers");
