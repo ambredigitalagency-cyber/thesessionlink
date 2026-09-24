@@ -566,6 +566,16 @@
       },
       "yourMessage": "Your message"
     },
+    "deletionWarning": {
+      "cta": "Write to us to cancel",
+      "dateLabel": "Permanent deletion",
+      "footer": "TheSessionLink",
+      "heading": "{count, plural, one {# day} other {# days}} left",
+      "intro": "You asked for your TheSessionLink account to be deleted. On the date below, your page, your offers, your bookings and your client records will be erased for good.",
+      "note": "Changed your mind? Write to us before that date and we will reactivate your account. After it, nothing can be recovered.",
+      "preview": "Permanently deleted on {date}",
+      "subject": "Your account will be deleted in {count, plural, one {# day} other {# days}}"
+    },
     "fields": {
       "budget": "Budget",
       "client": "Client",
@@ -1342,6 +1352,10 @@
     },
     "offersTitle": "Offers",
     "poweredBy": "Made with TheSessionLink",
+    "unavailable": {
+      "home": "Go to the homepage",
+      "title": "This professional is no longer available on TheSessionLink."
+    },
     "whatsappUnavailable": "This contact option is temporarily unavailable."
   },
   "share": {

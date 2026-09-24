@@ -356,3 +356,51 @@ export async function sendClientCancellationToPro({
     }),
   });
 }
+
+/* -------------------------------------------------------------------------- */
+/* Account                                                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Sent a week before an account marked for deletion is actually purged.
+ *
+ * The coach asked for this a while ago and may well have forgotten; this is
+ * their last chance to say so before the data goes. There is no one-click
+ * undo on purpose — reactivating goes through support, so the email carries a
+ * contact link rather than a button that acts.
+ */
+export async function sendAccountDeletionWarning({
+  to,
+  locale,
+  dueAt,
+  daysLeft,
+  supportEmail,
+}: {
+  to: string;
+  locale: Locale;
+  dueAt: Date;
+  daysLeft: number;
+  supportEmail: string | null;
+}) {
+  const t = await getTranslator(locale, "emails.deletionWarning");
+  const date = formatDateOnly(dueAt, "UTC", locale);
+
+  return sendEmail({
+    to,
+    subject: t("subject", { count: daysLeft }),
+    react: BookingNoticeEmail({
+      preview: t("preview", { date }),
+      heading: t("heading", { count: daysLeft }),
+      intro: t("intro"),
+      rows: [{ label: t("dateLabel"), value: date }],
+      cta: supportEmail
+        ? {
+            href: `mailto:${supportEmail}?subject=${encodeURIComponent(t("subject", { count: daysLeft }))}`,
+            label: t("cta"),
+          }
+        : undefined,
+      note: t("note"),
+      footerNote: t("footer"),
+    }),
+  });
+}

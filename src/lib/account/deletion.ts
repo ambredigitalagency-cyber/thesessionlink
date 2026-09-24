@@ -12,6 +12,13 @@
  */
 export const DELETION_GRACE_DAYS = 30;
 
+/**
+ * How long before the purge the coach is warned by email.
+ *
+ * Mirrors the p_warn_days default of claim_due_deletion_warnings().
+ */
+export const DELETION_WARNING_DAYS = 7;
+
 const DAY_MS = 86_400_000;
 
 /** The moment the purge becomes eligible to run on this account. */

@@ -46,3 +46,18 @@ export const serverEnv = {
 };
 
 export const isEmailConfigured = () => Boolean(serverEnv.resendApiKey);
+
+/**
+ * The address a human can write to, fit for a mailto: link.
+ *
+ * EMAIL_FROM carries a display name ("TheSessionLink <hello@…>"), which is what
+ * Resend wants and what a mailto: link must not contain — the angle brackets
+ * and the space break the URL. This returns the bare address, whichever of the
+ * two variables it comes from.
+ */
+export function supportAddress(): string | null {
+  const raw = serverEnv.emailReplyTo || serverEnv.emailFrom;
+  const inBrackets = raw.match(/<([^>]+)>/);
+  const address = (inBrackets ? inBrackets[1] : raw).trim();
+  return address.includes("@") ? address : null;
+}

@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, getTranslations } from "next-intl/server";
 
 import { PublicProfileView } from "@/components/public-profile/profile-view";
+import { ProfileUnavailable } from "@/components/public-profile/unavailable";
 import type { PublicOffer, PublicProfile } from "@/components/public-profile/types";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
@@ -46,6 +47,17 @@ async function loadProfile(slug: string) {
 }
 
 /**
+ * The link exists but the profile no longer answers — suspended, or on its way
+ * out. Told apart from a link that never existed, and from each other only in
+ * the database: the visitor gets one neutral page either way.
+ */
+async function profileIsUnavailable(slug: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.rpc("profile_unavailable", { p_slug: slug });
+  return data === true;
+}
+
+/**
  * Public pages are not locale-prefixed (the URL is the product), so the
  * language is: visitor's cookie first, otherwise the language the pro works in.
  */
@@ -60,7 +72,16 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
   const { slug } = await params;
   const data = await loadProfile(slug);
 
-  if (!data) return { title: "Not found" };
+  if (!data) {
+    if (await profileIsUnavailable(slug)) {
+      const t = await getTranslations({
+        locale: await resolveLocale(null),
+        namespace: "publicProfile.unavailable",
+      });
+      return { title: t("title"), robots: { index: false, follow: false } };
+    }
+    return { title: "Not found" };
+  }
 
   const { profile } = data;
   const description =
@@ -85,7 +106,12 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
   const query = await searchParams;
   const data = await loadProfile(slug);
 
-  if (!data) notFound();
+  if (!data) {
+    if (await profileIsUnavailable(slug)) {
+      return <ProfileUnavailable locale={await resolveLocale(null)} />;
+    }
+    notFound();
+  }
 
   const { profile, offers, category } = data;
   const locale = await resolveLocale(profile.locale);

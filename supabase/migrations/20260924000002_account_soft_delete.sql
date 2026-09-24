@@ -27,6 +27,15 @@ comment on column public.profiles.deleted_at is
 
 create index profiles_deleted_idx on public.profiles (deleted_at) where deleted_at is not null;
 
+/**
+ * Stamped when the J-7 warning has been sent, so it goes out once.
+ *
+ * Cleared whenever deleted_at is set or cleared: a coach who leaves, comes
+ * back, and leaves again gets warned again.
+ */
+alter table public.profiles
+  add column deletion_warned_at timestamptz;
+
 -- The public view already hides suspended profiles; a deleted one goes too.
 create or replace view public.public_profiles
 with (security_invoker = false) as
@@ -94,43 +103,6 @@ select cron.schedule(
 );
 
 -- -----------------------------------------------------------------------------
--- No reminder goes out for an account on its way out.
---
--- Without this, a coach who left would keep emailing their clients for thirty
--- days about sessions that are about to be erased. Recreated verbatim from
--- 20260918000001 apart from the added predicate.
---
--- Suspension is deliberately NOT filtered here: that is existing behaviour,
--- and a suspended coach may still be reinstated tomorrow with their bookings
--- intact. Worth revisiting, but not silently, in this migration.
--- -----------------------------------------------------------------------------
-create or replace function public.claim_due_reminders(p_limit integer default 50)
-returns setof public.bookings
-language sql
-security definer
-set search_path = ''
-as $$
-  update public.bookings b
-     set reminder_sent_at = now()
-   where b.id in (
-     select b2.id
-       from public.bookings b2
-       join public.profiles p on p.id = b2.profile_id
-      where b2.action_type = 'calendar_booking'
-        and b2.status = 'confirmed'
-        and b2.reminder_sent_at is null
-        and p.deleted_at is null
-        and b2.starts_at > now() + interval '15 minutes'
-        and b2.starts_at <= now() + make_interval(hours => p.reminder_hours_before)
-        and b2.created_at <= now() - interval '1 hour'
-      order by b2.starts_at
-      limit p_limit
-      for update of b2 skip locked
-   )
-  returning b.*;
-$$;
-
--- -----------------------------------------------------------------------------
 -- The console records restoring an account like any other intervention.
 -- -----------------------------------------------------------------------------
 alter table public.admin_audit_log drop constraint admin_audit_log_action_check;
@@ -172,3 +144,112 @@ with (security_invoker = true) as
 
 revoke all on public.admin_coach_overview from anon, authenticated;
 grant select on public.admin_coach_overview to authenticated;
+
+-- -----------------------------------------------------------------------------
+-- What the outside world is told about an account that is gone.
+--
+-- The public view simply stops returning the row, which would leave the page
+-- as a bare 404 — the same answer as a link that never existed. This says
+-- instead that the professional is no longer here, without saying whether they
+-- left or were suspended: the visitor gets one neutral message either way.
+--
+-- It returns a boolean and nothing else, so it discloses no more than the slug
+-- check already does when someone picks their link at signup.
+-- -----------------------------------------------------------------------------
+create or replace function public.profile_unavailable(p_slug text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select exists (
+    select 1
+      from public.profiles p
+     where p.slug = lower(p_slug)
+       and p.onboarding_completed_at is not null
+       and (p.suspended_at is not null or p.deleted_at is not null)
+  );
+$$;
+
+revoke execute on function public.profile_unavailable(text) from public;
+grant execute on function public.profile_unavailable(text) to anon, authenticated, service_role;
+
+-- -----------------------------------------------------------------------------
+-- The warning, seven days before the purge.
+--
+-- Same shape as claim_due_reminders: the claim stamps the rows it returns, so
+-- two concurrent runs never send twice, and the caller clears the stamp again
+-- when a send fails so the next run retries it.
+-- -----------------------------------------------------------------------------
+create or replace function public.claim_due_deletion_warnings(
+  p_grace_days integer default 30,
+  p_warn_days  integer default 7,
+  p_limit      integer default 50
+)
+returns setof public.profiles
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.profiles p
+     set deletion_warned_at = now()
+   where p.id in (
+     select p2.id
+       from public.profiles p2
+      where p2.deleted_at is not null
+        and p2.deletion_warned_at is null
+        and p2.deleted_at <= now() - make_interval(days => p_grace_days - p_warn_days)
+      order by p2.deleted_at
+      limit p_limit
+      for update of p2 skip locked
+   )
+  returning p.*;
+$$;
+
+revoke execute on function public.claim_due_deletion_warnings(integer, integer, integer)
+  from public, anon, authenticated;
+grant execute on function public.claim_due_deletion_warnings(integer, integer, integer)
+  to service_role;
+
+/**
+ * Pings the app once a day so it can send the warnings through Resend, the
+ * same way dispatch_reminders() does. Unconfigured project: it no-ops.
+ */
+create or replace function public.dispatch_deletion_warnings()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_app_url text;
+  v_secret  text;
+begin
+  select decrypted_secret into v_app_url from vault.decrypted_secrets where name = 'app_url';
+  select decrypted_secret into v_secret  from vault.decrypted_secrets where name = 'cron_secret';
+
+  if v_app_url is null or v_secret is null then
+    return; -- not configured yet
+  end if;
+
+  perform net.http_post(
+    url := rtrim(v_app_url, '/') || '/api/cron/deletion-warnings',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || v_secret
+    ),
+    body := '{}'::jsonb
+  );
+end;
+$$;
+
+revoke execute on function public.dispatch_deletion_warnings() from public, anon, authenticated;
+
+-- An hour before the purge runs, so a warning is never sent on the same night
+-- an account is erased.
+select cron.schedule(
+  'thesessionlink-deletion-warnings',
+  '30 2 * * *',
+  'select public.dispatch_deletion_warnings()'
+);

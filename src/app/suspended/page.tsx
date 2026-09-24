@@ -7,7 +7,7 @@ import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { deletionDaysLeft, deletionDueAt } from "@/lib/account/deletion";
 import { getCurrentProfile, requireUser } from "@/lib/auth";
-import { serverEnv } from "@/lib/env";
+import { supportAddress } from "@/lib/env";
 
 /**
  * Where a coach lands when the tools are closed to them — suspended by an
@@ -27,7 +27,7 @@ export default async function SuspendedPage() {
 
   const t = await getTranslations("admin.suspended");
   const format = await getFormatter();
-  const contact = serverEnv.emailReplyTo || serverEnv.emailFrom;
+  const contact = supportAddress();
   const deletedAt = profile.deleted_at;
 
   return (

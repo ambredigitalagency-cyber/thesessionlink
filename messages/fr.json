@@ -566,6 +566,16 @@
       },
       "yourMessage": "Votre message"
     },
+    "deletionWarning": {
+      "cta": "Nous écrire pour annuler",
+      "dateLabel": "Suppression définitive",
+      "footer": "TheSessionLink",
+      "heading": "Plus que {count, plural, one {# jour} other {# jours}}",
+      "intro": "Vous avez demandé la suppression de votre compte TheSessionLink. À la date ci-dessous, votre page, vos offres, vos réservations et vos fiches clients seront effacées définitivement.",
+      "note": "Vous préférez finalement rester ? Écrivez-nous avant cette date et nous réactiverons votre compte. Passé ce délai, rien ne pourra être récupéré.",
+      "preview": "Suppression définitive le {date}",
+      "subject": "Votre compte sera supprimé dans {count, plural, one {# jour} other {# jours}}"
+    },
     "fields": {
       "budget": "Budget",
       "client": "Client",
@@ -1342,6 +1352,10 @@
     },
     "offersTitle": "Offres",
     "poweredBy": "Créé avec TheSessionLink",
+    "unavailable": {
+      "home": "Aller à l'accueil",
+      "title": "Ce professionnel n'est plus disponible sur TheSessionLink."
+    },
     "whatsappUnavailable": "Ce moyen de contact est temporairement indisponible."
   },
   "share": {

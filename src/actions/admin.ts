@@ -217,7 +217,9 @@ export async function restoreAccount(profileId: string): Promise<ActionResult> {
 
   const { error } = await supabase
     .from("profiles")
-    .update({ deleted_at: null })
+    // The warning stamp goes too: if they ever leave again, they get warned
+    // again.
+    .update({ deleted_at: null, deletion_warned_at: null })
     .eq("id", profileId);
 
   if (error) return { ok: false, error: "unexpected" };

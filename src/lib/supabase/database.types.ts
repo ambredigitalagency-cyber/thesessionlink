@@ -453,6 +453,7 @@ export type Database = {
           currency: string;
           custom_closed_message: string | null;
           deleted_at: string | null;
+          deletion_warned_at: string | null;
           display_name: string;
           headline: string | null;
           id: string;
@@ -487,6 +488,7 @@ export type Database = {
           currency?: string;
           custom_closed_message?: string | null;
           deleted_at?: string | null;
+          deletion_warned_at?: string | null;
           display_name: string;
           headline?: string | null;
           id?: string;
@@ -521,6 +523,7 @@ export type Database = {
           currency?: string;
           custom_closed_message?: string | null;
           deleted_at?: string | null;
+          deletion_warned_at?: string | null;
           display_name?: string;
           headline?: string | null;
           id?: string;
@@ -773,6 +776,50 @@ export type Database = {
         Args: { p_bucket: string; p_limit: number; p_window: string };
         Returns: boolean;
       };
+      claim_due_deletion_warnings: {
+        Args: { p_grace_days?: number; p_limit?: number; p_warn_days?: number };
+        Returns: {
+          avatar_url: string | null;
+          bio: string | null;
+          calendar_visible: boolean;
+          category_id: string | null;
+          contact_channels: Json;
+          contact_email: string | null;
+          created_at: string;
+          currency: string;
+          custom_closed_message: string | null;
+          deleted_at: string | null;
+          deletion_warned_at: string | null;
+          display_name: string;
+          headline: string | null;
+          id: string;
+          locale: string;
+          location: string | null;
+          notify_new_bookings: boolean;
+          onboarding_completed_at: string | null;
+          payment_method: string | null;
+          phone_number: string | null;
+          reminder_hours_before: number;
+          slug: string;
+          social_links: Json;
+          subscription_active: boolean;
+          suspended_at: string | null;
+          suspended_by: string | null;
+          suspension_reason: string | null;
+          theme: Json;
+          timezone: string;
+          trial_ends_at: string;
+          updated_at: string;
+          user_id: string;
+          whatsapp_number: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "profiles";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       claim_due_reminders: {
         Args: { p_limit?: number };
         Returns: {
@@ -811,11 +858,13 @@ export type Database = {
         };
       };
       current_profile_id: { Args: never; Returns: string };
+      dispatch_deletion_warnings: { Args: never; Returns: undefined };
       dispatch_reminders: { Args: never; Returns: undefined };
       is_platform_admin: { Args: never; Returns: boolean };
       is_public_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_reserved_slug: { Args: { p_slug: string }; Returns: boolean };
       is_slug_available: { Args: { p_slug: string }; Returns: boolean };
+      profile_unavailable: { Args: { p_slug: string }; Returns: boolean };
       purge_deleted_accounts: {
         Args: { p_grace_days?: number };
         Returns: number;

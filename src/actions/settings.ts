@@ -91,7 +91,7 @@ export async function deleteAccount(confirmation: string): Promise<ActionResult>
   const supabase = await createSupabaseServerClient();
   const { data: marked, error } = await supabase
     .from("profiles")
-    .update({ deleted_at: new Date().toISOString() })
+    .update({ deleted_at: new Date().toISOString(), deletion_warned_at: null })
     .eq("user_id", user.id)
     .is("deleted_at", null)
     .select("id")
