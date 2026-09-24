@@ -31,7 +31,8 @@ type AuditAction =
   | "suspend"
   | "unsuspend"
   | "impersonate_start"
-  | "impersonate_stop";
+  | "impersonate_stop"
+  | "restore_account";
 
 async function audit(
   adminUserId: string,
@@ -188,6 +189,40 @@ export async function unsuspendProfile(profileId: string): Promise<ActionResult>
   if (error) return { ok: false, error: "unexpected" };
 
   await audit(admin.id, "unsuspend", profileId, {});
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+/**
+ * Brings back an account the coach asked to delete, before the purge runs.
+ *
+ * Deliberately admin-only: the coach has no way to undo their own deletion —
+ * they contact support, and this is what support clicks. Clearing deleted_at
+ * takes the profile out of reach of purge_deleted_accounts() and puts the
+ * public page back online.
+ */
+export async function restoreAccount(profileId: string): Promise<ActionResult> {
+  const admin = await requireAdminForAction();
+  if (!idSchema.safeParse(profileId).success) return { ok: false, error: "invalid_input" };
+
+  const supabase = await createSupabaseServerClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("deleted_at")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (!profile) return { ok: false, error: "not_found" };
+  if (!profile.deleted_at) return { ok: false, error: "not_pending_deletion" };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ deleted_at: null })
+    .eq("id", profileId);
+
+  if (error) return { ok: false, error: "unexpected" };
+
+  await audit(admin.id, "restore_account", profileId, { was_deleted_at: profile.deleted_at });
   revalidatePath("/admin", "layout");
   return { ok: true };
 }

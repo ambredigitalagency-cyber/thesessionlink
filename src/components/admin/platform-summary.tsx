@@ -64,8 +64,13 @@ export function PlatformSummary({
         />
         <StatTile
           label={t("stats.inactive")}
-          value={String(totals.byStatus.expired + totals.byStatus.suspended)}
-          hint={t("stats.inactiveHint", { suspended: totals.byStatus.suspended })}
+          value={String(
+            totals.byStatus.expired + totals.byStatus.suspended + totals.byStatus.deleted,
+          )}
+          hint={t("stats.inactiveHint", {
+            suspended: totals.byStatus.suspended,
+            deleted: totals.byStatus.deleted,
+          })}
         />
       </div>
 

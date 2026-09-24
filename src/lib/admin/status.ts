@@ -5,20 +5,24 @@
  * filters and the figures can never disagree with each other.
  */
 
-export const ACCOUNT_STATUSES = ["suspended", "subscribed", "trial", "expired"] as const;
+export const ACCOUNT_STATUSES = ["deleted", "suspended", "subscribed", "trial", "expired"] as const;
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 
 export type AccountFields = {
   trial_ends_at: string | null;
   subscription_active: boolean | null;
   suspended_at: string | null;
+  /** The coach asked to leave; the account is awaiting its purge. */
+  deleted_at?: string | null;
 };
 
 /**
- * Suspension wins over everything — it is a decision, not a state of the
- * subscription. Then a paid subscription, then an unfinished trial.
+ * A pending deletion wins over everything, then suspension — both are
+ * decisions, not states of the subscription. Then a paid subscription, then an
+ * unfinished trial.
  */
 export function accountStatus(account: AccountFields, now = new Date()): AccountStatus {
+  if (account.deleted_at) return "deleted";
   if (account.suspended_at) return "suspended";
   if (account.subscription_active) return "subscribed";
   if (account.trial_ends_at && new Date(account.trial_ends_at).getTime() > now.getTime()) {
@@ -48,6 +52,7 @@ export function platformTotals(
   const { monthlyPrice, locale, now = new Date(), unknownLabel } = options;
 
   const byStatus: Record<AccountStatus, number> = {
+    deleted: 0,
     suspended: 0,
     subscribed: 0,
     trial: 0,
@@ -56,7 +61,11 @@ export function platformTotals(
   const perCategory = new Map<string, number>();
 
   for (const account of accounts) {
-    byStatus[accountStatus(account, now)] += 1;
+    const status = accountStatus(account, now);
+    byStatus[status] += 1;
+
+    // An account waiting to be purged is not part of the active mix.
+    if (status === "deleted") continue;
 
     const label = localisedCategory(account.category_name, locale) ?? unknownLabel;
     perCategory.set(label, (perCategory.get(label) ?? 0) + 1);

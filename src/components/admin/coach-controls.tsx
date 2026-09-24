@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlus, LogIn, ShieldBan, ShieldCheck } from "lucide-react";
+import { CalendarPlus, LogIn, RotateCcw, ShieldBan, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import {
   extendTrial,
   impersonate,
+  restoreAccount,
   setSubscription,
   suspendProfile,
   unsuspendProfile,
@@ -27,11 +28,14 @@ const EXTENSIONS = [7, 14, 30, 90];
 export function CoachControls({
   profileId,
   suspended,
+  pendingDeletion,
   subscribed,
   isAdminAccount,
 }: {
   profileId: string;
   suspended: boolean;
+  /** The coach asked to leave and the purge has not run yet. */
+  pendingDeletion: boolean;
   subscribed: boolean;
   /** Platform admins are out of reach of moderation, including yourself. */
   isAdminAccount: boolean;
@@ -140,6 +144,20 @@ export function CoachControls({
           <p className="text-ink-subtle text-[12.5px]">{t("controls.suspendHint")}</p>
         )}
       </div>
+
+      {pendingDeletion ? (
+        <div className="border-line flex flex-wrap items-center gap-3 border-t pt-5">
+          <Button
+            variant="secondary"
+            onClick={() => run(() => restoreAccount(profileId), t("controls.restored"))}
+            loading={pending}
+          >
+            <RotateCcw className="size-4" />
+            {t("controls.restore")}
+          </Button>
+          <p className="text-ink-subtle text-[12.5px]">{t("controls.restoreHint")}</p>
+        </div>
+      ) : null}
 
       <Modal
         open={confirmSuspend}

@@ -25,6 +25,15 @@ describe("accountStatus", () => {
     expect(accountStatus(suspended, NOW)).toBe("suspended");
   });
 
+  it("puts a requested deletion above suspension itself", () => {
+    const leaving = account({
+      subscription_active: true,
+      suspended_at: inDays(-2),
+      deleted_at: inDays(-1),
+    });
+    expect(accountStatus(leaving, NOW)).toBe("deleted");
+  });
+
   it("counts the days left, never below zero", () => {
     expect(trialDaysLeft(account({ trial_ends_at: inDays(3) }), NOW)).toBe(3);
     expect(trialDaysLeft(account({ trial_ends_at: inDays(-3) }), NOW)).toBe(0);
@@ -48,7 +57,13 @@ describe("platformTotals", () => {
     );
 
     expect(totals.coaches).toBe(5);
-    expect(totals.byStatus).toEqual({ subscribed: 2, trial: 1, expired: 1, suspended: 1 });
+    expect(totals.byStatus).toEqual({
+      subscribed: 2,
+      trial: 1,
+      expired: 1,
+      suspended: 1,
+      deleted: 0,
+    });
     expect(totals.monthlyRevenue).toBe(18);
   });
 

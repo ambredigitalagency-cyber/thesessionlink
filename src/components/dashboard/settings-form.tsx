@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
+import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
 import type { Tables } from "@/lib/supabase/database.types";
 
@@ -215,14 +216,17 @@ export function SettingsForm({
       </Card>
 
       <Card className="border-danger/20 p-5 sm:p-7">
-        <CardHeader title={t("dangerTitle")} description={t("dangerHint")} />
+        <CardHeader
+          title={t("dangerTitle")}
+          description={t("dangerHint", { count: DELETION_GRACE_DAYS })}
+        />
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button variant="danger" onClick={() => setDeleteOpen(true)}>
             {t("deleteAccount")}
           </Button>
           <span className="text-ink-subtle inline-flex items-center gap-1.5 text-[12.5px]">
             <Info className="size-3.5" />
-            {t("deleteNote")}
+            {t("deleteNote", { count: DELETION_GRACE_DAYS })}
           </span>
         </div>
       </Card>
@@ -238,7 +242,7 @@ export function SettingsForm({
         onOpenChange={setDeleteOpen}
         size="sm"
         title={t("deleteTitle")}
-        description={t("deleteBody", { email: accountEmail })}
+        description={t("deleteBody", { count: DELETION_GRACE_DAYS })}
         footer={
           <>
             <Button variant="ghost" onClick={() => setDeleteOpen(false)}>

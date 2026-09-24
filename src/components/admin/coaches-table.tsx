@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/primitives";
+import { deletionDaysLeft } from "@/lib/account/deletion";
 import { ACCOUNT_STATUSES, accountStatus, type AccountStatus } from "@/lib/admin/status";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ export type CoachRow = {
   trial_ends_at: string | null;
   subscription_active: boolean | null;
   suspended_at: string | null;
+  deleted_at: string | null;
   offers_count: number;
   bookings_count: number;
   category_name: unknown;
@@ -30,6 +32,7 @@ const STATUS_TONE: Record<AccountStatus, "success" | "accent" | "warning" | "dan
   trial: "accent",
   expired: "warning",
   suspended: "danger",
+  deleted: "danger",
 };
 
 export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
@@ -155,6 +158,11 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
                   </td>
                   <td className="py-2.5">
                     <Badge tone={STATUS_TONE[state]}>{t(`status.${state}`)}</Badge>
+                    {coach.deleted_at ? (
+                      <p className="text-ink-subtle mt-1 text-[12px]">
+                        {t("coaches.purgeIn", { count: deletionDaysLeft(coach.deleted_at) })}
+                      </p>
+                    ) : null}
                   </td>
                   <td className="text-ink-muted py-2.5 tabular-nums">{format(coach.created_at)}</td>
                   <td className="text-ink-muted py-2.5 text-right tabular-nums">

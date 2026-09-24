@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server";
 import { AuditTrail } from "@/components/admin/audit-trail";
 import { CoachControls } from "@/components/admin/coach-controls";
 import { Badge, Card, CardHeader } from "@/components/ui/primitives";
+import { deletionDaysLeft, deletionDueAt } from "@/lib/account/deletion";
 import { requireAdmin } from "@/lib/admin/access";
 import { accountStatus, trialDaysLeft } from "@/lib/admin/status";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -45,6 +46,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
     trial_ends_at: coach.trial_ends_at,
     subscription_active: coach.subscription_active,
     suspended_at: coach.suspended_at,
+    deleted_at: coach.deleted_at,
   });
 
   const date = (value: string | null) =>
@@ -96,7 +98,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
                     ? "success"
                     : status === "trial"
                       ? "accent"
-                      : status === "suspended"
+                      : status === "suspended" || status === "deleted"
                         ? "danger"
                         : "warning"
                 }
@@ -116,6 +118,16 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
             <ExternalLink className="size-3.5" />
           </Link>
         </div>
+
+        {coach.deleted_at ? (
+          <p className="bg-danger-soft text-danger mt-5 rounded-[var(--radius-sm)] px-4 py-3 text-[13px]">
+            {t("coach.deletionRequested", {
+              date: date(coach.deleted_at),
+              due: date(deletionDueAt(coach.deleted_at).toISOString()),
+              count: deletionDaysLeft(coach.deleted_at),
+            })}
+          </p>
+        ) : null}
 
         {coach.suspended_at ? (
           <p className="bg-danger-soft text-danger mt-5 rounded-[var(--radius-sm)] px-4 py-3 text-[13px]">
@@ -144,6 +156,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
           <CoachControls
             profileId={coach.id ?? id}
             suspended={Boolean(coach.suspended_at)}
+            pendingDeletion={Boolean(coach.deleted_at)}
             subscribed={Boolean(coach.subscription_active)}
             isAdminAccount={Boolean(adminRow)}
           />

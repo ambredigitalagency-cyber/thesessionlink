@@ -81,8 +81,9 @@ export async function requireOnboardedProfile(): Promise<Profile> {
   await requireUser();
   const profile = await getCurrentProfile();
   if (!profile || !profile.onboarding_completed_at) redirect("/onboarding");
-  // A suspended coach keeps their data and their session, but not the tools.
-  if (profile.suspended_at) redirect("/suspended");
+  // A suspended coach — or one who asked to leave — keeps their data and their
+  // session, but not the tools. Both land on the same explanation page.
+  if (profile.suspended_at || profile.deleted_at) redirect("/suspended");
   return profile;
 }
 
@@ -94,6 +95,9 @@ export async function requireOnboardedProfile(): Promise<Profile> {
  * the coach's tables, but they also grant UPDATE on profiles, so without this
  * check the profile form would happily save under the coach's name. Every
  * coach-side write goes through here, so one refusal covers them all.
+ *
+ * An account awaiting deletion is frozen the same way: the session survives
+ * until the next sign-out, and a tab left open must not keep writing.
  */
 export async function requireProfileForAction(): Promise<Profile> {
   const user = await getCurrentUser();
@@ -102,5 +106,7 @@ export async function requireProfileForAction(): Promise<Profile> {
 
   const profile = await getCurrentProfile();
   if (!profile) throw new Error("no_profile");
+  if (profile.deleted_at) throw new Error("account_pending_deletion");
+  if (profile.suspended_at) throw new Error("account_suspended");
   return profile;
 }

@@ -452,6 +452,7 @@ export type Database = {
           created_at: string;
           currency: string;
           custom_closed_message: string | null;
+          deleted_at: string | null;
           display_name: string;
           headline: string | null;
           id: string;
@@ -485,6 +486,7 @@ export type Database = {
           created_at?: string;
           currency?: string;
           custom_closed_message?: string | null;
+          deleted_at?: string | null;
           display_name: string;
           headline?: string | null;
           id?: string;
@@ -518,6 +520,7 @@ export type Database = {
           created_at?: string;
           currency?: string;
           custom_closed_message?: string | null;
+          deleted_at?: string | null;
           display_name?: string;
           headline?: string | null;
           id?: string;
@@ -627,6 +630,7 @@ export type Database = {
           category_name: Json | null;
           contact_email: string | null;
           created_at: string | null;
+          deleted_at: string | null;
           display_name: string | null;
           id: string | null;
           last_booking_at: string | null;
@@ -812,6 +816,10 @@ export type Database = {
       is_public_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_reserved_slug: { Args: { p_slug: string }; Returns: boolean };
       is_slug_available: { Args: { p_slug: string }; Returns: boolean };
+      purge_deleted_accounts: {
+        Args: { p_grace_days?: number };
+        Returns: number;
+      };
       replace_weekly_availability: {
         Args: { p_offer_id: string; p_rules: Json };
         Returns: number;

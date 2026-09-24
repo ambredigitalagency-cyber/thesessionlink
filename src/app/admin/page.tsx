@@ -36,6 +36,7 @@ export default async function AdminHomePage() {
     trial_ends_at: row.trial_ends_at,
     subscription_active: row.subscription_active,
     suspended_at: row.suspended_at,
+    deleted_at: row.deleted_at,
     offers_count: row.offers_count ?? 0,
     bookings_count: row.bookings_count ?? 0,
     category_name: row.category_name,
