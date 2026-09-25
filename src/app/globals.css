@@ -149,6 +149,16 @@
   }
 }
 
+@keyframes glyph-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 :root {
   /* Overridden per public profile by the pro's accent preset. */
   --accent: var(--color-brand);
@@ -331,6 +341,24 @@ body {
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /*
+   * The three dots of the "send a message" glyph, typing. The only loop in the
+   * drawing set, and the only one that must truly stop rather than finish — so
+   * it is a media query and not a JavaScript branch: the dots then hold one
+   * opacity in the HTML whatever the reader prefers, and the server and the
+   * browser cannot disagree about it.
+   */
+  .glyph-pulse {
+    --pulse-delay: 0s;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .glyph-pulse {
+      animation: glyph-pulse 1.4s ease-in-out infinite;
+      animation-delay: var(--pulse-delay);
+    }
   }
 }
 

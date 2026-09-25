@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarCheck, Link2, Sparkles } from "lucide-react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 
@@ -27,6 +27,11 @@ export function HowItWorks() {
     const next = Math.min(STEPS.length - 1, Math.floor(value * STEPS.length));
     setActive(next);
   });
+
+  // Springed so the rail keeps flowing when the wheel stops abruptly. Safe to
+  // leave running under reduced motion: it is a position, not a movement the
+  // reader did not ask for.
+  const railProgress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
 
   return (
     <section id="how" className="relative py-20 sm:py-28">
@@ -55,15 +60,19 @@ export function HowItWorks() {
         {/* Desktop: scroll-driven sticky panel */}
         <div ref={containerRef} className="relative mt-16 hidden h-[260vh] lg:block">
           <div className="sticky top-24 grid grid-cols-2 items-center gap-16">
-            <ol className="space-y-8">
+            <ol className="relative space-y-8">
+              {/* One continuous rail behind the three steps, filled by the
+                  same scroll that switches them. It replaces three separate
+                  borders lighting up on their own. */}
+              <span aria-hidden className="bg-line absolute inset-y-0 left-0 w-0.5 rounded-full" />
+              <motion.span
+                aria-hidden
+                style={{ scaleY: railProgress }}
+                className="bg-ink absolute inset-y-0 left-0 w-0.5 origin-top rounded-full"
+              />
+
               {STEPS.map((step, index) => (
-                <li
-                  key={step.key}
-                  className={cn(
-                    "relative border-l-2 pl-6 transition-all duration-500",
-                    active === index ? "border-ink" : "border-line",
-                  )}
-                >
+                <li key={step.key} className="relative pl-6 transition-all duration-500">
                   <div
                     className={cn(
                       "transition-all duration-500",

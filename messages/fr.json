@@ -917,6 +917,7 @@
       "title": "Les questions qu'on se pose avant de s'inscrire"
     },
     "features": {
+      "actionsLabel": "Types d'action proposés",
       "eyebrow": "Pensé pour de vrais métiers",
       "items": {
         "bilingual": {
@@ -944,6 +945,7 @@
           "title": "WhatsApp en un clic"
         }
       },
+      "onYourPage": "Sur votre page",
       "subtitle": "Un coach vend du temps. Un agent vend une visite. Un consultant vend un devis. Une seule page gère tout — tu choisis l'action, on s'occupe du parcours.",
       "title": "Cinq façons de transformer un visiteur en client."
     },

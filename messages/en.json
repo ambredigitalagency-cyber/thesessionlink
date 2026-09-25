@@ -917,6 +917,7 @@
       "title": "Questions people ask before signing up"
     },
     "features": {
+      "actionsLabel": "Action types available",
       "eyebrow": "Built for real jobs",
       "items": {
         "bilingual": {
@@ -944,6 +945,7 @@
           "title": "WhatsApp in one tap"
         }
       },
+      "onYourPage": "On your page",
       "subtitle": "A coach sells time. A realtor sells a visit. A consultant sells a quote. One page handles all of it — you pick the action, we handle the flow.",
       "title": "Five ways to turn a visitor into a client."
     },
