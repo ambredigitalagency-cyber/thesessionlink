@@ -76,7 +76,9 @@ export function PaymentChoice({
               <span
                 className={cn(
                   "flex size-9 shrink-0 items-center justify-center rounded-full",
-                  selected ? "bg-[var(--accent)] text-white" : "bg-ink/[0.04] text-ink",
+                  selected
+                    ? "bg-[var(--accent)] text-[var(--accent-on)]"
+                    : "bg-ink/[0.04] text-ink",
                 )}
               >
                 <Icon className="size-4" />

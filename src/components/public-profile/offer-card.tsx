@@ -126,7 +126,7 @@ export function OfferCard({
             {tActions(`${offer.action_type}.label`)}
           </span>
 
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-3 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-white">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-3 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-on)]">
             {t(`cta.${offer.action_type}` as "cta.calendar_booking")}
             <ArrowUpRight className="size-3.5" />
           </span>

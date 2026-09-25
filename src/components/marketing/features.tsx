@@ -35,7 +35,7 @@ export function Features() {
   const t = useTranslations("landing.features");
 
   return (
-    <section id="features" className="bg-night text-ink-inverse relative py-20 sm:py-28">
+    <section id="features" className="bg-night text-on-night relative py-20 sm:py-28">
       <div className="bg-grid-inverse pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)] opacity-40" />
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">

@@ -192,7 +192,13 @@ export function SlotPicker({
                   aria-hidden
                   className={cn(
                     "size-1.5 rounded-full transition-colors",
-                    day.open > 0 ? (isCurrent ? "bg-white/70" : "bg-[var(--accent)]") : "bg-ink/15",
+                    // On the selected day the chip is filled with ink, so the
+                    // dot has to be its inverse and not a fixed white.
+                    day.open > 0
+                      ? isCurrent
+                        ? "bg-ink-inverse/70"
+                        : "bg-[var(--accent)]"
+                      : "bg-ink/15",
                   )}
                 />
               </span>
@@ -234,7 +240,7 @@ export function SlotPicker({
               className={cn(
                 "rounded-[var(--radius-xs)] border px-2 py-2.5 text-[13.5px] font-medium tabular-nums transition-colors duration-200",
                 active
-                  ? "border-[var(--accent)] bg-[var(--accent)] text-white shadow-[var(--shadow-card)]"
+                  ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-on)] shadow-[var(--shadow-card)]"
                   : "border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[var(--accent-soft)] text-[var(--accent-ink)] hover:border-[var(--accent)]",
               )}
             >

@@ -366,10 +366,13 @@
       "tagsTitle": "Tags"
     },
     "nav": {
+      "barLabel": "Sections",
       "bookings": "Bookings",
       "offers": "Offers",
       "profile": "Profile",
       "settings": "Settings",
+      "shortBookings": "Bookings",
+      "shortStats": "Stats",
       "stats": "Statistics"
     },
     "offers": {
@@ -496,6 +499,13 @@
       "visibilityTitle": "Booking visibility"
     },
     "settings": {
+      "appearance": {
+        "title": "Appearance",
+        "hint": "Applies to this device only, and takes effect straight away.",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      },
       "channelsHint": "What clients can see and use on your public page.",
       "channelsTitle": "Contact channels",
       "contactEmail": "Contact email",

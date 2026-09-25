@@ -12,7 +12,7 @@ export function FinalCta() {
   const t = useTranslations("landing.finalCta");
 
   return (
-    <section className="bg-night text-ink-inverse relative overflow-hidden py-24 sm:py-32">
+    <section className="bg-night text-on-night relative overflow-hidden py-24 sm:py-32">
       <div className="bg-grid-inverse pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,black,transparent)] opacity-40" />
 
       <motion.div

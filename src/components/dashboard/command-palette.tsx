@@ -171,7 +171,7 @@ export function CommandPalette() {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/25 backdrop-blur-[2px]" />
+        <Dialog.Overlay className="bg-scrim fixed inset-0 z-50 backdrop-blur-[2px]" />
         <Dialog.Content
           onKeyDown={onKeyDown}
           className="border-line bg-surface fixed top-[12vh] left-1/2 z-50 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 overflow-hidden rounded-[var(--radius-lg)] border shadow-[var(--shadow-float)]"

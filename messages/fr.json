@@ -366,10 +366,13 @@
       "tagsTitle": "Étiquettes"
     },
     "nav": {
+      "barLabel": "Sections",
       "bookings": "Réservations",
       "offers": "Offres",
       "profile": "Profil",
       "settings": "Paramètres",
+      "shortBookings": "Résas",
+      "shortStats": "Stats",
       "stats": "Statistiques"
     },
     "offers": {
@@ -496,6 +499,13 @@
       "visibilityTitle": "Visibilité des réservations"
     },
     "settings": {
+      "appearance": {
+        "title": "Apparence",
+        "hint": "Ne s'applique qu'à cet appareil, et prend effet immédiatement.",
+        "light": "Clair",
+        "dark": "Sombre",
+        "system": "Système"
+      },
       "channelsHint": "Ce que vos clients voient et peuvent utiliser sur votre page publique.",
       "channelsTitle": "Canaux de contact",
       "contactEmail": "E-mail de contact",

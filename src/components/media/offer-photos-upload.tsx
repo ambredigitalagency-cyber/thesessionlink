@@ -95,7 +95,7 @@ export function OfferPhotosUpload({
               <Image src={url} alt="" fill sizes="160px" className="object-cover" />
 
               {index === 0 ? (
-                <span className="bg-ink/75 absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+                <span className="bg-scrim absolute top-1.5 left-1.5 rounded-full px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
                   {t("mainPhoto")}
                 </span>
               ) : null}
@@ -103,7 +103,7 @@ export function OfferPhotosUpload({
               <button
                 type="button"
                 onClick={() => remove(index)}
-                className="bg-ink/70 hover:bg-ink absolute top-1.5 right-1.5 rounded-full p-1 text-white backdrop-blur transition-colors"
+                className="bg-scrim hover:bg-scrim/90 absolute top-1.5 right-1.5 rounded-full p-1 text-white backdrop-blur transition-colors"
                 aria-label={t("remove")}
               >
                 <X className="size-3" />

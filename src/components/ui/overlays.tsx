@@ -10,8 +10,13 @@ import { cn } from "@/lib/utils";
 /* Modal — centered on desktop, bottom sheet on mobile                          */
 /* -------------------------------------------------------------------------- */
 
+/*
+ * `scrim`, not `ink/25`: a scrim exists to push what is behind it away, which
+ * means darkening it. Built from ink it inverted with the theme and washed the
+ * page *white* behind a dark modal.
+ */
 const overlayClass =
-  "fixed inset-0 z-50 bg-ink/25 backdrop-blur-[2px] data-[state=open]:animate-[fade-in_200ms_ease] data-[state=closed]:animate-[fade-out_150ms_ease]";
+  "fixed inset-0 z-50 bg-scrim backdrop-blur-[2px] data-[state=open]:animate-[fade-in_200ms_ease] data-[state=closed]:animate-[fade-out_150ms_ease]";
 
 export function Modal({
   open,

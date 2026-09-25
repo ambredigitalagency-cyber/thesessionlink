@@ -25,7 +25,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
     <NextIntlClientProvider messages={messages}>
       <div className="bg-canvas min-h-dvh">
-        <header className="bg-ink text-ink-inverse sticky top-0 z-40">
+        {/* A bar that is dark in both themes, so its text is light in both:
+            `ink` would have turned it white under a dark theme and taken the
+            white links with it. */}
+        <header className="bg-night text-on-night sticky top-0 z-40">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3.5 sm:px-6">
             <Link href="/admin" className="flex items-center gap-2 font-semibold">
               <ShieldCheck className="size-4" />

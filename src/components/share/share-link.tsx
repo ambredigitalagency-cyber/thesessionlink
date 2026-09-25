@@ -127,8 +127,18 @@ export function ShareLink({
         size="sm"
       >
         <div className="flex flex-col items-center gap-4 py-2">
+          {/* Stays white, and says so on purpose: a scanner needs a light
+              quiet zone and dark modules, and a QR rendered pale-on-dark is a
+              QR that does not scan on half the phones that try. */}
           <div className="border-line rounded-[var(--radius-md)] border bg-white p-5">
-            <QRCodeSVG value={url} size={200} level="M" marginSize={0} />
+            <QRCodeSVG
+              value={url}
+              size={200}
+              level="M"
+              marginSize={0}
+              bgColor="#ffffff"
+              fgColor="#0c0c0d"
+            />
           </div>
           <p className="text-ink-muted text-center text-[13px]">{t("qrHint")}</p>
         </div>

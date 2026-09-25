@@ -50,7 +50,7 @@ export function OfferGallery({ offer }: { offer: PublicOffer }) {
             <>
               <GalleryArrow side="left" label={t("gallery.previous")} onClick={() => step(-1)} />
               <GalleryArrow side="right" label={t("gallery.next")} onClick={() => step(1)} />
-              <span className="bg-ink/70 absolute right-2.5 bottom-2.5 rounded-full px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
+              <span className="bg-scrim absolute right-2.5 bottom-2.5 rounded-full px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur">
                 {index + 1}/{photos.length}
               </span>
             </>
@@ -108,7 +108,9 @@ function GalleryArrow({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        "bg-ink/60 hover:bg-ink absolute top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white backdrop-blur transition-colors",
+        // Over a photograph, so it darkens in both themes: built from ink it
+        // turned into a white pill with white arrows on the dark page.
+        "bg-scrim hover:bg-scrim/90 absolute top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white backdrop-blur transition-colors",
         side === "left" ? "left-2.5" : "right-2.5",
       )}
     >

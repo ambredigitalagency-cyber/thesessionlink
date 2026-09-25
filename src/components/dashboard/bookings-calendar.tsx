@@ -261,7 +261,7 @@ export function BookingsCalendar({
                           className={cn(
                             "size-1.5 rounded-full",
                             isSelected
-                              ? "bg-white/70"
+                              ? "bg-ink-inverse/70"
                               : booking.status === "pending"
                                 ? "bg-[var(--accent)]"
                                 : "bg-ink/40",

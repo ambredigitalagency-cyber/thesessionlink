@@ -11,17 +11,22 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary:
-          "bg-ink text-ink-inverse hover:bg-night-soft shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
+        // `ink-hover`, not `night-soft`: the two are the same colour on paper,
+        // but at night ink is nearly white and night is not, so a button
+        // hovering towards night flipped from white to black.
+        primary: "bg-ink text-ink-inverse hover:bg-ink-hover shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
         // A per-theme hover step rather than brightness: on the near-black "ink"
         // accent a 6% lift is invisible.
+        // `accent-on` rather than a hard-coded white, because the one accent
+        // that has to flip in the dark theme is precisely the near-black one,
+        // and white on it would then be white on white.
         accent:
-          "bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
+          "bg-[var(--accent)] text-[var(--accent-on)] hover:bg-[var(--accent-hover)] shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
         secondary:
           "bg-surface text-ink border border-line-strong hover:border-ink/25 hover:bg-canvas",
         ghost: "text-ink-muted hover:bg-ink/5 hover:text-ink",
         subtle: "bg-ink/5 text-ink hover:bg-ink/10",
-        inverse: "bg-surface text-ink hover:bg-white/90",
+        inverse: "bg-surface text-ink hover:bg-canvas",
         danger: "bg-danger text-white hover:brightness-110",
         link: "text-ink underline underline-offset-4 hover:text-ink-muted",
       },

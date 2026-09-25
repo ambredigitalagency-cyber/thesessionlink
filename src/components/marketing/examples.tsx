@@ -64,7 +64,7 @@ export function Examples() {
               >
                 <div className="flex items-center justify-between">
                   <span
-                    className="flex size-11 items-center justify-center rounded-full text-[14px] font-semibold text-white"
+                    className="flex size-11 items-center justify-center rounded-full text-[14px] font-semibold text-[var(--accent-on)]"
                     style={{ background: "var(--accent)" }}
                   >
                     {t(`items.${example.key}.initials` as "items.coach.initials")}

@@ -129,7 +129,7 @@ export function DemoProfile() {
                           `profiles.${niche}.offers.${index}.description` as "profiles.coach.offers.0.description",
                         )}
                       </p>
-                      <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[11.5px] font-medium text-[var(--accent-ink)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-white">
+                      <span className="mt-3 inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[11.5px] font-medium text-[var(--accent-ink)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-on)]">
                         {t(
                           `profiles.${niche}.offers.${index}.cta` as "profiles.coach.offers.0.cta",
                         )}
@@ -191,7 +191,7 @@ export function DemoProfile() {
                       className={cn(
                         "rounded-[var(--radius-xs)] border py-2 text-[12.5px] font-medium tabular-nums transition-all",
                         slot === time
-                          ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-on)]"
                           : "border-line-strong text-ink hover:border-ink/40",
                       )}
                     >
@@ -234,7 +234,7 @@ export function DemoProfile() {
                   initial={{ scale: 0.5 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 340, damping: 16 }}
-                  className="flex size-14 items-center justify-center rounded-full bg-[var(--accent)] text-white"
+                  className="flex size-14 items-center justify-center rounded-full bg-[var(--accent)] text-[var(--accent-on)]"
                 >
                   <Check className="size-7" />
                 </motion.span>

@@ -120,11 +120,14 @@ export function Toggle({
       disabled={disabled}
       aria-label={label}
       className={cn(
-        "bg-ink/15 data-[state=checked]:bg-ink relative h-6 w-11 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50",
+        "bg-ink/20 data-[state=checked]:bg-ink relative h-6 w-11 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
     >
-      <Switch.Thumb className="block size-5 translate-x-0.5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-[var(--ease-out-expo)] will-change-transform data-[state=checked]:translate-x-[22px]" />
+      {/* The knob is `ink-inverse`, not white: the track it rides on is built
+          from ink, so in the dark theme a white knob would disappear into a
+          near-white "on" track. Inverting with the track keeps the pair. */}
+      <Switch.Thumb className="bg-ink-inverse block size-5 translate-x-0.5 rounded-full shadow-sm transition-transform duration-200 ease-[var(--ease-out-expo)] will-change-transform data-[state=checked]:translate-x-[22px]" />
     </Switch.Root>
   );
 }

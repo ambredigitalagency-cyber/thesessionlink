@@ -67,7 +67,7 @@ export function AvatarUpload({
             <ImagePlus className="size-5" />
           </span>
         )}
-        <span className="bg-ink/45 absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+        <span className="bg-scrim/80 absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
           {busy ? <Loader2 className="size-4 animate-spin" /> : t("change")}
         </span>
       </button>
@@ -174,7 +174,7 @@ export function CoverUpload({
                 void deleteImage(value);
                 onChange(null);
               }}
-              className="bg-ink/70 hover:bg-ink absolute top-2.5 right-2.5 rounded-full p-1.5 text-white backdrop-blur transition-colors"
+              className="bg-scrim hover:bg-scrim/90 absolute top-2.5 right-2.5 rounded-full p-1.5 text-white backdrop-blur transition-colors"
               aria-label={t("remove")}
             >
               <X className="size-3.5" />
@@ -244,7 +244,7 @@ export function GalleryUpload({
               void deleteImage(url);
               onChange(value.filter((item) => item !== url));
             }}
-            className="bg-ink/70 absolute top-1 right-1 rounded-full p-1 text-white"
+            className="bg-scrim absolute top-1 right-1 rounded-full p-1 text-white"
             aria-label={t("remove")}
           >
             <X className="size-3" />
