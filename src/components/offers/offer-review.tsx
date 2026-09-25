@@ -11,14 +11,18 @@ import { Badge } from "@/components/ui/primitives";
 import { isFieldFilled } from "@/lib/offers/fields";
 import { ACTION_ICONS } from "@/lib/offers/meta";
 
-import type { OfferStep } from "./offer-form";
+import type { OfferPhase } from "./offer-form";
 
 export type ReviewDraft = Omit<PublicOffer, "id" | "main_photo_url">;
 
 /**
- * Last step of the offer builder: a short checklist with a way back to each
- * step, then the offer exactly as clients will open it — rendered with the
- * public components themselves, not a lookalike.
+ * Last question of the offer builder: a short checklist with a way back to
+ * each answer, then the offer exactly as clients will open it — rendered with
+ * the public components themselves, not a lookalike.
+ *
+ * The checklist points at questions rather than stages, so "the action type is
+ * wrong" is one tap back to the five cards instead of a walk through the title
+ * and the price on the way.
  */
 export function OfferReview({
   draft,
@@ -29,7 +33,7 @@ export function OfferReview({
   draft: ReviewDraft;
   currency: string;
   locale: string;
-  onEdit: (step: OfferStep) => void;
+  onEdit: (phase: OfferPhase) => void;
 }) {
   const t = useTranslations("offers.review");
   const tForm = useTranslations("offers.form");
@@ -44,20 +48,18 @@ export function OfferReview({
   const empty = draft.custom_fields.length - filled;
   const ActionIcon = ACTION_ICONS[draft.action_type];
 
-  const rows: { step: OfferStep; summary: string }[] = [
+  const rows: { phase: OfferPhase; summary: string }[] = [
+    { phase: "action", summary: tActions(`${draft.action_type}.label`) },
+    { phase: "basics", summary: draft.title },
     {
-      step: "essentials",
-      summary: `${draft.title} · ${tActions(`${draft.action_type}.label`)}`,
-    },
-    {
-      step: "details",
+      phase: "details",
       summary:
         draft.custom_fields.length === 0
           ? t("noFields")
           : t("fieldsSummary", { count: draft.custom_fields.length, filled }),
     },
     {
-      step: "photos",
+      phase: "photos",
       summary:
         draft.photos.length === 0 ? t("noPhotos") : t("photos", { count: draft.photos.length }),
     },
@@ -67,14 +69,16 @@ export function OfferReview({
     <div className="space-y-7">
       <ul className="divide-line border-line divide-y border-y">
         {rows.map((row) => (
-          <li key={row.step} className="flex items-center justify-between gap-4 py-3">
+          <li key={row.phase} className="flex items-center justify-between gap-4 py-3">
             <div className="min-w-0">
-              <p className="text-ink text-[13.5px] font-medium">{tForm(`steps.${row.step}`)}</p>
+              <p className="text-ink text-[13.5px] font-medium">
+                {tForm(`phases.${row.phase}.short`)}
+              </p>
               <p className="text-ink-muted truncate text-[13px]">{row.summary}</p>
             </div>
             <button
               type="button"
-              onClick={() => onEdit(row.step)}
+              onClick={() => onEdit(row.phase)}
               className="text-ink-muted hover:text-ink hover:bg-ink/5 inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors"
             >
               <Pencil className="size-3.5" />

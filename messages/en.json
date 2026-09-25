@@ -191,6 +191,7 @@
     "search": "Search",
     "share": "Share",
     "signup": "Get started",
+    "skip": "Skip",
     "today": "Today",
     "viewPage": "View page",
     "yes": "Yes"
@@ -1117,6 +1118,7 @@
         "description": "For a property, a seat, an item. You keep control of the schedule.",
         "label": "Reserve without a time"
       },
+      "groupLabel": "What happens when a client clicks",
       "quote_request": {
         "description": "Clients describe their need, you come back with a price.",
         "label": "Ask for a quote"
@@ -1153,12 +1155,12 @@
       "dateModeNone": "No date",
       "dateModeOptional": "Optional date",
       "dateModeRequired": "Required date",
-      "days": "{count} days",
+      "days": "{count, plural, one {# day} other {# days}}",
       "duration": "Duration",
       "durationHint": "How long one slot lasts.",
       "horizon": "Bookable up to",
       "horizonHint": "How far ahead the calendar opens.",
-      "hours": "{count} hours",
+      "hours": "{count, plural, one {# hour} other {# hours}}",
       "interval": "Slot starts every",
       "intervalDefault": "Same as duration",
       "intervalHint": "Leave on default to start a slot every duration.",
@@ -1211,6 +1213,9 @@
       "pickType": "Which kind of field?",
       "remove": "Remove {label}",
       "removeOption": "Remove choice {label}",
+      "textFormat": "Format",
+      "textLong": "Paragraph",
+      "textShort": "One line",
       "timeDuration": "Duration",
       "timeEnd": "End",
       "timeMode": "Format",
@@ -1270,6 +1275,38 @@
       "description": "Description",
       "descriptionHint": "What the client gets. Two or three sentences is plenty.",
       "descriptionPlaceholder": "A one-to-one session built around your goals…",
+      "phases": {
+        "action": {
+          "title": "What happens when a client clicks?",
+          "hint": "This decides the whole flow on your public page. Pick the one that matches how you work.",
+          "short": "Client action"
+        },
+        "basics": {
+          "title": "What are you offering?",
+          "hint": "A title your clients will recognise, and what it costs.",
+          "short": "Essentials"
+        },
+        "settings": {
+          "title": "How this action works",
+          "hint": "Settings tied to the action you chose — not to your profession.",
+          "short": "Settings"
+        },
+        "details": {
+          "title": "Anything else worth knowing?",
+          "hint": "Only add what helps your clients choose. Nothing is required.",
+          "short": "Details"
+        },
+        "photos": {
+          "title": "Show what it looks like",
+          "hint": "The first photo is the one shown on your page. Drag to reorder.",
+          "short": "Photos"
+        },
+        "review": {
+          "title": "Here is your offer",
+          "hint": "Check it the way your clients will see it.",
+          "short": "Review"
+        }
+      },
       "photos": "Photos",
       "photosHint": "The first photo is the one shown on your page. Drag to reorder.",
       "price": "Price",
@@ -1336,6 +1373,20 @@
       "nameHint": "Your name or your brand, as clients know you.",
       "nameLabel": "Profile name",
       "namePlaceholder": "Ana Torres Coaching",
+      "phases": {
+        "category": {
+          "title": "What do you do?",
+          "hint": "Pick the closest one — it only pre-fills suggestions, and you can change it later."
+        },
+        "name": {
+          "title": "Under which name?",
+          "hint": "Your name or your brand, as clients know you."
+        },
+        "link": {
+          "title": "And your link?",
+          "hint": "This is the address you will share. Letters, numbers and dashes."
+        }
+      },
       "previewBody": "Based on your activity, we'll suggest fields like {fields} — keep what fits, ignore the rest.",
       "previewTitle": "Next step will suggest",
       "slugFree": "This link is available.",

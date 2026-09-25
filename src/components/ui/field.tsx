@@ -114,27 +114,38 @@ export function NativeSelect({ className, children, ...props }: ComponentProps<"
   );
 }
 
-/** Input with a fixed prefix, e.g. thesessionlink.com/ */
+/**
+ * Input with a fixed prefix, e.g. thesessionlink.com/
+ *
+ * `size="lg"` is for the moments where the field *is* the screen — picking
+ * your public link during onboarding — rather than one row in a form.
+ */
 export function PrefixedInput({
   prefix,
+  size = "md",
   className,
   ...props
-}: ComponentProps<"input"> & { prefix: string }) {
+}: Omit<ComponentProps<"input">, "size"> & { prefix: string; size?: "md" | "lg" }) {
   const field = useFieldContext();
+  const large = size === "lg";
 
   return (
     <div
       className={cn(
-        "border-line-strong bg-surface focus-within:border-ink flex h-11 items-center rounded-[var(--radius-sm)] border pl-3.5 transition-colors",
+        "border-line-strong bg-surface focus-within:border-ink flex items-center border transition-colors",
+        large
+          ? "h-14 rounded-[var(--radius-md)] pl-4 text-[18px]"
+          : "h-11 rounded-[var(--radius-sm)] pl-3.5 text-[15px]",
         field?.invalid && "border-danger",
       )}
     >
-      <span className="text-ink-subtle shrink-0 text-[15px]">{prefix}</span>
+      <span className="text-ink-subtle shrink-0 text-[1em]">{prefix}</span>
       <input
         id={props.id ?? field?.id}
         aria-invalid={field?.invalid || undefined}
         className={cn(
-          "text-ink placeholder:text-ink-subtle h-full w-full min-w-0 bg-transparent pr-3.5 text-[15px] focus:outline-none",
+          "text-ink placeholder:text-ink-subtle h-full w-full min-w-0 bg-transparent pr-3.5 text-[1em] focus:outline-none",
+          large ? "pr-10" : "",
           className,
         )}
         {...props}

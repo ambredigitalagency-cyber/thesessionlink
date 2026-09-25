@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
+import { ChoiceChips } from "@/components/ui/choice-cards";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import { Toggle, ToggleRow } from "@/components/ui/primitives";
 import { minutesToLabel } from "@/lib/offers/meta";
 import type {
@@ -94,6 +95,37 @@ export function ActionConfigFields({
   }
 }
 
+/**
+ * A closed set of numbers - a duration, a notice, a horizon - as pills rather
+ * than a menu.
+ *
+ * Every value here is one of a handful the product already decided on, so the
+ * dropdown was hiding ten known answers behind a tap and a scroll. Laid out
+ * they are one tap, and the shape of the scale (15 minutes to 4 hours) is
+ * readable at a glance. `null` is a value like any other: it is what "same as
+ * the duration" means for the slot interval.
+ */
+function NumberChoice({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (value: number | null) => void;
+  options: readonly { value: number | null; label: string }[];
+}) {
+  return (
+    <ChoiceChips
+      label={label}
+      value={String(value)}
+      onChange={(next) => onChange(next === "null" ? null : Number(next))}
+      options={options.map((option) => ({ value: String(option.value), label: option.label }))}
+    />
+  );
+}
+
 function AskPhoneField({
   value,
   onChange,
@@ -105,14 +137,16 @@ function AskPhoneField({
 
   return (
     <Field label={t("askPhone")}>
-      <NativeSelect
+      <ChoiceChips
+        label={t("askPhone")}
         value={value}
-        onChange={(event) => onChange(event.target.value as "hidden" | "optional" | "required")}
-      >
-        <option value="hidden">{t("askPhoneHidden")}</option>
-        <option value="optional">{t("askPhoneOptional")}</option>
-        <option value="required">{t("askPhoneRequired")}</option>
-      </NativeSelect>
+        onChange={onChange}
+        options={[
+          { value: "hidden", label: t("askPhoneHidden") },
+          { value: "optional", label: t("askPhoneOptional") },
+          { value: "required", label: t("askPhoneRequired") },
+        ]}
+      />
     </Field>
   );
 }
@@ -132,77 +166,65 @@ function CalendarFields({
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="space-y-5">
         <Field label={t("duration")} hint={t("durationHint")}>
-          <NativeSelect
-            value={String(config.duration_minutes)}
-            onChange={(event) => patch({ duration_minutes: Number(event.target.value) })}
-          >
-            {DURATIONS.map((minutes) => (
-              <option key={minutes} value={minutes}>
-                {minutesToLabel(minutes, locale)}
-              </option>
-            ))}
-          </NativeSelect>
+          <NumberChoice
+            label={t("duration")}
+            value={config.duration_minutes}
+            onChange={(duration_minutes) => patch({ duration_minutes: duration_minutes ?? 60 })}
+            options={DURATIONS.map((minutes) => ({
+              value: minutes,
+              label: minutesToLabel(minutes, locale),
+            }))}
+          />
         </Field>
 
         <Field label={t("buffer")} hint={t("bufferHint")}>
-          <NativeSelect
-            value={String(config.buffer_minutes)}
-            onChange={(event) => patch({ buffer_minutes: Number(event.target.value) })}
-          >
-            {BUFFERS.map((minutes) => (
-              <option key={minutes} value={minutes}>
-                {minutes === 0 ? t("noBuffer") : minutesToLabel(minutes, locale)}
-              </option>
-            ))}
-          </NativeSelect>
+          <NumberChoice
+            label={t("buffer")}
+            value={config.buffer_minutes}
+            onChange={(buffer_minutes) => patch({ buffer_minutes: buffer_minutes ?? 0 })}
+            options={BUFFERS.map((minutes) => ({
+              value: minutes,
+              label: minutes === 0 ? t("noBuffer") : minutesToLabel(minutes, locale),
+            }))}
+          />
         </Field>
 
         <Field label={t("interval")} hint={t("intervalHint")}>
-          <NativeSelect
-            value={
-              config.slot_interval_minutes === null ? "" : String(config.slot_interval_minutes)
-            }
-            onChange={(event) =>
-              patch({
-                slot_interval_minutes: event.target.value ? Number(event.target.value) : null,
-              })
-            }
-          >
-            <option value="">{t("intervalDefault")}</option>
-            {[15, 20, 30, 45, 60].map((minutes) => (
-              <option key={minutes} value={minutes}>
-                {minutesToLabel(minutes, locale)}
-              </option>
-            ))}
-          </NativeSelect>
+          <NumberChoice
+            label={t("interval")}
+            value={config.slot_interval_minutes}
+            onChange={(slot_interval_minutes) => patch({ slot_interval_minutes })}
+            options={[
+              { value: null, label: t("intervalDefault") },
+              ...[15, 20, 30, 45, 60].map((minutes) => ({
+                value: minutes,
+                label: minutesToLabel(minutes, locale),
+              })),
+            ]}
+          />
         </Field>
 
         <Field label={t("notice")} hint={t("noticeHint")}>
-          <NativeSelect
-            value={String(config.min_notice_hours)}
-            onChange={(event) => patch({ min_notice_hours: Number(event.target.value) })}
-          >
-            {NOTICES.map((hours) => (
-              <option key={hours} value={hours}>
-                {hours === 0 ? t("noNotice") : t("hours", { count: hours })}
-              </option>
-            ))}
-          </NativeSelect>
+          <NumberChoice
+            label={t("notice")}
+            value={config.min_notice_hours}
+            onChange={(min_notice_hours) => patch({ min_notice_hours: min_notice_hours ?? 0 })}
+            options={NOTICES.map((hours) => ({
+              value: hours,
+              label: hours === 0 ? t("noNotice") : t("hours", { count: hours }),
+            }))}
+          />
         </Field>
 
         <Field label={t("horizon")} hint={t("horizonHint")}>
-          <NativeSelect
-            value={String(config.max_days_ahead)}
-            onChange={(event) => patch({ max_days_ahead: Number(event.target.value) })}
-          >
-            {HORIZONS.map((days) => (
-              <option key={days} value={days}>
-                {t("days", { count: days })}
-              </option>
-            ))}
-          </NativeSelect>
+          <NumberChoice
+            label={t("horizon")}
+            value={config.max_days_ahead}
+            onChange={(max_days_ahead) => patch({ max_days_ahead: max_days_ahead ?? 60 })}
+            options={HORIZONS.map((days) => ({ value: days, label: t("days", { count: days }) }))}
+          />
         </Field>
 
         <AskPhoneField value={config.ask_phone} onChange={(ask_phone) => patch({ ask_phone })} />
@@ -253,16 +275,16 @@ function ReservationFields({
         </Field>
 
         <Field label={t("dateMode")} hint={t("dateModeHint")}>
-          <NativeSelect
+          <ChoiceChips
+            label={t("dateMode")}
             value={config.date_mode}
-            onChange={(event) =>
-              patch({ date_mode: event.target.value as DirectReservationConfig["date_mode"] })
-            }
-          >
-            <option value="none">{t("dateModeNone")}</option>
-            <option value="optional">{t("dateModeOptional")}</option>
-            <option value="required">{t("dateModeRequired")}</option>
-          </NativeSelect>
+            onChange={(date_mode) => patch({ date_mode })}
+            options={[
+              { value: "none", label: t("dateModeNone") },
+              { value: "optional", label: t("dateModeOptional") },
+              { value: "required", label: t("dateModeRequired") },
+            ]}
+          />
         </Field>
 
         <Field label={t("maxQuantity")} hint={t("maxQuantityHint")}>

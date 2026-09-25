@@ -1,12 +1,14 @@
-import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { FirstOfferForm } from "@/components/onboarding/first-offer-form";
-import { OnboardingSteps } from "@/components/onboarding/steps";
 import { getCurrentProfile, requireUser } from "@/lib/auth";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+/**
+ * Like the profile step, the page is only the data: the builder carries the
+ * progress bar and the heading because both change with every question.
+ */
 export default async function OnboardingOfferPage() {
   await requireUser();
   const profile = await getCurrentProfile();
@@ -23,25 +25,14 @@ export default async function OnboardingOfferPage() {
     : { data: null };
 
   const config = parseCategoryConfig(category?.config);
-  const t = await getTranslations("onboarding.offer");
 
   return (
-    <>
-      <OnboardingSteps current={3} />
-      <h1 className="text-ink text-[30px] leading-[1.1] font-semibold tracking-[-0.035em] sm:text-[34px]">
-        {t("title")}
-      </h1>
-      <p className="text-ink-muted mt-2.5 max-w-lg text-[16px] leading-relaxed">{t("subtitle")}</p>
-
-      <div className="surface-card mt-9 p-5 sm:p-7">
-        <FirstOfferForm
-          categoryFields={config.suggested_fields}
-          suggestedActionType={config.default_action_type}
-          currency={profile.currency}
-          locale={profile.locale}
-          profileWhatsapp={profile.whatsapp_number}
-        />
-      </div>
-    </>
+    <FirstOfferForm
+      categoryFields={config.suggested_fields}
+      suggestedActionType={config.default_action_type}
+      currency={profile.currency}
+      locale={profile.locale}
+      profileWhatsapp={profile.whatsapp_number}
+    />
   );
 }

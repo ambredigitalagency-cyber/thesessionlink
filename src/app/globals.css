@@ -149,6 +149,13 @@
   }
 }
 
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
 @keyframes glyph-pulse {
   0%,
   100% {
@@ -341,6 +348,29 @@ body {
 
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /*
+   * The entrance used by the question flow and the choice cards: a short fade
+   * upwards, staggered through --rise-delay.
+   *
+   * Written in CSS rather than animated from JavaScript on purpose. Motion
+   * renders an element's `initial` values into the HTML, so an `initial` that
+   * depends on prefers-reduced-motion means the server sends one set of styles
+   * and the browser hydrates another — a genuine hydration mismatch, and one
+   * that only ever shows up for the people who asked for less movement. A
+   * media query cannot mismatch: the class is the same in both renders and the
+   * browser simply declines to run the animation.
+   */
+  .rise-in {
+    --rise-delay: 0s;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .rise-in {
+      animation: rise-in 0.42s var(--ease-out-expo) both;
+      animation-delay: var(--rise-delay);
+    }
   }
 
   /*

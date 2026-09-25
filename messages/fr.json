@@ -191,6 +191,7 @@
     "search": "Rechercher",
     "share": "Partager",
     "signup": "Commencer",
+    "skip": "Passer",
     "today": "Aujourd'hui",
     "viewPage": "Voir la page",
     "yes": "Oui"
@@ -1117,6 +1118,7 @@
         "description": "Pour un bien, une place, un objet. Vous gardez la main sur le planning.",
         "label": "Réserver sans horaire"
       },
+      "groupLabel": "Ce qui se passe quand un client clique",
       "quote_request": {
         "description": "Le client décrit son besoin, vous revenez avec un prix.",
         "label": "Demander un devis"
@@ -1153,12 +1155,12 @@
       "dateModeNone": "Sans date",
       "dateModeOptional": "Date facultative",
       "dateModeRequired": "Date obligatoire",
-      "days": "{count} jours",
+      "days": "{count, plural, one {# jour} other {# jours}}",
       "duration": "Durée",
       "durationHint": "Durée d'un créneau.",
       "horizon": "Réservable jusqu'à",
       "horizonHint": "Jusqu'où l'agenda s'ouvre.",
-      "hours": "{count} heures",
+      "hours": "{count, plural, one {# heure} other {# heures}}",
       "interval": "Un créneau toutes les",
       "intervalDefault": "Comme la durée",
       "intervalHint": "Laissez par défaut pour enchaîner les créneaux.",
@@ -1211,6 +1213,9 @@
       "pickType": "Quel type de champ ?",
       "remove": "Supprimer {label}",
       "removeOption": "Retirer le choix {label}",
+      "textFormat": "Format",
+      "textLong": "Paragraphe",
+      "textShort": "Une ligne",
       "timeDuration": "Durée",
       "timeEnd": "Fin",
       "timeMode": "Format",
@@ -1270,6 +1275,38 @@
       "description": "Description",
       "descriptionHint": "Ce que le client obtient. Deux ou trois phrases suffisent.",
       "descriptionPlaceholder": "Une séance individuelle construite autour de vos objectifs…",
+      "phases": {
+        "action": {
+          "title": "Que se passe-t-il quand un client clique ?",
+          "hint": "Ce choix décide de tout le parcours sur votre page. Prenez celui qui correspond à votre façon de travailler.",
+          "short": "Action client"
+        },
+        "basics": {
+          "title": "Qu'est-ce que vous proposez ?",
+          "hint": "Un titre que vos clients reconnaîtront, et son prix.",
+          "short": "L'essentiel"
+        },
+        "settings": {
+          "title": "Comment cette action fonctionne",
+          "hint": "Des réglages liés à l'action choisie — jamais à votre métier.",
+          "short": "Réglages"
+        },
+        "details": {
+          "title": "Autre chose à savoir ?",
+          "hint": "N'ajoutez que ce qui aide vos clients à choisir. Rien n'est obligatoire.",
+          "short": "Détails"
+        },
+        "photos": {
+          "title": "Montrez à quoi ça ressemble",
+          "hint": "La première photo est celle affichée sur votre page. Glissez pour réordonner.",
+          "short": "Photos"
+        },
+        "review": {
+          "title": "Voici votre offre",
+          "hint": "Vérifiez-la comme vos clients la verront.",
+          "short": "Récapitulatif"
+        }
+      },
       "photos": "Photos",
       "photosHint": "La première photo est celle qui s'affiche sur ta page. Glisse-les pour les réordonner.",
       "price": "Prix",
@@ -1336,6 +1373,20 @@
       "nameHint": "Votre nom ou votre marque, tel que vos clients vous connaissent.",
       "nameLabel": "Nom du profil",
       "namePlaceholder": "Ana Torres Coaching",
+      "phases": {
+        "category": {
+          "title": "Quelle est votre activité ?",
+          "hint": "Choisissez la plus proche — elle ne sert qu'à pré-remplir des suggestions, modifiables ensuite."
+        },
+        "name": {
+          "title": "Sous quel nom ?",
+          "hint": "Votre nom ou votre marque, tel que vos clients vous connaissent."
+        },
+        "link": {
+          "title": "Et votre lien ?",
+          "hint": "C'est l'adresse que vous partagerez. Lettres, chiffres et tirets."
+        }
+      },
       "previewBody": "Selon votre activité, nous proposerons des champs comme {fields} — gardez ce qui colle, ignorez le reste.",
       "previewTitle": "À l'étape suivante",
       "slugFree": "Ce lien est disponible.",

@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   ArrowDown,
   ArrowUp,
+  Check,
   CircleDot,
   Clock,
   Hash,
@@ -20,8 +21,8 @@ import { useId, useState } from "react";
 
 import { GalleryUpload } from "@/components/media/image-upload";
 import { Button } from "@/components/ui/button";
-import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
-import { Toggle } from "@/components/ui/primitives";
+import { ChoiceChips, ChoiceGroup, chipClass } from "@/components/ui/choice-cards";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import {
   FIELD_LIMITS,
   FIELD_TYPES,
@@ -35,7 +36,6 @@ import {
   type TimeRange,
 } from "@/lib/offers/fields";
 import { localized, type ActionType, type CategoryField } from "@/lib/offers/schema";
-import { cn } from "@/lib/utils";
 
 export const FIELD_ICONS: Record<FieldType, LucideIcon> = {
   text: Type,
@@ -46,15 +46,6 @@ export const FIELD_ICONS: Record<FieldType, LucideIcon> = {
   time: Clock,
   images: Images,
 };
-
-/** Same chip as the booking filters: a pressed state, no new style. */
-const chipClass = (active: boolean) =>
-  cn(
-    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors",
-    active
-      ? "border-ink bg-ink text-ink-inverse"
-      : "border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink",
-  );
 
 const iconButtonClass =
   "text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors disabled:pointer-events-none disabled:opacity-30";
@@ -140,9 +131,12 @@ export function CustomFieldsEditor({
       )}
 
       {picking ? (
+        // Seven kinds of field, laid out as seven pictograms. Nothing is
+        // selected when the question opens, so a tap is the answer *and* the
+        // move on: the field is added and the panel closes in one go.
         <div className="border-line-strong rounded-[var(--radius-md)] border p-4">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-ink text-[13.5px] font-medium">{t("pickType")}</p>
+            <p className="text-ink text-[14px] font-medium">{t("pickType")}</p>
             <button
               type="button"
               onClick={() => setPicking(false)}
@@ -152,31 +146,23 @@ export function CustomFieldsEditor({
               <X className="size-4" />
             </button>
           </div>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {FIELD_TYPES.map((type) => {
+          <ChoiceGroup
+            name="field-type"
+            label={t("pickType")}
+            className="mt-3"
+            columns={2}
+            value={null}
+            onChange={(type) => add(createField(type))}
+            options={FIELD_TYPES.map((type) => {
               const Icon = FIELD_ICONS[type];
-              return (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => add(createField(type))}
-                  className="border-line bg-surface hover:border-ink/25 flex items-start gap-3 rounded-[var(--radius-sm)] border p-3 text-left transition-colors"
-                >
-                  <span className="bg-ink/5 text-ink-muted mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
-                    <Icon className="size-4" />
-                  </span>
-                  <span>
-                    <span className="text-ink block text-[13.5px] font-medium">
-                      {t(`types.${type}.name`)}
-                    </span>
-                    <span className="text-ink-muted block text-[12.5px] leading-snug">
-                      {t(`types.${type}.hint`)}
-                    </span>
-                  </span>
-                </button>
-              );
+              return {
+                value: type,
+                title: t(`types.${type}.name`),
+                description: t(`types.${type}.hint`),
+                visual: <Icon className="size-4" aria-hidden />,
+              };
             })}
-          </div>
+          />
         </div>
       ) : (
         <Button type="button" variant="secondary" onClick={() => setPicking(true)} disabled={full}>
@@ -324,20 +310,26 @@ function DefinitionControls({
 
   switch (field.type) {
     case "text":
+      // Two named shapes rather than a switch labelled "long text": "short"
+      // and "long" are both answers, where a switch makes one of them the
+      // absence of the other.
       return (
-        <label className="flex items-center justify-between gap-4">
-          <span>
-            <span className="text-ink block text-[13.5px] font-medium">{t("multiline")}</span>
-            <span className="text-ink-muted block text-[12.5px]">{t("multilineHint")}</span>
-          </span>
-          <Toggle
-            checked={field.definition.multiline}
-            onCheckedChange={(multiline) =>
-              onChange({ ...field, definition: { ...field.definition, multiline } })
+        <Field label={t("textFormat")} hint={t("multilineHint")}>
+          <ChoiceChips
+            label={t("textFormat")}
+            value={field.definition.multiline ? "long" : "short"}
+            onChange={(mode) =>
+              onChange({
+                ...field,
+                definition: { ...field.definition, multiline: mode === "long" },
+              })
             }
-            label={t("multiline")}
+            options={[
+              { value: "short", label: t("textShort") },
+              { value: "long", label: t("textLong") },
+            ]}
           />
-        </label>
+        </Field>
       );
 
     case "number":
@@ -365,23 +357,17 @@ function DefinitionControls({
     case "time":
       return (
         <Field label={t("timeMode")}>
-          <NativeSelect
+          <ChoiceChips
+            label={t("timeMode")}
             value={field.definition.mode}
-            onChange={(event) =>
-              onChange({
-                ...field,
-                definition: {
-                  ...field.definition,
-                  mode: event.target.value as "range" | "duration",
-                },
-                value: null,
-              })
+            onChange={(mode) =>
+              onChange({ ...field, definition: { ...field.definition, mode }, value: null })
             }
-            className="sm:max-w-60"
-          >
-            <option value="range">{t("timeRange")}</option>
-            <option value="duration">{t("timeDuration")}</option>
-          </NativeSelect>
+            options={[
+              { value: "range", label: t("timeRange") },
+              { value: "duration", label: t("timeDuration") },
+            ]}
+          />
         </Field>
       );
 
@@ -542,20 +528,20 @@ function ValueControl({
 
     case "select": {
       const options = field.definition.options.filter((option) => option.label.trim());
+      if (options.length === 0) {
+        return <p className="text-ink-subtle text-[13px]">{t("optionsFirst")}</p>;
+      }
+      // The pro just wrote these choices a few centimetres above; asking them
+      // to reopen a menu to find one of them again is the wrong shape.
       return (
-        <NativeSelect
-          value={field.value ?? ""}
-          onChange={(event) => onChange({ ...field, value: event.target.value || null })}
-          disabled={options.length === 0}
-          className="sm:max-w-80"
-        >
-          <option value="">{t("choose")}</option>
-          {options.map((option) => (
-            <option key={option.id} value={option.id}>
-              {option.label}
-            </option>
-          ))}
-        </NativeSelect>
+        <ChoiceChips
+          label={field.definition.label || t("types.select.name")}
+          value={field.value}
+          onChange={(id) => onChange({ ...field, value: id })}
+          onClear={() => onChange({ ...field, value: null })}
+          clearLabel={t("clearAnswer")}
+          options={options.map((option) => ({ value: option.id, label: option.label }))}
+        />
       );
     }
 
@@ -597,36 +583,17 @@ function ValueControl({
       // Two explicit answers rather than a switch: a switch has no "not
       // answered yet" position, and an unanswered field must stay hidden.
       return (
-        <div className="flex flex-wrap items-center gap-2">
-          <div
-            role="radiogroup"
-            aria-label={field.definition.label || t("types.boolean.name")}
-            className="flex gap-2"
-          >
-            {([true, false] as const).map((answer) => (
-              <button
-                key={String(answer)}
-                type="button"
-                role="radio"
-                aria-checked={field.value === answer}
-                className={chipClass(field.value === answer)}
-                onClick={() => onChange({ ...field, value: answer })}
-              >
-                {answer ? tCommon("yes") : tCommon("no")}
-              </button>
-            ))}
-          </div>
-          {field.value !== null ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onChange({ ...field, value: null })}
-            >
-              {t("clearAnswer")}
-            </Button>
-          ) : null}
-        </div>
+        <ChoiceChips
+          label={field.definition.label || t("types.boolean.name")}
+          value={field.value === null ? null : field.value ? "yes" : "no"}
+          onChange={(answer) => onChange({ ...field, value: answer === "yes" })}
+          onClear={() => onChange({ ...field, value: null })}
+          clearLabel={t("clearAnswer")}
+          options={[
+            { value: "yes", label: tCommon("yes"), icon: <Check className="size-3.5" /> },
+            { value: "no", label: tCommon("no"), icon: <X className="size-3.5" /> },
+          ]}
+        />
       );
 
     case "time":

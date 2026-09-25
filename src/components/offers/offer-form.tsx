@@ -1,16 +1,18 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState, useTransition, type ReactNode } from "react";
-import { toast } from "sonner";
 
 import { createOffer, updateOffer } from "@/actions/offers";
 import { OfferPhotosUpload } from "@/components/media/offer-photos-upload";
 import { Button } from "@/components/ui/button";
-import { Field, Input, NativeSelect, Textarea } from "@/components/ui/field";
+import { ChoiceChips } from "@/components/ui/choice-cards";
+import { Field, Input, Textarea } from "@/components/ui/field";
+import { PhaseField, PhaseQuestion, PhaseSwitch } from "@/components/ui/phase";
 import { ToggleRow } from "@/components/ui/primitives";
+import { StepProgress } from "@/components/ui/step-progress";
+import { notify } from "@/lib/notify";
 import { offerFieldsSchema, type OfferField } from "@/lib/offers/fields";
 import {
   defaultActionConfig,
@@ -19,7 +21,6 @@ import {
   type AnyActionConfig,
   type CategoryField,
 } from "@/lib/offers/schema";
-import { cn } from "@/lib/utils";
 import { fieldErrorsFrom } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
@@ -40,15 +41,63 @@ export type OfferInitialValues = {
   is_active: boolean;
 };
 
+/**
+ * The four stages of the journey, which is what the progress bar names.
+ * Unchanged: they are the shape of an offer, and the single-page editor still
+ * draws one section per stage.
+ */
 const STEPS = ["essentials", "details", "photos", "review"] as const;
 export type OfferStep = (typeof STEPS)[number];
+
+/**
+ * The questions the builder actually asks, in order.
+ *
+ * "Essentials" used to be one screen carrying the title, the description, the
+ * price, the choice between five action types and every setting belonging to
+ * whichever one was picked — thirty-odd controls, most of them irrelevant
+ * until the action type was decided. It is now three questions: what happens
+ * when someone clicks, what you are selling, and how that action behaves. The
+ * first one comes first because it decides what the other two even mean.
+ *
+ * The progress bar keeps naming four stages — six labels do not fit a phone
+ * and the journey really is four — and moves a third of a stage per answer
+ * instead of standing still for three screens. Same bar, same component, finer
+ * resolution.
+ */
+const PHASES = ["action", "basics", "settings", "details", "photos", "review"] as const;
+export type OfferPhase = (typeof PHASES)[number];
+
+const PHASE_STEP: Record<OfferPhase, OfferStep> = {
+  action: "essentials",
+  basics: "essentials",
+  settings: "essentials",
+  details: "details",
+  photos: "photos",
+  review: "review",
+};
+
+const PRICE_TYPES = ["fixed", "from", "free", "on_request"] as const;
+type PriceType = (typeof PRICE_TYPES)[number];
+
+/** Which question owns an error key, so a rejected save lands on it. */
+function phaseForError(key: string): OfferPhase {
+  if (key.startsWith("custom_fields")) return "details";
+  if (key.startsWith("photos")) return "photos";
+  if (key.startsWith("action_config")) return "settings";
+  return "basics";
+}
+
+/** The first question of a stage, for the jumps the progress bar allows. */
+function firstPhaseOf(step: OfferStep): OfferPhase {
+  return PHASES.find((phase) => PHASE_STEP[phase] === step) ?? "action";
+}
 
 type Props = {
   mode: "create" | "edit";
   /**
-   * Creating walks through the steps and ends on a review; editing an offer
-   * that already exists shows every section on one page, so a small change is
-   * one scroll and one save.
+   * Creating walks through the questions and ends on a review; editing an
+   * offer that already exists shows every section on one page, so a small
+   * change is one scroll and one save.
    */
   layout: "wizard" | "sections";
   categoryFields: CategoryField[];
@@ -58,18 +107,21 @@ type Props = {
   profileWhatsapp?: string | null;
   /** True when the coach has a gateway connected and cleared to charge. */
   gatewayReady?: boolean;
+  /**
+   * Draws the progress bar, given how far through the questions we are (0-1).
+   *
+   * Onboarding uses it to feed its own four-step bar instead: the wizard is
+   * step 3 of a longer journey there, and two progress bars stacked on one
+   * screen tell the coach less than one bar does, not more.
+   */
+  progress?: (ratio: number) => ReactNode;
+  /** 1 when the wizard owns the page, 2 when it sits under a page title. */
+  headingLevel?: 1 | 2;
   initial?: OfferInitialValues;
   submitLabel?: string;
   onSaved?: (offerId: string) => void;
   onCancel?: () => void;
 };
-
-/** Which step owns an error key, so a rejected save lands on it. */
-function stepForError(key: string): OfferStep {
-  if (key.startsWith("custom_fields")) return "details";
-  if (key.startsWith("photos")) return "photos";
-  return "essentials";
-}
 
 export function OfferForm({
   mode,
@@ -80,6 +132,8 @@ export function OfferForm({
   locale,
   profileWhatsapp,
   gatewayReady = false,
+  progress,
+  headingLevel = 2,
   initial,
   submitLabel,
   onSaved,
@@ -91,11 +145,11 @@ export function OfferForm({
   const startingActionType =
     initial?.action_type ?? suggestedActionType ?? ("calendar_booking" as ActionType);
 
-  const [step, setStep] = useState<OfferStep>("essentials");
+  const [phase, setPhase] = useState<OfferPhase>("action");
   const [direction, setDirection] = useState<1 | -1>(1);
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [priceType, setPriceType] = useState(initial?.price_type ?? "fixed");
+  const [priceType, setPriceType] = useState<PriceType>(initial?.price_type ?? "fixed");
   const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : "");
   const [photos, setPhotos] = useState<string[]>(initial?.photos ?? []);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
@@ -139,7 +193,7 @@ export function OfferForm({
     return found;
   }
 
-  /** The same rules the server applies, run before leaving the step. */
+  /** The same rules the server applies, run before leaving the question. */
   function detailsErrors(list = fields): Record<string, string> {
     const result = offerFieldsSchema.safeParse(list);
     if (result.success) return {};
@@ -161,6 +215,19 @@ export function OfferForm({
   }
 
   /**
+   * Once a question has been refused, re-check it on every keystroke so a
+   * fixed field clears its message there and then. Waiting for the next
+   * "Continue" to say "that is fine now" was tolerable in a long form; on a
+   * screen holding one question it reads as the answer still being wrong.
+   */
+  function clearEssentialError(key: "title" | "price") {
+    setErrors((current) => {
+      if (!current[key]) return current;
+      return Object.fromEntries(Object.entries(current).filter(([name]) => name !== key));
+    });
+  }
+
+  /**
    * Once the details show errors, re-check them on every change so a fixed
    * field clears its message right away instead of on the next "Continue".
    */
@@ -176,10 +243,10 @@ export function OfferForm({
     });
   }
 
-  function goTo(target: OfferStep) {
-    setDirection(STEPS.indexOf(target) >= STEPS.indexOf(step) ? 1 : -1);
-    setStep(target);
-    // Move focus with the content, so keyboard and screen reader users follow.
+  function goTo(target: OfferPhase) {
+    setDirection(PHASES.indexOf(target) >= PHASES.indexOf(phase) ? 1 : -1);
+    setPhase(target);
+    // Move focus with the question, so keyboard and screen reader users follow.
     requestAnimationFrame(() => {
       headingRef.current?.focus({ preventScroll: true });
       headingRef.current?.scrollIntoView({ block: "nearest" });
@@ -187,16 +254,16 @@ export function OfferForm({
   }
 
   function next() {
-    if (step === "essentials" && Object.keys(validate("essentials")).length > 0) return;
-    if (step === "details" && Object.keys(validate("details")).length > 0) return;
-    goTo(STEPS[STEPS.indexOf(step) + 1]);
+    if (phase === "basics" && Object.keys(validate("essentials")).length > 0) return;
+    if (phase === "details" && Object.keys(validate("details")).length > 0) return;
+    goTo(PHASES[PHASES.indexOf(phase) + 1]);
   }
 
   function submit() {
     const firstError = Object.keys(validate("all"))[0];
     if (firstError) {
-      if (layout === "wizard") goTo(stepForError(firstError));
-      toast.error(tError("form_has_errors"));
+      if (layout === "wizard") goTo(phaseForError(firstError));
+      notify.error(tError("form_has_errors"));
       return;
     }
 
@@ -220,7 +287,7 @@ export function OfferForm({
           : await createOffer(payload);
 
       if (result.ok) {
-        toast.success(t(mode === "edit" ? "updated" : "created"));
+        notify.success(t(mode === "edit" ? "updated" : "created"));
         setErrors({});
         onSaved?.(
           mode === "edit" && initial
@@ -231,47 +298,79 @@ export function OfferForm({
         const serverErrors = result.fieldErrors ?? {};
         setErrors(serverErrors);
         const first = Object.keys(serverErrors)[0];
-        if (first && layout === "wizard") goTo(stepForError(first));
-        toast.error(tError(result.error as "unexpected"));
+        if (first && layout === "wizard") goTo(phaseForError(first));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }
 
   const errorFor = (key: string) => (errors[key] ? tError(errors[key] as "unexpected") : null);
 
-  const essentials = (
-    <div className="space-y-5">
-      <Field label={t("title")} error={errorFor("title")}>
-        <Input
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder={t("titlePlaceholder")}
-          maxLength={120}
-          autoFocus={mode === "create"}
-        />
-      </Field>
+  const priceChips = (
+    <ChoiceChips
+      label={t("priceType")}
+      value={priceType}
+      onChange={setPriceType}
+      options={PRICE_TYPES.map((type) => ({
+        value: type,
+        label: t(
+          type === "on_request"
+            ? "priceOnRequest"
+            : type === "fixed"
+              ? "priceFixed"
+              : type === "from"
+                ? "priceFrom"
+                : "priceFree",
+        ),
+      }))}
+    />
+  );
 
-      <Field label={t("description")} hint={t("descriptionHint")} optional>
-        <Textarea
-          rows={4}
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder={t("descriptionPlaceholder")}
-          maxLength={5000}
-        />
-      </Field>
+  const titleField = (
+    <Field label={t("title")} error={errorFor("title")}>
+      <Input
+        value={title}
+        onChange={(event) => {
+          setTitle(event.target.value);
+          clearEssentialError("title");
+        }}
+        placeholder={t("titlePlaceholder")}
+        maxLength={120}
+        autoFocus={mode === "create" && layout === "wizard"}
+        className={layout === "wizard" ? "h-13 rounded-[var(--radius-sm)] text-[17px]" : undefined}
+      />
+    </Field>
+  );
 
-      <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
+  const descriptionField = (
+    <Field label={t("description")} hint={t("descriptionHint")} optional>
+      <Textarea
+        rows={4}
+        value={description}
+        onChange={(event) => setDescription(event.target.value)}
+        placeholder={t("descriptionPlaceholder")}
+        maxLength={5000}
+      />
+    </Field>
+  );
+
+  const priceField = (
+    <div className="space-y-4">
+      <Field label={t("priceType")}>{priceChips}</Field>
+
+      {priceType === "free" || priceType === "on_request" ? null : (
         <Field label={t("price")} error={errorFor("price")}>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:max-w-60">
             <Input
               type="number"
               inputMode="decimal"
               min={0}
               step="0.01"
               value={price}
-              disabled={priceType === "free" || priceType === "on_request"}
-              onChange={(event) => setPrice(event.target.value)}
+              onChange={(event) => {
+                setPrice(event.target.value);
+                clearEssentialError("price");
+              }}
               placeholder="0"
             />
             <span className="border-line-strong text-ink-muted flex h-11 items-center rounded-[var(--radius-sm)] border px-3 text-[14px]">
@@ -279,51 +378,25 @@ export function OfferForm({
             </span>
           </div>
         </Field>
-
-        <Field label={t("priceType")}>
-          <NativeSelect
-            value={priceType}
-            onChange={(event) => setPriceType(event.target.value as typeof priceType)}
-          >
-            <option value="fixed">{t("priceFixed")}</option>
-            <option value="from">{t("priceFrom")}</option>
-            <option value="free">{t("priceFree")}</option>
-            <option value="on_request">{t("priceOnRequest")}</option>
-          </NativeSelect>
-        </Field>
-      </div>
-
-      <Field label={t("actionType")} hint={t("actionTypeHint")}>
-        <ActionTypePicker
-          value={actionType}
-          onChange={changeActionType}
-          suggested={suggestedActionType}
-        />
-      </Field>
-
-      <section className="space-y-4">
-        <div>
-          <h3 className="text-ink text-[15px] font-semibold">{t("settingsTitle")}</h3>
-          <p className="text-ink-muted mt-0.5 text-[13px]">{t("settingsHint")}</p>
-        </div>
-        <ActionConfigFields
-          actionType={actionType}
-          config={config}
-          locale={locale}
-          profileWhatsapp={profileWhatsapp}
-          payments={{
-            gatewayReady,
-            // A price the client can act on: a firm number, not "from" and not
-            // "on request". Read live, so switching the price type off a firm
-            // amount closes the payment options in the same breath.
-            priceIsFirm: priceType === "fixed" && price !== "" && Number(price) > 0,
-          }}
-          onChange={(nextConfig) =>
-            setConfigs((current) => ({ ...current, [actionType]: nextConfig }))
-          }
-        />
-      </section>
+      )}
     </div>
+  );
+
+  const settingsSection = (
+    <ActionConfigFields
+      actionType={actionType}
+      config={config}
+      locale={locale}
+      profileWhatsapp={profileWhatsapp}
+      payments={{
+        gatewayReady,
+        // A price the client can act on: a firm number, not "from" and not
+        // "on request". Read live, so switching the price type off a firm
+        // amount closes the payment options in the same breath.
+        priceIsFirm: priceType === "fixed" && price !== "" && Number(price) > 0,
+      }}
+      onChange={(nextConfig) => setConfigs((current) => ({ ...current, [actionType]: nextConfig }))}
+    />
   );
 
   const details = (
@@ -337,24 +410,47 @@ export function OfferForm({
     />
   );
 
-  const photosSection = (
-    <Field label={t("photos")} hint={t("photosHint")} optional>
-      <OfferPhotosUpload value={photos} onChange={setPhotos} />
-    </Field>
-  );
+  const photosSection = <OfferPhotosUpload value={photos} onChange={setPhotos} />;
+
+  /* ---------------------------------------------------------------------- */
+  /* Editing: every section on one page                                      */
+  /* ---------------------------------------------------------------------- */
 
   if (layout === "sections") {
     return (
       <div className="space-y-10">
         <FormSection title={t("steps.essentials")} hint={t("stepHints.essentials")}>
-          {essentials}
+          <div className="space-y-5">
+            {titleField}
+            {descriptionField}
+            {priceField}
+            <Field label={t("actionType")} hint={t("actionTypeHint")}>
+              <ActionTypePicker
+                value={actionType}
+                onChange={changeActionType}
+                suggested={suggestedActionType}
+              />
+            </Field>
+            <section className="space-y-4">
+              <div>
+                <h3 className="text-ink text-[15px] font-semibold">{t("settingsTitle")}</h3>
+                <p className="text-ink-muted mt-0.5 text-[13px]">{t("settingsHint")}</p>
+              </div>
+              {settingsSection}
+            </section>
+          </div>
         </FormSection>
+
         <FormSection title={t("steps.details")} hint={t("stepHints.details")}>
           {details}
         </FormSection>
+
         <FormSection title={t("steps.photos")} hint={t("stepHints.photos")}>
-          {photosSection}
+          <Field label={t("photos")} hint={t("photosHint")} optional>
+            {photosSection}
+          </Field>
         </FormSection>
+
         {mode === "edit" ? (
           <section className="divide-line border-line divide-y border-y">
             <ToggleRow
@@ -365,6 +461,7 @@ export function OfferForm({
             />
           </section>
         ) : null}
+
         <div className="flex flex-wrap justify-end gap-2">
           {onCancel ? (
             <Button type="button" variant="ghost" onClick={onCancel}>
@@ -379,6 +476,10 @@ export function OfferForm({
     );
   }
 
+  /* ---------------------------------------------------------------------- */
+  /* Creating: one question at a time                                        */
+  /* ---------------------------------------------------------------------- */
+
   const draft: ReviewDraft = {
     title: title.trim(),
     description: description.trim() || null,
@@ -391,51 +492,64 @@ export function OfferForm({
     custom_fields: fields,
   };
 
-  const index = STEPS.indexOf(step);
+  const step = PHASE_STEP[phase];
+  const stepIndex = STEPS.indexOf(step);
+  const siblings = PHASES.filter((item) => PHASE_STEP[item] === step);
+  const index = PHASES.indexOf(phase);
 
   return (
-    <div className="space-y-6">
-      <StepHeader
-        step={step}
-        onSelect={(target) => {
-          // Only steps already reached can be revisited from the header.
-          if (STEPS.indexOf(target) < index) goTo(target);
-        }}
-      />
+    <div className="space-y-7">
+      {progress ? (
+        progress((index + 1) / PHASES.length)
+      ) : (
+        <StepProgress
+          label={t("progress")}
+          steps={STEPS.map((item) => t(`steps.${item}`))}
+          current={stepIndex}
+          advance={(siblings.indexOf(phase) + 1) / siblings.length}
+          onSelect={(target) => {
+            // Only stages already reached can be revisited from the bar.
+            if (target < stepIndex) goTo(firstPhaseOf(STEPS[target]));
+          }}
+        />
+      )}
 
-      <div>
-        <h2
+      <PhaseSwitch phase={phase} direction={direction} className="space-y-6">
+        <PhaseQuestion
           ref={headingRef}
-          tabIndex={-1}
-          className="text-ink scroll-mt-24 text-[18px] font-semibold tracking-[-0.01em] focus:outline-none"
-        >
-          {t(`steps.${step}`)}
-        </h2>
-        <p className="text-ink-muted mt-1 text-[14px]">{t(`stepHints.${step}`)}</p>
-      </div>
+          level={headingLevel}
+          title={t(`phases.${phase}.title`)}
+          hint={t(`phases.${phase}.hint`)}
+        />
 
-      {/* Transforms are dropped under prefers-reduced-motion by MotionProvider;
-          the cross-fade stays so the change of step is still visible. */}
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: 12 * direction }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -12 * direction }}
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {step === "essentials" ? essentials : null}
-          {step === "details" ? details : null}
-          {step === "photos" ? photosSection : null}
-          {step === "review" ? (
-            <OfferReview draft={draft} currency={currency} locale={locale} onEdit={goTo} />
-          ) : null}
-        </motion.div>
-      </AnimatePresence>
+        {phase === "action" ? (
+          <ActionTypePicker
+            value={actionType}
+            onChange={changeActionType}
+            suggested={suggestedActionType}
+            size="question"
+          />
+        ) : null}
+
+        {phase === "basics" ? (
+          <div className="space-y-3">
+            <PhaseField index={0}>{titleField}</PhaseField>
+            <PhaseField index={1}>{descriptionField}</PhaseField>
+            <PhaseField index={2}>{priceField}</PhaseField>
+          </div>
+        ) : null}
+
+        {phase === "settings" ? <PhaseField>{settingsSection}</PhaseField> : null}
+        {phase === "details" ? details : null}
+        {phase === "photos" ? photosSection : null}
+        {phase === "review" ? (
+          <OfferReview draft={draft} currency={currency} locale={locale} onEdit={goTo} />
+        ) : null}
+      </PhaseSwitch>
 
       <div className="border-line flex items-center justify-between gap-3 border-t pt-5">
         {index > 0 ? (
-          <Button type="button" variant="ghost" onClick={() => goTo(STEPS[index - 1])}>
+          <Button type="button" variant="ghost" onClick={() => goTo(PHASES[index - 1])}>
             <ArrowLeft className="size-4" />
             {t("back")}
           </Button>
@@ -447,13 +561,13 @@ export function OfferForm({
           <span />
         )}
 
-        {step === "review" ? (
-          <Button type="button" onClick={submit} loading={pending}>
+        {phase === "review" ? (
+          <Button type="button" size="lg" onClick={submit} loading={pending}>
             <Check className="size-4" />
             {submitLabel ?? t("create")}
           </Button>
         ) : (
-          <Button type="button" onClick={next}>
+          <Button type="button" size="lg" onClick={next}>
             {t("continue")}
             <ArrowRight className="size-4" />
           </Button>
@@ -480,45 +594,5 @@ function FormSection({
       </div>
       {children}
     </section>
-  );
-}
-
-function StepHeader({ step, onSelect }: { step: OfferStep; onSelect: (step: OfferStep) => void }) {
-  const t = useTranslations("offers.form");
-  const current = STEPS.indexOf(step);
-
-  return (
-    <ol className="flex gap-2" aria-label={t("progress")}>
-      {STEPS.map((item, index) => {
-        const done = index < current;
-        return (
-          <li key={item} className="flex-1">
-            <button
-              type="button"
-              onClick={() => onSelect(item)}
-              disabled={!done}
-              aria-current={index === current ? "step" : undefined}
-              className="w-full space-y-1.5 text-left disabled:cursor-default"
-            >
-              <span
-                className={cn(
-                  "block h-1 rounded-full transition-colors duration-300",
-                  index <= current ? "bg-ink" : "bg-ink/10",
-                )}
-              />
-              <span
-                className={cn(
-                  "block truncate text-[12px] font-medium transition-colors",
-                  index <= current ? "text-ink" : "text-ink-subtle",
-                  done && "hover:text-ink-muted",
-                )}
-              >
-                {t(`steps.${item}`)}
-              </span>
-            </button>
-          </li>
-        );
-      })}
-    </ol>
   );
 }
