@@ -2,7 +2,6 @@
 
 import {
   Ban,
-  CalendarClock,
   Check,
   CreditCard,
   Mail,
@@ -13,9 +12,9 @@ import {
   UserRoundX,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   deleteBooking,
@@ -25,6 +24,8 @@ import {
 } from "@/actions/bookings";
 import { BookingsKanban } from "@/components/dashboard/bookings-kanban";
 import { BookingsToolbar } from "@/components/dashboard/bookings-toolbar";
+import { NoBookingsArt } from "@/components/dashboard/empty-illustrations";
+import { notify } from "@/lib/notify";
 import { useBookingPrefs } from "@/lib/bookings/prefs";
 import {
   EMPTY_FILTERS,
@@ -87,7 +88,11 @@ export function BookingsView({
     direction: "asc",
   });
   const [{ view, columns }, setPrefs] = useBookingPrefs();
-  const [openId, setOpenId] = useState<string | null>(null);
+  // `?open=<id>` lets a booking be addressed directly — that is what the
+  // command palette links to, and it makes a booking shareable between the
+  // coach's own devices.
+  const requestedId = useSearchParams().get("open");
+  const [openId, setOpenId] = useState<string | null>(requestedId);
 
   const filtered = useMemo(
     () => sortBookings(applyFilters(bookings, filters, now), sort.key, sort.direction, now),
@@ -139,7 +144,7 @@ export function BookingsView({
 
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<CalendarClock className="size-5" />}
+          illustration={<NoBookingsArt className="h-24 w-32" />}
           title={t("empty.title")}
           description={t("empty.body")}
         />
@@ -313,6 +318,7 @@ function BookingSheet({
   const tPayment = useTranslations("dashboard.payments");
   const tCommon = useTranslations("common");
   const tError = useTranslations("errors");
+  const router = useRouter();
 
   const [notes, setNotes] = useState("");
   const [notesFor, setNotesFor] = useState<string | null>(null);
@@ -338,10 +344,10 @@ function BookingSheet({
     startTransition(async () => {
       const result = await markNoShow(booking!.id, !booking!.no_show);
       if (result.ok) {
-        toast.success(t(booking!.no_show ? "noShowCleared" : "noShowMarked"));
+        notify.success(t(booking!.no_show ? "noShowCleared" : "noShowMarked"));
         onClose();
       } else {
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }
@@ -350,10 +356,19 @@ function BookingSheet({
     startTransition(async () => {
       const result = await updateBookingStatus(booking!.id, status);
       if (result.ok) {
-        toast.success(t(status === "confirmed" ? "confirmed" : "cancelledToast"));
+        notify.success(t(status === "confirmed" ? "confirmed" : "cancelledToast"), {
+          // Confirming usually comes with something to note about the client.
+          action:
+            status === "confirmed" && booking?.client_id
+              ? {
+                  label: t("openClient"),
+                  onClick: () => router.push(`/dashboard/bookings/clients/${booking.client_id}`),
+                }
+              : undefined,
+        });
         onClose();
       } else {
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }
@@ -485,7 +500,7 @@ function BookingSheet({
             onBlur={() =>
               startTransition(async () => {
                 const result = await saveBookingNotes(booking.id, notes);
-                if (!result.ok) toast.error(tError(result.error as "unexpected"));
+                if (!result.ok) notify.error(tError(result.error as "unexpected"));
               })
             }
             placeholder={t("internalNotesPlaceholder")}
@@ -514,7 +529,7 @@ function BookingSheet({
                     setConfirmDelete(false);
                     onClose();
                   } else {
-                    toast.error(tError(result.error as "unexpected"));
+                    notify.error(tError(result.error as "unexpected"));
                   }
                 })
               }

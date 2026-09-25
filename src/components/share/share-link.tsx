@@ -5,10 +5,10 @@ import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/overlays";
+import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 /** The copy-and-share block used on the onboarding final screen and the dashboard. */
@@ -33,10 +33,10 @@ export function ShareLink({
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast.success(t("copied"));
+      notify.success(t("copied"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error(t("copyFailed"));
+      notify.error(t("copyFailed"));
     }
   }
 

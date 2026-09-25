@@ -377,7 +377,11 @@
       "deleted": "Offer deleted",
       "dragHandle": "Reorder {title}",
       "duplicated": "Offer duplicated",
+      "duplicatedHint": "The copy stays hidden until you have adjusted it.",
       "editSubtitle": "Changes are live on your page as soon as you save.",
+      "emptyBody": "Your offers are what clients book. Start with one; you can add more whenever you like.",
+      "emptyCta": "Create my first offer",
+      "emptyTitle": "No offers yet",
       "hidden": "Hidden",
       "hide": "Hide from page",
       "menuLabel": "Offer actions",
@@ -388,6 +392,13 @@
       "show": "Show on page",
       "subtitle": "What clients can book, reserve or ask about.",
       "title": "Offers"
+    },
+    "palette": {
+      "title": "Quick search",
+      "placeholder": "Search an offer, a client, a booking…",
+      "jumpTo": "Jump to",
+      "none": "Nothing matches “{query}”.",
+      "hint": "↑ ↓ to move, ↵ to open"
     },
     "payments": {
       "amountLabel": "Payment",

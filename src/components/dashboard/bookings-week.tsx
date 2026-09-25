@@ -17,10 +17,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { rescheduleBooking } from "@/actions/bookings";
 import { TZDate } from "@date-fns/tz";
+import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 import type { CalendarBooking } from "./bookings-calendar";
@@ -175,7 +175,7 @@ export function BookingsWeek({
       setPendingId(null);
 
       if (result.ok) {
-        toast.success(t("rescheduled"));
+        notify.success(t("rescheduled"));
         // Let the server be the source of truth again.
         setMoved((current) => {
           const next = { ...current };
@@ -190,7 +190,7 @@ export function BookingsWeek({
           delete next[booking.id];
           return next;
         });
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }

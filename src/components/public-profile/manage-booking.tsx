@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { cancelBookingByToken } from "@/actions/public-booking";
+import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/overlays";
 
@@ -76,10 +76,10 @@ export function ManageBookingActions({
                   const result = await cancelBookingByToken(token);
                   if (result.ok) {
                     setConfirmOpen(false);
-                    toast.success(t("cancelled"));
+                    notify.success(t("cancelled"));
                     router.refresh();
                   } else {
-                    toast.error(tError(result.error as "unexpected"));
+                    notify.error(tError(result.error as "unexpected"));
                   }
                 })
               }

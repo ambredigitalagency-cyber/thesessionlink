@@ -377,7 +377,11 @@
       "deleted": "Offre supprimée",
       "dragHandle": "Réordonner {title}",
       "duplicated": "Offre dupliquée",
+      "duplicatedHint": "La copie est masquée le temps que vous l'ajustiez.",
       "editSubtitle": "Les modifications sont visibles sur votre page dès l'enregistrement.",
+      "emptyBody": "Vos offres sont ce que vos clients réservent. Commencez par une, vous en ajouterez d'autres quand vous voudrez.",
+      "emptyCta": "Créer ma première offre",
+      "emptyTitle": "Aucune offre pour l'instant",
       "hidden": "Masquée",
       "hide": "Masquer de la page",
       "menuLabel": "Actions sur l'offre",
@@ -388,6 +392,13 @@
       "show": "Afficher sur la page",
       "subtitle": "Ce que vos clients peuvent réserver, demander ou acheter.",
       "title": "Offres"
+    },
+    "palette": {
+      "title": "Recherche rapide",
+      "placeholder": "Chercher une offre, un client, une réservation…",
+      "jumpTo": "Aller à",
+      "none": "Rien ne correspond à « {query} ».",
+      "hint": "↑ ↓ pour naviguer, ↵ pour ouvrir"
     },
     "payments": {
       "amountLabel": "Paiement",

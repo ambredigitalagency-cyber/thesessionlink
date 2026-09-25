@@ -17,7 +17,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { Lock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { updateBookingStatus } from "@/actions/bookings";
 import { Badge } from "@/components/ui/primitives";
@@ -28,6 +27,7 @@ import {
   type DerivedStatus,
   type StoredStatus,
 } from "@/lib/bookings/filters";
+import { notify } from "@/lib/notify";
 import { BOOKING_STATUS_TONE } from "@/lib/offers/meta";
 import { cn } from "@/lib/utils";
 
@@ -91,9 +91,9 @@ export function BookingsKanban({
     startTransition(async () => {
       const result = await updateBookingStatus(booking.id, target);
       if (result.ok) {
-        toast.success(t(`statusChanged.${target}` as "statusChanged.confirmed"));
+        notify.success(t(`statusChanged.${target}` as "statusChanged.confirmed"));
       } else {
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }

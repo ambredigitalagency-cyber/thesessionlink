@@ -3,7 +3,6 @@
 import { Check, ExternalLink, Loader2, X } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { checkSlugAvailability, updateProfile } from "@/actions/profile";
 import { SocialIcon } from "@/components/brand/social-icons";
@@ -12,6 +11,7 @@ import { AvatarUpload } from "@/components/media/image-upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
 import { Field, Input, NativeSelect, PrefixedInput, Textarea } from "@/components/ui/field";
+import { notify } from "@/lib/notify";
 import { localized } from "@/lib/offers/schema";
 import type { Tables } from "@/lib/supabase/database.types";
 import { cn, slugify } from "@/lib/utils";
@@ -93,10 +93,10 @@ export function ProfileEditor({
 
       if (result.ok) {
         setErrors({});
-        toast.success(tCommon("saved"));
+        notify.success(tCommon("saved"));
       } else {
         setErrors(result.fieldErrors ?? {});
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }

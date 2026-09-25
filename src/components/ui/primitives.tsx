@@ -187,12 +187,15 @@ export const TabsContent = Tabs.Content;
 
 export function EmptyState({
   icon,
+  illustration,
   title,
   description,
   action,
   className,
 }: {
   icon?: ReactNode;
+  /** A drawing, shown instead of the icon bubble when present. */
+  illustration?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
@@ -205,7 +208,9 @@ export function EmptyState({
         className,
       )}
     >
-      {icon ? (
+      {illustration ? (
+        <div className="mb-1">{illustration}</div>
+      ) : icon ? (
         <div className="bg-ink/5 text-ink-muted flex size-11 items-center justify-center rounded-full">
           {icon}
         </div>

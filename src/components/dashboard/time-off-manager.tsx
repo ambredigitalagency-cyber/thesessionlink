@@ -4,9 +4,9 @@ import { Plane, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { addTimeOff, deleteTimeOff } from "@/actions/availability";
+import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 
@@ -37,7 +37,7 @@ export function TimeOffManager({ entries, locale }: { entries: Entry[]; locale: 
         setLabel("");
         router.refresh();
       } else {
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }
@@ -74,7 +74,7 @@ export function TimeOffManager({ entries, locale }: { entries: Entry[]; locale: 
                     if (result.ok) {
                       router.refresh();
                     } else {
-                      toast.error(tError(result.error as "unexpected"));
+                      notify.error(tError(result.error as "unexpected"));
                     }
                   })
                 }

@@ -4,8 +4,8 @@ import { ArrowLeft, ArrowRight, ImagePlus, Loader2, Lock, X } from "lucide-react
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 
+import { notify } from "@/lib/notify";
 import { UploadError, deleteImage, uploadImage } from "@/lib/media/upload";
 import { ABSOLUTE_MAX_PHOTOS } from "@/lib/validation";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ export function OfferPhotosUpload({
     if (!files || files.length === 0) return;
 
     const accepted = Array.from(files).slice(0, remaining);
-    if (accepted.length < files.length) toast.error(limitHint);
+    if (accepted.length < files.length) notify.error(limitHint);
     if (accepted.length === 0) return;
 
     setBusy(true);
@@ -52,7 +52,7 @@ export function OfferPhotosUpload({
       onChange([...value, ...urls]);
     } catch (error) {
       const code = error instanceof UploadError ? error.code : "failed";
-      toast.error(t(`errors.${code}` as "errors.failed"));
+      notify.error(t(`errors.${code}` as "errors.failed"));
     } finally {
       setBusy(false);
     }
@@ -146,7 +146,7 @@ export function OfferPhotosUpload({
           event.preventDefault();
           setDragging(false);
           if (full) {
-            toast.error(limitHint);
+            notify.error(limitHint);
             return;
           }
           await addFiles(event.dataTransfer.files);
@@ -159,7 +159,7 @@ export function OfferPhotosUpload({
       >
         <button
           type="button"
-          onClick={() => (full ? toast.error(limitHint) : inputRef.current?.click())}
+          onClick={() => (full ? notify.error(limitHint) : inputRef.current?.click())}
           className="flex w-full flex-col items-center gap-2 px-6 py-7 text-center"
         >
           {busy ? (

@@ -4,13 +4,13 @@ import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useMemo, useState, useTransition, type ReactNode } from "react";
-import { toast } from "sonner";
 
 import { deleteAccount, updateSettings } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
+import { notify } from "@/lib/notify";
 import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -55,7 +55,7 @@ export function SettingsForm({
   const [timezone, setTimezone] = useState(profile.timezone);
   const [currency, setCurrency] = useState(profile.currency);
   const [reminderHours, setReminderHours] = useState(profile.reminder_hours_before);
-  const [notify, setNotify] = useState(profile.notify_new_bookings);
+  const [notifyBookings, setNotifyBookings] = useState(profile.notify_new_bookings);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
@@ -75,16 +75,16 @@ export function SettingsForm({
         timezone,
         currency,
         reminder_hours_before: reminderHours,
-        notify_new_bookings: notify,
+        notify_new_bookings: notifyBookings,
       });
 
       if (result.ok) {
         setErrors({});
-        toast.success(tCommon("saved"));
+        notify.success(tCommon("saved"));
         router.refresh();
       } else {
         setErrors(result.fieldErrors ?? {});
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }
@@ -204,8 +204,8 @@ export function SettingsForm({
           <ToggleRow
             title={t("notify")}
             description={t("notifyHint")}
-            checked={notify}
-            onCheckedChange={setNotify}
+            checked={notifyBookings}
+            onCheckedChange={setNotifyBookings}
           />
         </div>
       </Card>
@@ -252,7 +252,7 @@ export function SettingsForm({
               onClick={() =>
                 startTransition(async () => {
                   const result = await deleteAccount(confirmation);
-                  if (result && !result.ok) toast.error(tError(result.error as "unexpected"));
+                  if (result && !result.ok) notify.error(tError(result.error as "unexpected"));
                 })
               }
             >

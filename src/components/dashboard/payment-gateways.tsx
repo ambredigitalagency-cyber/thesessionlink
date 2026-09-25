@@ -3,12 +3,12 @@
 import { AlertCircle, CheckCircle2, CreditCard, ExternalLink, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { disconnectGateway } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/overlays";
 import { Badge, Card, CardHeader } from "@/components/ui/primitives";
+import { notify } from "@/lib/notify";
 import type { GatewayState } from "@/lib/payments/accounts";
 
 /**
@@ -155,10 +155,10 @@ function GatewayRow({ gateway }: { gateway: GatewayState }) {
                 startTransition(async () => {
                   const result = await disconnectGateway(gateway.provider);
                   if (result.ok) {
-                    toast.success(t("disconnected", { provider: name }));
+                    notify.success(t("disconnected", { provider: name }));
                     setConfirmOff(false);
                   } else {
-                    toast.error(tError((result.error ?? "unexpected") as "unexpected"));
+                    notify.error(tError((result.error ?? "unexpected") as "unexpected"));
                   }
                 })
               }

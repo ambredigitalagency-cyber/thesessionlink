@@ -6,6 +6,7 @@ import { getMessages, getTranslations } from "next-intl/server";
 import { signOut } from "@/actions/auth";
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { Logo } from "@/components/brand/logo";
+import { CommandPalette } from "@/components/dashboard/command-palette";
 import { DashboardSidebarNav, DashboardTabBar } from "@/components/dashboard/nav";
 import { ShareLink } from "@/components/share/share-link";
 import { getImpersonatedProfile, requireOnboardedProfile } from "@/lib/auth";
@@ -43,6 +44,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   return (
     <NextIntlClientProvider messages={messages}>
       {impersonated ? <ImpersonationBanner coachName={impersonated.display_name} /> : null}
+      <CommandPalette />
       <div className="flex min-h-dvh">
         {/* Desktop sidebar */}
         <aside className="border-line bg-surface/60 sticky top-0 hidden h-dvh w-[17.5rem] shrink-0 flex-col border-r px-5 py-6 lg:flex">

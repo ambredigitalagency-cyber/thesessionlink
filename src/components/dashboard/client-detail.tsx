@@ -3,7 +3,6 @@
 import { Mail, Phone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { updateClientRecord } from "@/actions/clients";
 import { ClientTags, SegmentBadges } from "@/components/dashboard/client-tags";
@@ -11,6 +10,7 @@ import { CustomFieldsEditor } from "@/components/offers/custom-fields-editor";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { Badge, Card, CardHeader, ProfileAvatar } from "@/components/ui/primitives";
+import { notify } from "@/lib/notify";
 import type { Segment } from "@/lib/crm/segments";
 import { parseOfferFields, type OfferField } from "@/lib/offers/fields";
 import { ACTION_ICONS, BOOKING_STATUS_TONE } from "@/lib/offers/meta";
@@ -74,10 +74,10 @@ export function ClientDetail({
 
       if (result.ok) {
         setErrors({});
-        toast.success(tCommon("saved"));
+        notify.success(tCommon("saved"));
       } else {
         setErrors(result.fieldErrors ?? {});
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }

@@ -3,11 +3,11 @@
 import { CopyPlus, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { saveWeeklySchedule } from "@/actions/availability";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/primitives";
+import { notify } from "@/lib/notify";
 import { WEEKDAY_ORDER, weekdayLabel } from "@/lib/offers/meta";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +63,7 @@ export function WeeklyScheduleEditor({
       }
       return next;
     });
-    toast.success(t("copied"));
+    notify.success(t("copied"));
   }
 
   function save() {
@@ -77,17 +77,17 @@ export function WeeklyScheduleEditor({
 
     const invalid = payload.some((rule) => rule.end_time <= rule.start_time);
     if (invalid) {
-      toast.error(tError("end_before_start"));
+      notify.error(tError("end_before_start"));
       return;
     }
 
     startTransition(async () => {
       const result = await saveWeeklySchedule({ offer_id: offerId, rules: payload });
       if (result.ok) {
-        toast.success(tCommon("saved"));
+        notify.success(tCommon("saved"));
         onSaved?.();
       } else {
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }

@@ -3,11 +3,11 @@
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { setClientTags } from "@/actions/clients";
 import { Input } from "@/components/ui/field";
 import { Badge } from "@/components/ui/primitives";
+import { notify } from "@/lib/notify";
 import { normaliseTags, TAG_LIMITS } from "@/lib/crm/segments";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +45,7 @@ export function ClientTags({
       const result = await setClientTags(clientId, cleaned);
       if (!result.ok) {
         setCurrent(previous);
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
   }

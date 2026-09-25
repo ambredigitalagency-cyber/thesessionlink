@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { saveWeeklySchedule } from "@/actions/availability";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
+import { notify } from "@/lib/notify";
 import { WEEKDAY_ORDER, weekdayLabel } from "@/lib/offers/meta";
 
 import { WeeklyScheduleEditor, type ScheduleRule } from "./weekly-schedule";
@@ -46,10 +46,10 @@ export function OfferAvailability({
       startTransition(async () => {
         const result = await saveWeeklySchedule({ offer_id: offerId, rules: [] });
         if (result.ok) {
-          toast.success(t("backToDefault"));
+          notify.success(t("backToDefault"));
           router.refresh();
         } else {
-          toast.error(tError(result.error as "unexpected"));
+          notify.error(tError(result.error as "unexpected"));
         }
       });
     }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
+import { NoClientsArt } from "@/components/dashboard/empty-illustrations";
 import { Badge, EmptyState, ProfileAvatar } from "@/components/ui/primitives";
 import { SEGMENTS, segmentsByClient, tagVocabulary, type Segment } from "@/lib/crm/segments";
 import { cn } from "@/lib/utils";
@@ -143,7 +144,10 @@ export function ClientsList({
 
       {filtered.length === 0 ? (
         <EmptyState
-          icon={<UserRound className="size-5" />}
+          // The drawing belongs to "no clients yet"; a filter that matches
+          // nothing is a different, smaller problem and keeps the plain icon.
+          illustration={filter.kind === "all" ? <NoClientsArt className="h-24 w-32" /> : undefined}
+          icon={filter.kind === "all" ? undefined : <UserRound className="size-5" />}
           title={filter.kind === "all" ? t("emptyTitle") : t("filterNone")}
           description={filter.kind === "all" ? t("emptyBody") : undefined}
         />

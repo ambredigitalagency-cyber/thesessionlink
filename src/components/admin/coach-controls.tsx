@@ -4,7 +4,6 @@ import { CalendarPlus, LogIn, RotateCcw, ShieldBan, ShieldCheck } from "lucide-r
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import {
   extendTrial,
@@ -14,6 +13,7 @@ import {
   suspendProfile,
   unsuspendProfile,
 } from "@/actions/admin";
+import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
@@ -53,10 +53,10 @@ export function CoachControls({
     startTransition(async () => {
       const result = await work();
       if (result.ok) {
-        toast.success(success);
+        notify.success(success);
         router.refresh();
       } else {
-        toast.error(tError((result.error ?? "unexpected") as "unexpected"));
+        notify.error(tError((result.error ?? "unexpected") as "unexpected"));
       }
     });
 

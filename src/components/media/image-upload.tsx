@@ -4,8 +4,8 @@ import { ImagePlus, Loader2, Plus, X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
 
+import { notify } from "@/lib/notify";
 import { UploadError, deleteImage, uploadImage, type UploadFolder } from "@/lib/media/upload";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ function useUploader(folder: UploadFolder) {
       return urls;
     } catch (error) {
       const code = error instanceof UploadError ? error.code : "failed";
-      toast.error(t(`errors.${code}` as "errors.failed"));
+      notify.error(t(`errors.${code}` as "errors.failed"));
       return [];
     } finally {
       setBusy(false);

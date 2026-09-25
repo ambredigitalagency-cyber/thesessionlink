@@ -23,7 +23,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 
 import { deleteOffer, duplicateOffer, reorderOffers, setOfferActive } from "@/actions/offers";
 import { Button } from "@/components/ui/button";
@@ -35,7 +34,9 @@ import {
   MenuTrigger,
   Modal,
 } from "@/components/ui/overlays";
-import { Badge } from "@/components/ui/primitives";
+import { Badge, EmptyState } from "@/components/ui/primitives";
+import { NoOffersArt } from "@/components/dashboard/empty-illustrations";
+import { notify } from "@/lib/notify";
 import { ACTION_ICONS } from "@/lib/offers/meta";
 import { parseActionConfig, type ActionType } from "@/lib/offers/schema";
 import { cn, formatPrice } from "@/lib/utils";
@@ -91,9 +92,24 @@ export function OffersList({
       const result = await reorderOffers(next.map((offer) => offer.id));
       if (!result.ok) {
         setOffers(offers);
-        toast.error(tError(result.error as "unexpected"));
+        notify.error(tError(result.error as "unexpected"));
       }
     });
+  }
+
+  if (offers.length === 0) {
+    return (
+      <EmptyState
+        illustration={<NoOffersArt className="h-24 w-32" />}
+        title={t("emptyTitle")}
+        description={t("emptyBody")}
+        action={
+          <Button asChild>
+            <Link href="/dashboard/offers/new">{t("emptyCta")}</Link>
+          </Button>
+        }
+      />
+    );
   }
 
   return (
@@ -143,7 +159,7 @@ function OfferRow({
   function toggleActive() {
     startTransition(async () => {
       const result = await setOfferActive(offer.id, !offer.is_active);
-      if (!result.ok) toast.error(tError(result.error as "unexpected"));
+      if (!result.ok) notify.error(tError(result.error as "unexpected"));
     });
   }
 
@@ -230,9 +246,20 @@ function OfferRow({
               startTransition(async () => {
                 const result = await duplicateOffer(offer.id);
                 if (result.ok) {
-                  toast.success(t("duplicated"));
+                  // The copy lands hidden and titled "(copy)", so editing it
+                  // is always the next thing. Offer that instead of making
+                  // them find it in the list.
+                  notify.success(t("duplicated"), {
+                    description: t("duplicatedHint"),
+                    action: result.data
+                      ? {
+                          label: tCommon("edit"),
+                          onClick: () => router.push(`/dashboard/offers/${result.data!.id}`),
+                        }
+                      : undefined,
+                  });
                 } else {
-                  toast.error(tError(result.error as "unexpected"));
+                  notify.error(tError(result.error as "unexpected"));
                 }
               })
             }
@@ -266,10 +293,10 @@ function OfferRow({
                 startTransition(async () => {
                   const result = await deleteOffer(offer.id);
                   if (result.ok) {
-                    toast.success(t("deleted"));
+                    notify.success(t("deleted"));
                     setConfirmOpen(false);
                   } else {
-                    toast.error(tError(result.error as "unexpected"));
+                    notify.error(tError(result.error as "unexpected"));
                   }
                 })
               }

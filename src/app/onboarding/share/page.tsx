@@ -5,6 +5,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
+import { Celebration } from "@/components/onboarding/celebration";
 import { OnboardingSteps } from "@/components/onboarding/steps";
 import { ShareLink } from "@/components/share/share-link";
 import { Button } from "@/components/ui/button";
@@ -46,9 +47,11 @@ export default async function OnboardingSharePage() {
       </h1>
       <p className="text-ink-muted mt-3 max-w-lg text-[16px] leading-relaxed">{t("subtitle")}</p>
 
-      <div className="surface-card mt-8 p-5 sm:p-7">
-        <ShareLink url={url} displayName={profile.display_name} />
-      </div>
+      <Celebration>
+        <div className="surface-card mt-8 p-5 sm:p-7">
+          <ShareLink url={url} displayName={profile.display_name} />
+        </div>
+      </Celebration>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-3">
         {places.map(({ icon: Icon, key }) => (
