@@ -100,9 +100,9 @@
   --color-brand-ink: light-dark(#7d2a12, #ffb59c);
 
   /* Status */
-  --color-success: light-dark(#0f8a5f, #3dd598);
+  --color-success: light-dark(#0d7c55, #3dd598);
   --color-success-soft: light-dark(#e7f6ef, #0f2a20);
-  --color-warning: light-dark(#b26a00, #e8a33f);
+  --color-warning: light-dark(#a15f00, #e8a33f);
   --color-warning-soft: light-dark(#fdf1df, #2c2113);
   --color-danger: light-dark(#c4342a, #f2695d);
   --color-danger-soft: light-dark(#fdeceb, #2f1614);

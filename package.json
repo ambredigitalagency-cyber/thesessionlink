@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prestart": "node scripts/guard-remote-db.mjs",
     "start": "next start",
+    "build:local": "node scripts/with-local-env.mjs build",
+    "start:local": "node scripts/with-local-env.mjs start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
