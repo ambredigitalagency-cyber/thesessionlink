@@ -43,3 +43,12 @@ next-env.d.ts
 
 # graphify knowledge graph (generated cache, rebuild with /graphify)
 /graphify-out/
+
+# database dumps
+#
+# A data dump carries live auth rows — user emails, sessions and refresh
+# tokens. Those are credentials, and a repository is the wrong place for them:
+# once pushed they are on the remote for good, readable by anyone who can read
+# the repo, and they survive every later deletion of the file.
+# Take the dumps, keep them off the machine's git, restore from disk.
+backup-*.sql
