@@ -2,11 +2,22 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { ChoiceChips } from "@/components/ui/choice-cards";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { Toggle, ToggleRow } from "@/components/ui/primitives";
+import { ScaleSlider } from "@/components/ui/slider";
 import { minutesToLabel } from "@/lib/offers/meta";
+import {
+  BUFFER_STOPS,
+  CAPACITY_STOPS,
+  DURATION_STOPS,
+  HORIZON_STOPS,
+  INTERVAL_STOPS,
+  NOTICE_STOPS,
+  QUANTITY_STOPS,
+} from "@/lib/scales";
 import type {
   ActionType,
   AnyActionConfig,
@@ -18,11 +29,6 @@ import type {
   WhatsappDirectConfig,
 } from "@/lib/offers/schema";
 
-const DURATIONS = [15, 20, 30, 45, 60, 75, 90, 120, 150, 180, 240];
-const BUFFERS = [0, 5, 10, 15, 30, 45, 60];
-const NOTICES = [0, 1, 2, 4, 12, 24, 48, 72];
-const HORIZONS = [7, 14, 30, 60, 90, 180, 365];
-
 type Patch<T> = (patch: Partial<T>) => void;
 
 /** Whether online payment can even be offered on this offer, and why not. */
@@ -32,6 +38,9 @@ export type PaymentReadiness = {
   /** The price is a firm amount — not "from", not "on request", not free. */
   priceIsFirm: boolean;
 };
+
+const validCapacity = (text: string) =>
+  /^d+$/.test(text) && Number(text) >= 1 && Number(text) <= 10000;
 
 /** Settings that depend on the action type — never on the profession. */
 export function ActionConfigFields({
@@ -95,37 +104,6 @@ export function ActionConfigFields({
   }
 }
 
-/**
- * A closed set of numbers - a duration, a notice, a horizon - as pills rather
- * than a menu.
- *
- * Every value here is one of a handful the product already decided on, so the
- * dropdown was hiding ten known answers behind a tap and a scroll. Laid out
- * they are one tap, and the shape of the scale (15 minutes to 4 hours) is
- * readable at a glance. `null` is a value like any other: it is what "same as
- * the duration" means for the slot interval.
- */
-function NumberChoice({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: number | null;
-  onChange: (value: number | null) => void;
-  options: readonly { value: number | null; label: string }[];
-}) {
-  return (
-    <ChoiceChips
-      label={label}
-      value={String(value)}
-      onChange={(next) => onChange(next === "null" ? null : Number(next))}
-      options={options.map((option) => ({ value: String(option.value), label: option.label }))}
-    />
-  );
-}
-
 function AskPhoneField({
   value,
   onChange,
@@ -163,67 +141,68 @@ function CalendarFields({
   payments: PaymentReadiness;
 }) {
   const t = useTranslations("offers.config");
+  // Past two days, a notice reads better in days: "3 jours", not "72 heures".
+  const hoursLabel = (hours: number) =>
+    hours >= 48 && hours % 24 === 0
+      ? t("days", { count: hours / 24 })
+      : t("hours", { count: hours });
 
   return (
     <div className="space-y-5">
       <div className="space-y-5">
         <Field label={t("duration")} hint={t("durationHint")}>
-          <NumberChoice
+          <ScaleSlider
             label={t("duration")}
+            stops={DURATION_STOPS}
             value={config.duration_minutes}
-            onChange={(duration_minutes) => patch({ duration_minutes: duration_minutes ?? 60 })}
-            options={DURATIONS.map((minutes) => ({
-              value: minutes,
-              label: minutesToLabel(minutes, locale),
-            }))}
-          />
-        </Field>
-
-        <Field label={t("buffer")} hint={t("bufferHint")}>
-          <NumberChoice
-            label={t("buffer")}
-            value={config.buffer_minutes}
-            onChange={(buffer_minutes) => patch({ buffer_minutes: buffer_minutes ?? 0 })}
-            options={BUFFERS.map((minutes) => ({
-              value: minutes,
-              label: minutes === 0 ? t("noBuffer") : minutesToLabel(minutes, locale),
-            }))}
-          />
-        </Field>
-
-        <Field label={t("interval")} hint={t("intervalHint")}>
-          <NumberChoice
-            label={t("interval")}
-            value={config.slot_interval_minutes}
-            onChange={(slot_interval_minutes) => patch({ slot_interval_minutes })}
-            options={[
-              { value: null, label: t("intervalDefault") },
-              ...[15, 20, 30, 45, 60].map((minutes) => ({
-                value: minutes,
-                label: minutesToLabel(minutes, locale),
-              })),
+            onChange={(duration_minutes) => patch({ duration_minutes })}
+            format={(minutes) => minutesToLabel(minutes, locale)}
+            edges={[
+              minutesToLabel(DURATION_STOPS[0], locale),
+              minutesToLabel(DURATION_STOPS.at(-1)!, locale),
             ]}
           />
         </Field>
 
+        <Field label={t("buffer")} hint={t("bufferHint")}>
+          <ScaleSlider
+            label={t("buffer")}
+            stops={BUFFER_STOPS}
+            value={config.buffer_minutes}
+            onChange={(buffer_minutes) => patch({ buffer_minutes })}
+            format={(minutes) => (minutes === 0 ? t("noBuffer") : minutesToLabel(minutes, locale))}
+          />
+        </Field>
+
+        <Field label={t("interval")} hint={t("intervalHint")}>
+          <ScaleSlider
+            label={t("interval")}
+            stops={INTERVAL_STOPS}
+            value={config.slot_interval_minutes}
+            onChange={(slot_interval_minutes) => patch({ slot_interval_minutes })}
+            format={(minutes) =>
+              minutes === null ? t("intervalDefault") : minutesToLabel(minutes, locale)
+            }
+          />
+        </Field>
+
         <Field label={t("notice")} hint={t("noticeHint")}>
-          <NumberChoice
+          <ScaleSlider
             label={t("notice")}
+            stops={NOTICE_STOPS}
             value={config.min_notice_hours}
-            onChange={(min_notice_hours) => patch({ min_notice_hours: min_notice_hours ?? 0 })}
-            options={NOTICES.map((hours) => ({
-              value: hours,
-              label: hours === 0 ? t("noNotice") : t("hours", { count: hours }),
-            }))}
+            onChange={(min_notice_hours) => patch({ min_notice_hours })}
+            format={(hours) => (hours === 0 ? t("noNotice") : hoursLabel(hours))}
           />
         </Field>
 
         <Field label={t("horizon")} hint={t("horizonHint")}>
-          <NumberChoice
+          <ScaleSlider
             label={t("horizon")}
+            stops={HORIZON_STOPS}
             value={config.max_days_ahead}
-            onChange={(max_days_ahead) => patch({ max_days_ahead: max_days_ahead ?? 60 })}
-            options={HORIZONS.map((days) => ({ value: days, label: t("days", { count: days }) }))}
+            onChange={(max_days_ahead) => patch({ max_days_ahead })}
+            format={(days) => t("days", { count: days })}
           />
         </Field>
 
@@ -258,19 +237,38 @@ function ReservationFields({
   payments: PaymentReadiness;
 }) {
   const t = useTranslations("offers.config");
+  // Typed text, kept apart from the number so "1" on the way to "120" is not
+  // snapped to a stop mid-keystroke.
+  const [capacityText, setCapacityText] = useState(
+    config.capacity === null ? "" : String(config.capacity),
+  );
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t("capacity")} hint={t("capacityHint")}>
-          <Input
-            type="number"
-            min={1}
-            placeholder={t("unlimited")}
-            value={config.capacity ?? ""}
-            onChange={(event) =>
-              patch({ capacity: event.target.value ? Number(event.target.value) : null })
-            }
+      <div className="grid gap-x-4 gap-y-5 sm:grid-cols-2">
+        <Field label={t("capacity")} hint={t("capacityHint")} className="sm:col-span-2">
+          <ScaleSlider
+            label={t("capacity")}
+            stops={CAPACITY_STOPS}
+            value={config.capacity}
+            onChange={(capacity) => {
+              patch({ capacity });
+              setCapacityText(capacity === null ? "" : String(capacity));
+            }}
+            format={(capacity) => (capacity === null ? t("unlimited") : String(capacity))}
+            edges={["1", t("unlimited")]}
+            exact={{
+              min: 1,
+              max: 10000,
+              step: 1,
+              text: capacityText,
+              invalid: capacityText !== "" && !validCapacity(capacityText),
+              onText: (text) => {
+                setCapacityText(text);
+                if (text === "") patch({ capacity: null });
+                else if (validCapacity(text)) patch({ capacity: Number(text) });
+              },
+            }}
           />
         </Field>
 
@@ -288,14 +286,12 @@ function ReservationFields({
         </Field>
 
         <Field label={t("maxQuantity")} hint={t("maxQuantityHint")}>
-          <Input
-            type="number"
-            min={1}
-            max={50}
+          <ScaleSlider
+            label={t("maxQuantity")}
+            stops={QUANTITY_STOPS}
             value={config.max_quantity_per_booking}
-            onChange={(event) =>
-              patch({ max_quantity_per_booking: Math.max(1, Number(event.target.value) || 1) })
-            }
+            onChange={(max_quantity_per_booking) => patch({ max_quantity_per_booking })}
+            format={(count) => String(count)}
           />
         </Field>
 

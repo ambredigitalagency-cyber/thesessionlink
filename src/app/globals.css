@@ -256,16 +256,6 @@
   }
 }
 
-@keyframes nudge-down {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(5px);
-  }
-}
-
 @keyframes glyph-pulse {
   0%,
   100% {
@@ -560,20 +550,41 @@ body {
   }
 
   /*
-   * The arrow on the "your profile is ready" screen, leaning towards the
-   * button below it. A loop, so it has to stop outright rather than finish —
-   * hence a media query, and hence the arrow holding one position in the HTML
-   * for every reader. Deciding that in JavaScript is how the server and the
-   * browser end up rendering different transforms.
+   * A soft light that follows the pointer across a card on the landing.
+   *
+   * The position comes from two custom properties set on pointermove (see
+   * useSpotlight); everything else is here. It only exists for a real pointer
+   * that hovers and for readers who allow motion — on touch, or with reduced
+   * motion, the card is exactly the card. --spot-color lets a dark surface ask
+   * for a lighter glow.
    */
-  .nudge-down {
-    --nudge-delay: 0s;
+  .spotlight {
+    --spot-x: 50%;
+    --spot-y: 50%;
+    --spot-color: color-mix(in oklab, var(--accent) 14%, transparent);
+    position: relative;
+    isolation: isolate;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .nudge-down {
-      animation: nudge-down 1.6s ease-in-out infinite;
-      animation-delay: var(--nudge-delay);
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .spotlight::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      background: radial-gradient(
+        22rem circle at var(--spot-x) var(--spot-y),
+        var(--spot-color),
+        transparent 70%
+      );
+      opacity: 0;
+      transition: opacity 300ms ease;
+      pointer-events: none;
+    }
+
+    .spotlight:hover::before {
+      opacity: 1;
     }
   }
 

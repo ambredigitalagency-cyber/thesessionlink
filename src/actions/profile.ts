@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { getCurrentProfile, getCurrentUser, requireProfileForAction } from "@/lib/auth";
 import { toLocale } from "@/lib/i18n/config";
+import type { OfferField } from "@/lib/offers/fields";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   fieldErrorsFrom,
@@ -120,6 +121,7 @@ export async function updateProfile(input: unknown): Promise<ActionResult<{ slug
       theme: parsed.data.theme,
       calendar_visible: parsed.data.calendar_visible,
       custom_closed_message: parsed.data.custom_closed_message,
+      custom_fields: parsed.data.custom_fields,
     })
     .eq("id", profile.id);
 
@@ -178,6 +180,7 @@ export async function updateOnboardingProfile(input: unknown): Promise<ActionRes
     phone_number?: string | null;
     whatsapp_number?: string | null;
     social_links?: Record<string, string | null>;
+    custom_fields?: OfferField[];
   } = {};
 
   if (data.avatar_url !== undefined) patch.avatar_url = data.avatar_url;
@@ -186,6 +189,7 @@ export async function updateOnboardingProfile(input: unknown): Promise<ActionRes
   if (data.phone_number !== undefined) patch.phone_number = data.phone_number;
   if (data.whatsapp_number !== undefined) patch.whatsapp_number = data.whatsapp_number;
   if (data.social_links !== undefined) patch.social_links = data.social_links;
+  if (data.custom_fields !== undefined) patch.custom_fields = data.custom_fields;
 
   if (Object.keys(patch).length === 0) return { ok: true };
 
@@ -194,6 +198,37 @@ export async function updateOnboardingProfile(input: unknown): Promise<ActionRes
 
   if (error) {
     console.error("[profile] onboarding update failed", error.code, error.message);
+    return { ok: false, error: "unexpected" };
+  }
+
+  revalidateProfile(profile.slug);
+  return { ok: true };
+}
+
+/**
+ * Ends onboarding once the profile screens are behind the coach.
+ *
+ * Onboarding used to end with the first offer — a database trigger stamped
+ * onboarding_completed_at on that insert. The offer now comes later, from the
+ * dashboard, so the profile's last screen stamps it instead. The trigger stays:
+ * it only ever fills a null, so it is a no-op for anyone who came through here.
+ *
+ * From this moment the page is public. With no offer yet it shows a "being set
+ * up" state rather than an empty list (see PublicProfileView).
+ */
+export async function completeOnboarding(): Promise<ActionResult> {
+  const profile = await requireProfileForAction();
+  if (profile.onboarding_completed_at) return { ok: true };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq("id", profile.id)
+    .is("onboarding_completed_at", null);
+
+  if (error) {
+    console.error("[profile] completing onboarding failed", error.code, error.message);
     return { ok: false, error: "unexpected" };
   }
 

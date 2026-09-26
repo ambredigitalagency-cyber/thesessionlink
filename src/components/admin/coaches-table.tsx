@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { ConsolePanel } from "@/components/admin/console-kpi";
 import { STATUS_BAR, STATUS_TEXT } from "@/components/admin/status-tone";
 import { deletionDaysLeft } from "@/lib/account/deletion";
+import { coachRef, matchesRef } from "@/lib/admin/ref";
 import { ACCOUNT_STATUSES, accountStatus, type AccountStatus } from "@/lib/admin/status";
 import { cn } from "@/lib/utils";
 
@@ -70,6 +71,7 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
     const filtered = coaches.filter((coach) => {
       if (status !== "all" && accountStatus(coach) !== status) return false;
       if (!search) return true;
+      if (matchesRef(coach.id, search)) return true;
       return `${coach.display_name} ${coach.contact_email ?? ""} ${coach.slug}`
         .toLowerCase()
         .includes(search);
@@ -198,6 +200,9 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
                         >
                           {coach.display_name}
                         </Link>
+                        <span className="text-ink-subtle ml-2 font-mono text-[11.5px] tracking-wide">
+                          {coachRef(coach.id)}
+                        </span>
                         <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12.5px]">
                           <span className={cn("font-medium", STATUS_TEXT[state])}>
                             {t(`status.${state}`)}

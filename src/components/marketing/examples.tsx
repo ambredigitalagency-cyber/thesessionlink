@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 
+import { useSpotlight } from "./interactive";
 import { EASE, SectionHeading } from "./section";
 
 /**
@@ -32,6 +33,7 @@ export const NICHE_EXAMPLES = [
  */
 export function Examples() {
   const t = useTranslations("landing.examples");
+  const spotlight = useSpotlight();
 
   return (
     <section id="examples" className="py-20 sm:py-28">
@@ -47,7 +49,8 @@ export function Examples() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: index * 0.07, ease: EASE }}
-              className="group surface-card flex h-full flex-col overflow-hidden p-0 transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-float)]"
+              onPointerMove={spotlight}
+              className="spotlight group surface-card flex h-full flex-col overflow-hidden p-0 transition-[box-shadow,transform] duration-300 hover:shadow-[var(--shadow-float)] motion-safe:hover:-translate-y-1"
             >
               {/* A band of the page's own accent, standing in for the header
                   photo a real profile would have. */}

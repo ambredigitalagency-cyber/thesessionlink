@@ -1,22 +1,29 @@
 "use client";
 
-import { ArrowDown, ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
-import { checkSlugAvailability, createProfile, updateOnboardingProfile } from "@/actions/profile";
+import {
+  checkSlugAvailability,
+  completeOnboarding,
+  createProfile,
+  updateOnboardingProfile,
+} from "@/actions/profile";
 import { SocialIcon } from "@/components/brand/social-icons";
 import { CategoryIcon } from "@/components/categories/category-icon";
-import { NoOffersArt } from "@/components/dashboard/empty-illustrations";
 import { AvatarUpload } from "@/components/media/image-upload";
+import { CustomFieldsEditor } from "@/components/offers/custom-fields-editor";
 import { OnboardingSteps } from "@/components/onboarding/steps";
 import { Button } from "@/components/ui/button";
 import { ChoiceGroup } from "@/components/ui/choice-cards";
 import { Field, Input, PrefixedInput, Textarea } from "@/components/ui/field";
 import { PhaseField, PhaseQuestion, PhaseSwitch } from "@/components/ui/phase";
 import { notify } from "@/lib/notify";
+import type { OfferField } from "@/lib/offers/fields";
 import { localized, parseCategoryConfig } from "@/lib/offers/schema";
+import { PROFILE_FIELD_SUGGESTIONS, PROFILE_FIELD_TYPES } from "@/lib/profile/details";
 import { slugify } from "@/lib/utils";
 import type { SocialKey } from "@/lib/validation";
 
@@ -45,15 +52,27 @@ export type CategoryOption = {
  * own, so closing the tab on the fifth screen does not throw away the four
  * before it.
  *
- * The offer used to come before any of this. It came first when the product
- * was "a booking link", and it was the wrong first thing: a page with an offer
- * and no face on it is not a page anyone shares.
+ * The offer is not part of it any more. It came first when the product was
+ * "a booking link", then last, behind a bridge screen; now it waits for the
+ * dashboard, which invites to it without insisting. The last screen — details
+ * about the coach, in the same editor as Dashboard › Profile — ends
+ * onboarding, and until an offer exists the public page says it is being set
+ * up rather than showing an empty list.
  *
- * The bar at the top is the same four-step bar as the rest of onboarding; it
- * moves an eighth of a step per answer, so progress never stalls.
+ * The bar at the top moves an eighth of a step per answer, so progress never
+ * stalls.
  */
 
-const PHASES = ["category", "name", "link", "photo", "bio", "contact", "socials", "ready"] as const;
+const PHASES = [
+  "category",
+  "name",
+  "link",
+  "photo",
+  "bio",
+  "contact",
+  "socials",
+  "details",
+] as const;
 type Phase = (typeof PHASES)[number];
 
 /** The three that make a profile. Everything after them is optional. */
@@ -98,6 +117,7 @@ export function ProfileSetupForm({
   const [whatsapp, setWhatsapp] = useState("");
   const [location, setLocation] = useState("");
   const [socials, setSocials] = useState<Partial<Record<SocialKey, string>>>({});
+  const [details, setDetails] = useState<OfferField[]>([]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
@@ -173,19 +193,26 @@ export function ProfileSetupForm({
     });
   }
 
-  /** Saves one screen and moves on. `null` patch = nothing to save. */
-  function saveAndGo(patch: Record<string, unknown> | null, target: Phase) {
-    if (!patch) {
+  /**
+   * Saves one screen and moves on. `null` patch = nothing to save; no target =
+   * this was the last screen, so onboarding ends and the dashboard opens.
+   */
+  function saveAndGo(patch: Record<string, unknown> | null, target: Phase | undefined) {
+    if (!patch && target) {
       goTo(target);
       return;
     }
 
     startTransition(async () => {
-      const result = await updateOnboardingProfile(patch);
-      if (result.ok) {
+      const result = patch ? await updateOnboardingProfile(patch) : { ok: true as const };
+      if (result.ok && !target) {
+        const done = await completeOnboarding();
+        if (done.ok) router.push("/dashboard");
+        else notify.error(tError(done.error as "unexpected"));
+      } else if (result.ok && target) {
         setErrors({});
         goTo(target);
-      } else {
+      } else if (!result.ok) {
         setErrors(result.fieldErrors ?? {});
         notify.error(tError(result.error as "unexpected"));
       }
@@ -212,6 +239,8 @@ export function ProfileSetupForm({
         );
         return Object.keys(filled).length > 0 ? { social_links: filled } : null;
       }
+      case "details":
+        return details.length > 0 ? { custom_fields: details } : null;
       default:
         return null;
     }
@@ -493,8 +522,26 @@ export function ProfileSetupForm({
             </PhaseField>
           </div>
         ) : null}
-
-        {phase === "ready" ? <ReadyScreen ref={headingRef} name={name.trim()} /> : null}
+        {phase === "details" ? (
+          <div className="space-y-6">
+            <PhaseQuestion
+              ref={headingRef}
+              level={1}
+              title={t("phases.details.title")}
+              hint={t("phases.details.hint")}
+            />
+            <PhaseField>
+              <CustomFieldsEditor
+                fields={details}
+                onChange={setDetails}
+                suggestions={PROFILE_FIELD_SUGGESTIONS}
+                allowedTypes={PROFILE_FIELD_TYPES}
+                locale={locale}
+                errors={errors}
+              />
+            </PhaseField>
+          </div>
+        ) : null}
       </PhaseSwitch>
 
       {/* ---------------------------------------------------------------- */}
@@ -536,16 +583,16 @@ export function ProfileSetupForm({
             {t("submit")}
             <ArrowRight className="size-4" />
           </Button>
-        ) : phase === "ready" ? (
-          <Button type="button" size="lg" onClick={() => router.push("/onboarding/offer")}>
-            {t("phases.ready.cta")}
-            <ArrowRight className="size-4" />
-          </Button>
         ) : (
-          // Everything between the link and the offer is optional, so every
-          // one of those screens offers both doors.
+          // Everything after the link is optional, so every one of those
+          // screens offers both doors. The last one opens the dashboard.
           <div className="flex items-center gap-2">
-            <Button type="button" variant="ghost" disabled={pending} onClick={() => goTo(next)}>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={pending}
+              onClick={() => saveAndGo(null, next)}
+            >
               {tCommon("skip")}
             </Button>
             <Button
@@ -554,14 +601,14 @@ export function ProfileSetupForm({
               loading={pending}
               onClick={() => saveAndGo(patchFor(phase), next)}
             >
-              {tCommon("continue")}
+              {next ? tCommon("continue") : t("finish")}
               <ArrowRight className="size-4" />
             </Button>
           </div>
         )}
       </div>
 
-      {index > LAST_REQUIRED && phase !== "ready" ? (
+      {index > LAST_REQUIRED ? (
         <p className="text-ink-subtle text-center text-[12.5px]">{t("optionalNote")}</p>
       ) : null}
     </div>
@@ -569,46 +616,6 @@ export function ProfileSetupForm({
 }
 
 /* -------------------------------------------------------------------------- */
-
-/**
- * The bridge between the two halves of onboarding.
- *
- * It reuses the drawing the empty offer list already uses — a page with room
- * for cards that are not there yet — because that is exactly what the next
- * screen is about to fill. The arrow leans towards the button below it; the
- * lean is a CSS loop, so the browser drops it for readers who asked for less
- * movement without anything here having to ask them.
- */
-function ReadyScreen({
-  name,
-  ref,
-}: {
-  name: string;
-  ref?: React.RefObject<HTMLHeadingElement | null>;
-}) {
-  const t = useTranslations("onboarding.profile");
-
-  return (
-    <div className="flex flex-col items-center gap-6 text-center">
-      <PhaseQuestion
-        ref={ref}
-        level={1}
-        eyebrow={name || undefined}
-        title={t("phases.ready.title")}
-        hint={t("phases.ready.hint")}
-        className="items-center [&>*]:mx-auto"
-      />
-
-      <NoOffersArt className="w-full max-w-[220px]" />
-
-      <ArrowDown
-        aria-hidden
-        className="nudge-down text-ink-subtle size-5"
-        style={{ "--nudge-delay": "0.3s" } as CSSProperties}
-      />
-    </div>
-  );
-}
 
 /** Shows what the next step will pre-fill, so the choice feels consequential. */
 function CategoryPreview({ category }: { category: CategoryOption }) {

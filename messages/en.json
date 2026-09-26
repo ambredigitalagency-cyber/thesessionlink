@@ -41,7 +41,9 @@
       "subscriptionOff": "Inactive",
       "subscriptionOn": "Active (manual)",
       "suspendedSince": "Account suspended on {date} — reason: {reason}",
-      "trialEnds": "Trial ends"
+      "trialEnds": "Trial ends",
+      "copyRef": "Copy reference",
+      "copyFailed": "Could not copy."
     },
     "coaches": {
       "all": "All",
@@ -50,7 +52,7 @@
       "none": "No coach matches.",
       "offers": "Offers",
       "purgeIn": "Purged in {count, plural, one {# day} other {# days}}",
-      "search": "Name, email, link…",
+      "search": "Name, email, link, #ref…",
       "showing": "{shown} of {total} shown",
       "signedUp": "Signed up",
       "sortBy": "Sort by {column}",
@@ -131,7 +133,63 @@
       "signOut": "Sign out",
       "title": "Your account is suspended"
     },
-    "title": "Console"
+    "title": "Console",
+    "activity": {
+      "title": "Activity",
+      "hint": "What this account does, in figures.",
+      "recent": "Bookings (30 d)",
+      "clients": "Distinct clients",
+      "noShow": "No-shows (90 d)",
+      "sessions": "{count, plural, one {# past session} other {# past sessions}}",
+      "cancel": "Cancellations (90 d)",
+      "offers": "Offers",
+      "offersValue": "{active} published of {total}",
+      "lastOfferEdit": "Last offer edit",
+      "completeness": "Public page complete at",
+      "missing": "Missing: {items}.",
+      "items": {
+        "photo": "photo",
+        "headline": "headline",
+        "bio": "bio",
+        "location": "location",
+        "contact": "phone or WhatsApp",
+        "socials": "socials",
+        "details": "extra details",
+        "offer": "published offer"
+      }
+    },
+    "billing": {
+      "title": "Billing",
+      "hint": "Subscription and online payments.",
+      "plan": "Plan",
+      "planValue": "All included · €{price}/month",
+      "nextDue": "Next charge",
+      "notWired": "Automatic billing not wired yet",
+      "trialUntil": "Trial ends {date}",
+      "none": "None",
+      "stripe": "Stripe",
+      "paypal": "PayPal",
+      "gatewayNone": "Not connected",
+      "gatewayReady": "Ready · since {date}",
+      "gatewayLimited": "Connected, charges blocked",
+      "gatewayPending": "Connection in progress",
+      "gatewayDisabled": "Disabled",
+      "collected": "Collected online",
+      "payments": "Payments",
+      "paymentsValue": "{paid} paid · {refunded} refunded · {failed} failed",
+      "footnote": "The subscription is not charged automatically yet: it is switched on by hand from the controls below."
+    },
+    "notes": {
+      "title": "Internal notes",
+      "hint": "Admins only. Never shown to the coach.",
+      "placeholder": "Call, incident, follow-up… (Ctrl + Enter to add)",
+      "private": "The coach never sees these notes.",
+      "add": "Add note",
+      "empty": "No notes yet.",
+      "remove": "Delete note",
+      "you": "You",
+      "otherAdmin": "Another admin"
+    }
   },
   "auth": {
     "emailLabel": "Email address",
@@ -210,6 +268,8 @@
       "backToDefault": "Back to your weekly hours",
       "copied": "Copied to every day",
       "copyToAll": "Copy to every day",
+      "overlap": "Two ranges overlap on the same day.",
+      "weeklyTotal": "{hours} h open per week",
       "customSchedule": "Custom hours for this offer",
       "customScheduleHint": "Useful when one offer runs on different days than the rest.",
       "defaultEmpty": "No weekly hours set yet.",
@@ -503,7 +563,30 @@
       "subtitle": "This is the page clients land on. Keep it short and personal.",
       "title": "Your public profile",
       "visibilityHint": "Pause bookings without taking your page down.",
-      "visibilityTitle": "Booking visibility"
+      "visibilityTitle": "Booking visibility",
+      "detailsTitle": "More about you",
+      "detailsHint": "What clients want to know before choosing you: experience, languages, qualifications, area covered… Shown under your bio.",
+      "layoutTitle": "Layout",
+      "cardsTitle": "Card style",
+      "layouts": {
+        "centered": {
+          "title": "Centred",
+          "hint": "Everything on one axis, the original."
+        },
+        "banner": {
+          "title": "Banner",
+          "hint": "A band in your colour up top."
+        },
+        "compact": {
+          "title": "Compact",
+          "hint": "Offers in two columns."
+        }
+      },
+      "cards": {
+        "outline": "Outline",
+        "soft": "Soft shadow",
+        "accent": "Tinted"
+      }
     },
     "settings": {
       "appearance": {
@@ -536,7 +619,8 @@
       "preferencesTitle": "Preferences",
       "reminder": "Send reminders",
       "reminderHint": "Only for offers booked on a time slot.",
-      "reminderOption": "{count} hours before",
+      "reminderOption": "{count, plural, one {# hour before} other {# hours before}}",
+      "reminderOptionDays": "{count, plural, one {# day before} other {# days before}}",
       "showEmail": "Show my email",
       "showEmailHint": "Displayed on your public page.",
       "showPhone": "Show my phone",
@@ -608,7 +692,15 @@
         "title": "Bookings received"
       }
     },
-    "yourLink": "Your link"
+    "yourLink": "Your link",
+    "firstOffer": {
+      "eyebrow": "Last step",
+      "title": "Your page is waiting for its first offer",
+      "body": "For now, visitors see “Page being set up”. One offer is enough for them to book or get in touch.",
+      "cta": "Create my first offer",
+      "preview": "View my page",
+      "later": "Later"
+    }
   },
   "emails": {
     "clientCancellation": {
@@ -909,37 +1001,37 @@
           }
         }
       },
-      "subtitle": "These are example profiles built with the product — they show how the same building blocks fit a session, a property, a haircut or a lesson.",
-      "title": "The same page, in four very different businesses."
+      "subtitle": "Example profiles: the same building blocks, four trades.",
+      "title": "The same page, four businesses."
     },
     "faq": {
       "items": {
         "calendar": {
-          "a": "Yes. You can hide your calendar while keeping your profile online, with a message of your own.",
+          "a": "Yes: calendar hidden, profile visible, with your message.",
           "q": "Can I close my calendar for a while?"
         },
         "cancel": {
-          "a": "Yes — no commitment, and cancelling takes one click.",
+          "a": "Yes, no commitment, one click.",
           "q": "Can I cancel any time?"
         },
         "clients": {
-          "a": "Never. They book by leaving their contact details, nothing more.",
+          "a": "Never. Their contact details are enough.",
           "q": "Do my clients have to create an account?"
         },
         "language": {
-          "a": "The interface and the emails exist in English and French. Your public page follows the visitor's choice, and falls back to the language you work in.",
+          "a": "Yes, English and French. The page follows the visitor's language.",
           "q": "Is the page bilingual?"
         },
         "link": {
-          "a": "Yes, but the old address stops working — so pick one you are happy to print. Everything else (name, photo, offers) can change as often as you like.",
+          "a": "Yes, but the old address stops working. Everything else changes freely.",
           "q": "Can I change my link later?"
         },
         "niche": {
-          "a": "Any business where you sell time, a property, or a service: coaches, teachers, tutors, estate agents, hairdressers, and plenty more.",
+          "a": "Any business that sells time, a property or a service.",
           "q": "What kind of business does this work for?"
         },
         "payments": {
-          "a": "You choose how you get paid. The money goes straight to you, with no middleman.",
+          "a": "However you like. The money goes straight to you.",
           "q": "How do my clients pay me?"
         }
       },
@@ -950,38 +1042,38 @@
       "eyebrow": "Built for real jobs",
       "items": {
         "bilingual": {
-          "body": "Your page, your emails and your dashboard follow the language you work in.",
+          "body": "Page, emails and dashboard in your language.",
           "title": "English and French"
         },
         "crm": {
-          "body": "Every booking and message creates a client file with their history and your private notes.",
+          "body": "Every request creates a client file with its history.",
           "title": "A CRM that fills itself"
         },
         "fields": {
-          "body": "Surface, level, what's included, dress code — add anything clients always ask about.",
+          "body": "Surface, level, dress code: what clients always ask.",
           "title": "Your own fields"
         },
         "pause": {
-          "body": "Fully booked? Switch bookings off and show your own message. The page stays online.",
+          "body": "Fully booked? Switch bookings off, the page stays up.",
           "title": "Pause without disappearing"
         },
         "reminders": {
-          "body": "Clients get a reminder before the session. Fewer no-shows, zero messages from you.",
+          "body": "A reminder before every session. Fewer no-shows.",
           "title": "Automatic reminders"
         },
         "whatsapp": {
-          "body": "For everything that needs a conversation first, with a message already written.",
+          "body": "For what needs a conversation first.",
           "title": "WhatsApp in one tap"
         }
       },
       "onYourPage": "On your page",
-      "subtitle": "A coach sells time. A realtor sells a visit. A consultant sells a quote. One page handles all of it — you pick the action, we handle the flow.",
+      "subtitle": "A session, a viewing, a quote: you pick the action, we handle the flow.",
       "title": "Five ways to turn a visitor into a client."
     },
     "finalCta": {
       "cta": "Create my link",
       "note": "14-day trial, then €{price}/month",
-      "subtitle": "Create your page, add one offer, share it today. Fourteen days to see if it changes your week.",
+      "subtitle": "Create your page today. Fourteen days to feel the difference.",
       "title": "Stop explaining how to book you. <accent>Send the link.</accent>"
     },
     "footer": {
@@ -1005,27 +1097,27 @@
         "noCommission": "No commission, no setup call",
         "setup": "Live in about two minutes"
       },
-      "subtitle": "TheSessionLink turns your Instagram and your DMs into a real booking system. One profile, your offers, a single link — your clients book themselves, you stay on top of it.",
+      "subtitle": "One profile, your offers, one link. Clients book themselves, you stay in control.",
       "title": "Your professional booking link, live in five minutes"
     },
     "how": {
       "eyebrow": "How it works",
       "steps": {
         "create": {
-          "body": "Show what you do, your socials, your style, then add your offers — sessions, services, places to view. You decide how clients take action: book a slot, send a message, open WhatsApp, or request a quote.",
-          "title": "Set up your profile and your offers"
+          "body": "Your intro, your offers, and how clients book: a slot, a message, WhatsApp or a quote.",
+          "title": "Set up your profile"
         },
         "fill": {
-          "body": "Clients book or message you without creating an account. Everything lands in one place, and every request becomes a client record with your private notes.",
+          "body": "No client account. Every request becomes a file with your notes.",
           "title": "Take your bookings"
         },
         "share": {
-          "body": "In your Instagram bio, in your email signature, as a QR code on a flyer. The same address works everywhere and always shows your current offers.",
+          "body": "Instagram bio, email signature, QR code: one address that works everywhere.",
           "title": "Share your link"
         }
       },
-      "subtitle": "Built for independents who sell their time or their expertise — coaches, teachers, tutors, estate agents, hairdressers, and plenty more.",
-      "title": "No more WhatsApp ping-pong just to book a time",
+      "subtitle": "For anyone who sells their time: coaches, teachers, agents, hairdressers…",
+      "title": "No more back-and-forth to book a time",
       "visuals": {
         "actions": {
           "calendar_booking": "Book a slot",
@@ -1056,22 +1148,22 @@
     },
     "positioning": {
       "cold": {
-        "body": "A bare calendar with your name on top. The client picks an hour without seeing what they are buying.",
+        "body": "A bare calendar. You pick an hour without seeing what you buy.",
         "label": "Too cold",
         "title": "A booking form"
       },
       "eyebrow": "Where it sits",
       "heavy": {
-        "body": "Programmes, invoicing, progress tracking. Powerful, long to install, and oversized when all you want is to be bookable.",
+        "body": "Powerful, slow to set up, oversized just to be bookable.",
         "label": "Too heavy",
         "title": "Trade software"
       },
       "ours": {
-        "body": "Your page, your offers, your prices, the way you work — with booking at the end of it. Ready the same day.",
+        "body": "Your page, your offers, booking at the end. Ready the same day.",
         "label": "The right size",
         "title": "TheSessionLink"
       },
-      "subtitle": "Between the booking tool that shows nothing of you and the trade platform that takes a week to set up, something was missing: a page that looks like you and fills itself in.",
+      "subtitle": "A page that looks like you and fills itself.",
       "title": "Warmer than a form, lighter than software."
     },
     "pricing": {
@@ -1084,26 +1176,29 @@
         "photosUnlimited": "Unlimited photos",
         "reminders": "Automatic email reminders"
       },
-      "featuresIntro": "Everything you need, no tier to unlock:",
+      "featuresIntro": "All included, no tiers:",
       "monthlyNote": "Cancel any time, in one click.",
-      "paymentsNote": "Online payment isn't part of the product yet: the client books, you get paid the way you do today. When payments land, your offers won't need to change.",
+      "paymentsNote": "Clients book, you get paid the way you do today.",
       "perMonth": "/ month",
       "planName": "All included",
       "price": "€{price}",
-      "subtitle": "No per-booking fee, no commission on what you charge. The price you see is the price you pay.",
+      "subtitle": "No commission, no per-booking fee.",
       "title": "One plan, everything included",
       "trialBadge": "14-day trial",
-      "trialNote": "14-day trial · card required"
+      "trialNote": "14-day trial · card required",
+      "calcLabel": "How many bookings do you get a month?",
+      "calcValue": "{count} bookings",
+      "calcResult": "That is <strong>{cost}</strong> per booking, with no commission."
     },
     "problem": {
-      "afterBody": "Your offers, your prices, your slots, your terms. The client picks, you get the request in writing — and it stays there.",
+      "afterBody": "Offers, prices, slots: it's all on the page. Requests arrive in writing.",
       "afterLabel": "With your link",
       "afterPoints": {
         "0": "No account to create, for you or for them",
         "1": "Every request becomes a client record",
         "2": "The same link works everywhere, forever"
       },
-      "afterTitle": "One address, and the question is already answered.",
+      "afterTitle": "One link, and the question is already answered.",
       "eyebrow": "The problem",
       "messages": {
         "0": "Any room on Saturday?",
@@ -1283,6 +1378,7 @@
       "timeMode": "Format",
       "timeRange": "Time range",
       "timeStart": "Start",
+      "timeSet": "Set a time range",
       "types": {
         "boolean": {
           "hint": "Yes or no, shown as ✓ or ✗.",
@@ -1425,10 +1521,6 @@
     }
   },
   "onboarding": {
-    "offer": {
-      "subtitle": "One offer is enough to go live. Start with the essentials, then add the details that matter for your work.",
-      "title": "Create your first offer"
-    },
     "profile": {
       "bioPlaceholder": "Two or three sentences: what you do, who you do it for, and what makes you different.",
       "bioPlaceholderCategory": "{category} for 5 years. I work with… Two or three sentences is plenty.",
@@ -1437,7 +1529,7 @@
       "nameHint": "Your name or your brand, as clients know you.",
       "nameLabel": "Profile name",
       "namePlaceholder": "Ana Torres Coaching",
-      "optionalNote": "Optional — you can add this later from your dashboard.",
+      "optionalNote": "Optional — you can change all of it later from your dashboard.",
       "phases": {
         "bio": {
           "title": "Say who you are",
@@ -1470,17 +1562,16 @@
           "title": "Put a face to the link",
           "hint": "A photo makes a page feel like a person. You can skip it and add one later."
         },
-        "ready": {
-          "title": "Your profile is ready",
-          "hint": "Now the part that makes it work: one offer, so clients have something to book.",
-          "cta": "Create my first offer"
-        },
         "socials": {
           "title": "Where else can they find you?",
           "hint": "A handle or a full link, whichever you have. Empty ones simply do not show.",
           "instagram": "@your_handle",
           "tiktok": "@your_handle",
           "facebook": "facebook.com/your-page"
+        },
+        "details": {
+          "title": "What do your clients want to know?",
+          "hint": "Experience, languages, area covered… Tap an idea to add it. Only filled-in fields appear on your page."
         }
       },
       "previewBody": "Based on your activity, we'll suggest fields like {fields} — keep what fits, ignore the rest.",
@@ -1490,34 +1581,13 @@
       "slugLabel": "Your link",
       "submit": "Create my profile",
       "subtitle": "This shapes your public page and pre-fills your first offer. You can change all of it later.",
-      "title": "What do you do, and under which name?"
-    },
-    "share": {
-      "badge": "Your page is live",
-      "places": {
-        "instagram": {
-          "body": "Replace the link in your bio — the one people already tap.",
-          "title": "Instagram bio"
-        },
-        "messages": {
-          "body": "Answer \"how do I book?\" with one link instead of ten messages.",
-          "title": "DMs and WhatsApp"
-        },
-        "signature": {
-          "body": "Every email you send becomes a booking opportunity.",
-          "title": "Email signature"
-        }
-      },
-      "subtitle": "Share it once and let clients book, reserve or reach out — without a single back-and-forth message.",
-      "title": "One link. <accent>Everything you sell.</accent>",
-      "toDashboard": "Go to my dashboard",
-      "viewPage": "See my public page"
+      "title": "What do you do, and under which name?",
+      "finish": "Open my dashboard"
     },
     "steps": {
       "1": "Account",
       "2": "Profile",
-      "3": "First offer",
-      "4": "Your link",
+      "3": "Your space",
       "aria": "Setup progress"
     }
   },
@@ -1603,7 +1673,13 @@
       "home": "Go to the homepage",
       "title": "This professional is no longer available on TheSessionLink."
     },
-    "whatsappUnavailable": "This contact option is temporarily unavailable."
+    "whatsappUnavailable": "This contact option is temporarily unavailable.",
+    "setup": {
+      "title": "Page being set up",
+      "body": "{name} is getting their services ready. Check back very soon.",
+      "bodyContact": "{name} is getting their services ready. In the meantime, you can already reach out with the buttons above."
+    },
+    "detailsTitle": "Good to know"
   },
   "share": {
     "copied": "Link copied",

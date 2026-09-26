@@ -8,14 +8,28 @@ import { checkSlugAvailability, updateProfile } from "@/actions/profile";
 import { SocialIcon } from "@/components/brand/social-icons";
 import { AccentPreview } from "@/components/dashboard/accent-preview";
 import { AvatarUpload } from "@/components/media/image-upload";
+import { CustomFieldsEditor } from "@/components/offers/custom-fields-editor";
 import { Button } from "@/components/ui/button";
+import { ChoiceChips, ChoiceGroup } from "@/components/ui/choice-cards";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
 import { Field, Input, NativeSelect, PrefixedInput, Textarea } from "@/components/ui/field";
 import { notify } from "@/lib/notify";
+import { parseOfferFields, type OfferField } from "@/lib/offers/fields";
 import { localized } from "@/lib/offers/schema";
+import { PROFILE_FIELD_SUGGESTIONS, PROFILE_FIELD_TYPES } from "@/lib/profile/details";
 import type { Tables } from "@/lib/supabase/database.types";
 import { cn, slugify } from "@/lib/utils";
-import { SOCIAL_KEYS, THEME_ACCENTS, type SocialKey, type ThemeAccent } from "@/lib/validation";
+import {
+  CARD_STYLES,
+  PROFILE_LAYOUTS,
+  SOCIAL_KEYS,
+  THEME_ACCENTS,
+  parseTheme,
+  type CardStyle,
+  type ProfileLayout,
+  type SocialKey,
+  type ThemeAccent,
+} from "@/lib/validation";
 
 type Category = Pick<Tables<"activity_categories">, "id" | "slug" | "name" | "icon">;
 
@@ -36,7 +50,7 @@ export function ProfileEditor({
   const locale = useLocale();
 
   const initialSocial = (profile.social_links ?? {}) as Partial<Record<SocialKey, string | null>>;
-  const initialTheme = (profile.theme ?? {}) as { accent?: ThemeAccent };
+  const initialTheme = parseTheme(profile.theme);
 
   const [displayName, setDisplayName] = useState(profile.display_name);
   const [slug, setSlug] = useState(profile.slug);
@@ -50,7 +64,12 @@ export function ProfileEditor({
       Record<SocialKey, string>
     >,
   );
-  const [accent, setAccent] = useState<ThemeAccent>(initialTheme.accent ?? "coral");
+  const [accent, setAccent] = useState<ThemeAccent>(initialTheme.accent);
+  const [layout, setLayout] = useState<ProfileLayout>(initialTheme.layout);
+  const [cards, setCards] = useState<CardStyle>(initialTheme.cards);
+  const [details, setDetails] = useState<OfferField[]>(() =>
+    parseOfferFields(profile.custom_fields),
+  );
   const [calendarVisible, setCalendarVisible] = useState(profile.calendar_visible);
   const [closedMessage, setClosedMessage] = useState(profile.custom_closed_message ?? "");
 
@@ -86,7 +105,8 @@ export function ProfileEditor({
         social_links: Object.fromEntries(
           SOCIAL_KEYS.map((key) => [key, social[key]?.trim() || null]),
         ),
-        theme: { accent },
+        theme: { accent, layout, cards },
+        custom_fields: details,
         calendar_visible: calendarVisible,
         custom_closed_message: closedMessage.trim() || null,
       });
@@ -237,6 +257,20 @@ export function ProfileEditor({
       </Card>
 
       <Card className="p-5 sm:p-7">
+        <CardHeader title={t("detailsTitle")} description={t("detailsHint")} />
+        <div className="mt-5">
+          <CustomFieldsEditor
+            fields={details}
+            onChange={setDetails}
+            suggestions={PROFILE_FIELD_SUGGESTIONS}
+            allowedTypes={PROFILE_FIELD_TYPES}
+            locale={locale}
+            errors={errors}
+          />
+        </div>
+      </Card>
+
+      <Card className="p-5 sm:p-7">
         <CardHeader title={t("appearanceTitle")} description={t("appearanceHint")} />
 
         <div className="mt-5 flex flex-wrap gap-2">
@@ -260,11 +294,45 @@ export function ProfileEditor({
           ))}
         </div>
 
+        <div className="mt-7 space-y-6">
+          <Field label={t("layoutTitle")}>
+            <ChoiceGroup
+              name="profile-layout"
+              label={t("layoutTitle")}
+              layout="tile"
+              visual="bare"
+              columns={3}
+              value={layout}
+              onChange={setLayout}
+              options={PROFILE_LAYOUTS.map((option) => ({
+                value: option,
+                title: t(`layouts.${option}.title` as "layouts.centered.title"),
+                description: t(`layouts.${option}.hint` as "layouts.centered.hint"),
+                visual: <LayoutSketch layout={option} />,
+              }))}
+            />
+          </Field>
+
+          <Field label={t("cardsTitle")}>
+            <ChoiceChips
+              label={t("cardsTitle")}
+              value={cards}
+              onChange={setCards}
+              options={CARD_STYLES.map((option) => ({
+                value: option,
+                label: t(`cards.${option}` as "cards.outline"),
+              }))}
+            />
+          </Field>
+        </div>
+
         <div className="mt-6">
           <p className="text-ink-subtle mb-2 text-[12.5px] font-medium">{t("previewTitle")}</p>
           <div className="max-w-xs">
             <AccentPreview
               accent={accent}
+              layout={layout}
+              cards={cards}
               displayName={displayName || profile.display_name}
               categoryName={
                 categories.find((category) => category.id === categoryId)
@@ -310,6 +378,49 @@ export function ProfileEditor({
         <Button onClick={save} loading={pending} size="lg" className="shadow-[var(--shadow-float)]">
           {tCommon("save")}
         </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A thumbnail of each layout, drawn with the same boxes the page is built
+ * from, so the three read as the page at a glance rather than as icons.
+ */
+function LayoutSketch({ layout }: { layout: ProfileLayout }) {
+  const line = "bg-ink/15 h-1.5 rounded-full";
+  const card = "border-line bg-surface h-4 rounded-[3px] border";
+
+  return (
+    <div
+      aria-hidden
+      className="bg-canvas border-line relative h-24 w-full overflow-hidden rounded-[var(--radius-sm)] border p-2.5"
+    >
+      {layout === "banner" ? (
+        <div className="absolute inset-x-0 top-0 h-7 bg-[var(--accent)] opacity-80" />
+      ) : null}
+
+      <div
+        className={cn(
+          "relative flex",
+          layout === "compact" ? "flex-row items-center gap-1.5" : "flex-col gap-1",
+          layout === "centered" ? "items-center" : "items-start",
+          layout === "banner" && "pt-2.5",
+        )}
+      >
+        <span
+          className={cn(
+            "bg-ink/25 block shrink-0 rounded-full",
+            layout === "banner" && "ring-2 ring-[var(--color-canvas)]",
+            layout === "compact" ? "size-4" : "size-5",
+          )}
+        />
+        <span className={cn(line, "w-10")} />
+      </div>
+
+      <div className={cn("relative mt-2 grid gap-1", layout === "compact" && "grid-cols-2")}>
+        <span className={card} />
+        <span className={card} />
       </div>
     </div>
   );

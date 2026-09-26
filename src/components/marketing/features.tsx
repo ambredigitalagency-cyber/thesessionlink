@@ -10,13 +10,14 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { ACTION_ICONS } from "@/lib/offers/meta";
 import { ACTION_TYPES, type ActionType } from "@/lib/offers/schema";
 import { cn } from "@/lib/utils";
 
 import { ACTION_GLYPHS, GLYPH_ON_DARK } from "./action-glyphs";
+import { useSpotlight } from "./interactive";
 import { EASE, SectionHeading } from "./section";
 
 const SMALL_FEATURES = [
@@ -235,6 +236,7 @@ function ActionShowcase() {
  */
 function SmallFeatures() {
   const t = useTranslations("landing.features");
+  const spotlight = useSpotlight();
 
   return (
     <ul className="mt-14 grid gap-x-12 sm:grid-cols-2">
@@ -245,7 +247,10 @@ function SmallFeatures() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.45, delay: (index % 2) * 0.08, ease: EASE }}
-          className="border-line-inverse flex items-start gap-3.5 border-t py-5"
+          onPointerMove={spotlight}
+          // A pale glow on the night band, where the accent one would muddy.
+          style={{ "--spot-color": "rgb(255 255 255 / 0.06)" } as CSSProperties}
+          className="spotlight border-line-inverse -mx-3 flex items-start gap-3.5 rounded-[var(--radius-md)] border-t px-3 py-5"
         >
           <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-white/[0.06]">
             <Icon className="size-4 text-[var(--accent)]" />

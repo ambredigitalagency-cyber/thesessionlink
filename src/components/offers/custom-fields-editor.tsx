@@ -23,12 +23,14 @@ import { GalleryUpload } from "@/components/media/image-upload";
 import { Button } from "@/components/ui/button";
 import { ChoiceChips, ChoiceGroup, chipClass } from "@/components/ui/choice-cards";
 import { Field, Input, Textarea } from "@/components/ui/field";
+import { ScaleSlider, TimeRangeSlider } from "@/components/ui/slider";
 import {
   FIELD_LIMITS,
   FIELD_TYPES,
   availableSuggestions,
   createField,
   fieldFromSuggestion,
+  formatDuration,
   newFieldId,
   type FieldType,
   type OfferField,
@@ -36,6 +38,8 @@ import {
   type TimeRange,
 } from "@/lib/offers/fields";
 import { localized, type ActionType, type CategoryField } from "@/lib/offers/schema";
+import { DETAIL_DURATION_STOPS } from "@/lib/scales";
+import { cn } from "@/lib/utils";
 
 export const FIELD_ICONS: Record<FieldType, LucideIcon> = {
   text: Type,
@@ -65,14 +69,18 @@ export function CustomFieldsEditor({
   onChange,
   suggestions = [],
   actionType,
+  allowedTypes = FIELD_TYPES,
   locale,
   errors,
 }: {
   fields: OfferField[];
   onChange: (fields: OfferField[]) => void;
-  /** Category suggestions; omitted outside the offer builder. */
+  /** Ready-made fields offered as one-tap ideas (category or profile ones). */
   suggestions?: CategoryField[];
+  /** Filters suggestions that do not apply to this action; absent = keep all. */
   actionType?: ActionType;
+  /** The profile leaves photos out: its gallery is the offers'. */
+  allowedTypes?: readonly FieldType[];
   locale: string;
   errors: Record<string, string>;
 }) {
@@ -81,7 +89,7 @@ export function CustomFieldsEditor({
   const [focusId, setFocusId] = useState<string | null>(null);
 
   const full = fields.length >= FIELD_LIMITS.fields;
-  const ideas = actionType ? availableSuggestions(suggestions, fields, actionType, locale) : [];
+  const ideas = availableSuggestions(suggestions, fields, actionType, locale);
 
   function add(field: OfferField) {
     onChange([...fields, field]);
@@ -153,7 +161,7 @@ export function CustomFieldsEditor({
             columns={2}
             value={null}
             onChange={(type) => add(createField(type))}
-            options={FIELD_TYPES.map((type) => {
+            options={allowedTypes.map((type) => {
               const Icon = FIELD_ICONS[type];
               return {
                 value: type,
@@ -635,33 +643,40 @@ function TimeRangeInput({
   onChange: (value: TimeRange | null) => void;
 }) {
   const t = useTranslations("offers.fields");
-  const [start, setStart] = useState(value?.start ?? "");
-  const [end, setEnd] = useState(value?.end ?? "");
-  // The first input takes the Field's id; the second needs its own.
-  const endId = useId();
+  const tCommon = useTranslations("common");
 
-  function commit(nextStart: string, nextEnd: string) {
-    setStart(nextStart);
-    setEnd(nextEnd);
-    onChange(nextStart && nextEnd ? { start: nextStart, end: nextEnd } : null);
+  // Unset is a real state (an empty detail is hidden publicly), so the slider
+  // only appears once there is a range to drag.
+  if (!value) {
+    return (
+      <button
+        type="button"
+        onClick={() => onChange({ start: "09:00", end: "12:00" })}
+        className={cn(chipClass(false), "self-start")}
+      >
+        <Plus className="size-3.5" />
+        {t("timeSet")}
+      </button>
+    );
   }
 
   return (
-    <div className="flex items-center gap-2 sm:max-w-80">
-      <Input
-        type="time"
-        value={start}
-        onChange={(event) => commit(event.target.value, end)}
-        aria-label={t("timeStart")}
+    <div className="flex items-start gap-3">
+      <TimeRangeSlider
+        label={`${t("timeStart")} / ${t("timeEnd")}`}
+        start={value.start}
+        end={value.end}
+        onChange={onChange}
+        className="flex-1"
       />
-      <span className="text-ink-subtle">–</span>
-      <Input
-        type="time"
-        id={endId}
-        value={end}
-        onChange={(event) => commit(start, event.target.value)}
-        aria-label={t("timeEnd")}
-      />
+      <button
+        type="button"
+        onClick={() => onChange(null)}
+        className="text-ink-subtle hover:bg-ink/5 hover:text-ink mt-0.5 rounded-full p-1.5 transition-colors"
+        aria-label={tCommon("remove")}
+      >
+        <X className="size-3.5" />
+      </button>
     </div>
   );
 }
@@ -687,29 +702,44 @@ function DurationInput({
     onChange(total > 0 ? Math.round(total) : null);
   }
 
+  // The slider covers five minutes to a week; the two inputs stay for an exact
+  // figure off the scale (1 h 10).
   return (
-    <div className="flex items-center gap-2 sm:max-w-80" lang={locale}>
-      <Input
-        type="number"
-        inputMode="numeric"
-        min={0}
-        max={168}
-        value={hours}
-        onChange={(event) => commit(event.target.value, rest)}
-        aria-label={t("hours")}
+    <div className="space-y-3" lang={locale}>
+      <ScaleSlider
+        label={t("timeDuration")}
+        stops={DETAIL_DURATION_STOPS}
+        value={minutes ?? DETAIL_DURATION_STOPS[0]}
+        onChange={(next) => {
+          setHours(String(Math.floor(next / 60)));
+          setRest(String(next % 60));
+          onChange(next);
+        }}
+        format={(value) => (minutes === null ? "—" : formatDuration(value, locale))}
       />
-      <span className="text-ink-muted text-[14px]">{t("hoursShort")}</span>
-      <Input
-        type="number"
-        inputMode="numeric"
-        min={0}
-        max={59}
-        id={minutesId}
-        value={rest}
-        onChange={(event) => commit(hours, event.target.value)}
-        aria-label={t("minutes")}
-      />
-      <span className="text-ink-muted text-[14px]">{t("minutesShort")}</span>
+      <div className="flex items-center gap-2 sm:max-w-80">
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={168}
+          value={hours}
+          onChange={(event) => commit(event.target.value, rest)}
+          aria-label={t("hours")}
+        />
+        <span className="text-ink-muted text-[14px]">{t("hoursShort")}</span>
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={59}
+          id={minutesId}
+          value={rest}
+          onChange={(event) => commit(hours, event.target.value)}
+          aria-label={t("minutes")}
+        />
+        <span className="text-ink-muted text-[14px]">{t("minutesShort")}</span>
+      </div>
     </div>
   );
 }

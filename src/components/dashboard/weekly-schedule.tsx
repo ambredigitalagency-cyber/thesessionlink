@@ -7,6 +7,7 @@ import { useState, useTransition } from "react";
 import { saveWeeklySchedule } from "@/actions/availability";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/primitives";
+import { TimeRangeSlider, fromMinutes, toMinutes } from "@/components/ui/slider";
 import { notify } from "@/lib/notify";
 import { WEEKDAY_ORDER, weekdayLabel } from "@/lib/offers/meta";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,28 @@ export type ScheduleRule = {
 type Range = { start: string; end: string };
 
 const DEFAULT_RANGE: Range = { start: "09:00", end: "17:00" };
+
+/** A second range starts an hour after the last one ends, two hours long. */
+function nextRange(ranges: Range[]): Range {
+  const lastEnd = toMinutes(ranges.at(-1)?.end ?? "16:00");
+  const start = Math.min(lastEnd + 60, 22 * 60);
+  return { start: fromMinutes(start), end: fromMinutes(Math.min(start + 120, 24 * 60 - 15)) };
+}
+
+function minutesOpen(days: Record<number, Range[]>): number {
+  return Object.values(days)
+    .flat()
+    .reduce(
+      (total, range) => total + Math.max(0, toMinutes(range.end) - toMinutes(range.start)),
+      0,
+    );
+}
+
+/** Two ranges on one day that share any minute. */
+function overlaps(ranges: Range[]): boolean {
+  const sorted = [...ranges].sort((a, b) => a.start.localeCompare(b.start));
+  return sorted.some((range, index) => index > 0 && range.start < sorted[index - 1].end);
+}
 
 function toDayMap(rules: ScheduleRule[]): Record<number, Range[]> {
   const map: Record<number, Range[]> = {};
@@ -80,6 +103,10 @@ export function WeeklyScheduleEditor({
       notify.error(tError("end_before_start"));
       return;
     }
+    if (Object.values(days).some((ranges) => overlaps(ranges ?? []))) {
+      notify.error(t("overlap"));
+      return;
+    }
 
     startTransition(async () => {
       const result = await saveWeeklySchedule({ offer_id: offerId, rules: payload });
@@ -100,7 +127,7 @@ export function WeeklyScheduleEditor({
           const enabled = ranges.length > 0;
 
           return (
-            <div key={weekday} className="flex flex-col gap-3 py-3.5 sm:flex-row sm:items-start">
+            <div key={weekday} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start">
               <div className="flex w-full items-center gap-3 sm:w-44">
                 <Toggle
                   checked={enabled}
@@ -119,76 +146,62 @@ export function WeeklyScheduleEditor({
                 </span>
               </div>
 
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 space-y-4">
                 {enabled ? (
                   ranges.map((range, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <input
-                        type="time"
-                        value={range.start}
-                        step={300}
-                        onChange={(event) =>
+                    <div key={index} className="flex items-start gap-2">
+                      <TimeRangeSlider
+                        label={weekdayLabel(weekday, locale, "long")}
+                        start={range.start}
+                        end={range.end}
+                        onChange={(next) =>
                           setDay(
                             weekday,
-                            ranges.map((item, position) =>
-                              position === index ? { ...item, start: event.target.value } : item,
-                            ),
+                            ranges.map((item, position) => (position === index ? next : item)),
                           )
                         }
-                        className="border-line-strong bg-surface text-ink focus:border-ink h-10 rounded-[var(--radius-xs)] border px-2.5 text-[14px] focus:outline-none"
+                        className="min-w-0 flex-1"
                       />
-                      <span className="text-ink-subtle">–</span>
-                      <input
-                        type="time"
-                        value={range.end}
-                        step={300}
-                        onChange={(event) =>
-                          setDay(
-                            weekday,
-                            ranges.map((item, position) =>
-                              position === index ? { ...item, end: event.target.value } : item,
-                            ),
-                          )
-                        }
-                        className="border-line-strong bg-surface text-ink focus:border-ink h-10 rounded-[var(--radius-xs)] border px-2.5 text-[14px] focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setDay(
-                            weekday,
-                            ranges.filter((_, position) => position !== index),
-                          )
-                        }
-                        className="text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors"
-                        aria-label={tCommon("remove")}
-                      >
-                        <X className="size-3.5" />
-                      </button>
+                      {/* Fixed width, buttons from the right: every track of the
+                          week ends at the same x, whatever sits beside it. */}
+                      <div className="flex w-[84px] shrink-0 items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDay(
+                              weekday,
+                              ranges.filter((_, position) => position !== index),
+                            )
+                          }
+                          className="text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors"
+                          aria-label={tCommon("remove")}
+                        >
+                          <X className="size-3.5" />
+                        </button>
 
-                      {index === ranges.length - 1 ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDay(weekday, [...ranges, { start: "18:00", end: "20:00" }])
-                            }
-                            className="text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors"
-                            aria-label={t("addRange")}
-                          >
-                            <Plus className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => copyToAll(weekday)}
-                            className="text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors"
-                            aria-label={t("copyToAll")}
-                            title={t("copyToAll")}
-                          >
-                            <CopyPlus className="size-3.5" />
-                          </button>
-                        </>
-                      ) : null}
+                        {index === ranges.length - 1 ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setDay(weekday, [...ranges, nextRange(ranges)])}
+                              className="text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors"
+                              aria-label={t("addRange")}
+                              title={t("addRange")}
+                            >
+                              <Plus className="size-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => copyToAll(weekday)}
+                              className="text-ink-subtle hover:bg-ink/5 hover:text-ink rounded-full p-1.5 transition-colors"
+                              aria-label={t("copyToAll")}
+                              title={t("copyToAll")}
+                            >
+                              <CopyPlus className="size-3.5" />
+                            </button>
+                          </>
+                        ) : null}
+                      </div>
                     </div>
                   ))
                 ) : (
@@ -200,7 +213,10 @@ export function WeeklyScheduleEditor({
         })}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-ink-muted text-[13px] tabular-nums" aria-live="polite">
+          {t("weeklyTotal", { hours: Math.round((minutesOpen(days) / 60) * 10) / 10 })}
+        </p>
         <Button onClick={save} loading={pending}>
           {tCommon("save")}
         </Button>

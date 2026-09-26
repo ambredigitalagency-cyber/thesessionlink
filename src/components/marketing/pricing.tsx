@@ -3,12 +3,18 @@
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ScaleSlider } from "@/components/ui/slider";
 import { PLAN_FEATURES, PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
 
+import { CountUp, useSpotlight } from "./interactive";
 import { EASE, SectionHeading } from "./section";
+
+/** Bookings a month, for the cost-per-booking calculator. */
+const VOLUME_STOPS = [2, 4, 6, 8, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100];
 
 /**
  * One plan, so it does not need a column of its own.
@@ -21,6 +27,17 @@ import { EASE, SectionHeading } from "./section";
  */
 export function Pricing() {
   const t = useTranslations("landing.pricing");
+  const locale = useLocale();
+  const spotlight = useSpotlight();
+  const [volume, setVolume] = useState(20);
+
+  const money = (value: number, digits = 0) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    }).format(value);
 
   return (
     <section id="pricing" className="py-20 sm:py-28">
@@ -37,7 +54,8 @@ export function Pricing() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.5, ease: EASE }}
-          className="surface-card border-ink-strong ring-ink/10 mx-auto mt-12 grid max-w-4xl overflow-hidden ring-2 lg:grid-cols-[0.9fr_1fr]"
+          onPointerMove={spotlight}
+          className="spotlight surface-card border-ink-strong ring-ink/10 mx-auto mt-12 grid max-w-4xl overflow-hidden ring-2 lg:grid-cols-[0.9fr_1fr]"
         >
           {/* The price side. */}
           <div className="flex flex-col p-7 sm:p-9">
@@ -51,13 +69,37 @@ export function Pricing() {
             </div>
 
             <div className="mt-5 flex items-end gap-1.5">
-              <span className="text-ink text-[56px] leading-none font-semibold tracking-[-0.045em]">
-                {t("price", { price: PLAN_PRICE_MONTHLY })}
-              </span>
+              <CountUp
+                value={PLAN_PRICE_MONTHLY}
+                format={(price) => t("price", { price })}
+                className="text-ink text-[56px] leading-none font-semibold tracking-[-0.045em] tabular-nums"
+              />
               <span className="text-ink-muted pb-2 text-[14px]">{t("perMonth")}</span>
             </div>
 
             <p className="text-ink-muted mt-3 text-[13.5px] leading-relaxed">{t("monthlyNote")}</p>
+
+            {/* The flat price, turned into the only figure a coach compares
+                it with: what one booking costs them. */}
+            <div className="bg-ink/[0.03] mt-6 rounded-[var(--radius-md)] p-4">
+              <p className="text-ink-muted text-[13px]">{t("calcLabel")}</p>
+              <ScaleSlider
+                className="mt-2"
+                label={t("calcLabel")}
+                stops={VOLUME_STOPS}
+                value={volume}
+                onChange={setVolume}
+                format={(count) => t("calcValue", { count })}
+              />
+              <p className="text-ink mt-3 text-[14px]" aria-live="polite">
+                {t.rich("calcResult", {
+                  cost: money(PLAN_PRICE_MONTHLY / volume, 2),
+                  strong: (chunks) => (
+                    <strong className="font-semibold text-[var(--accent-ink)]">{chunks}</strong>
+                  ),
+                })}
+              </p>
+            </div>
 
             <div className="mt-auto pt-7">
               <Button asChild size="lg" block>

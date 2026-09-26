@@ -4,12 +4,16 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { AuditTrail } from "@/components/admin/audit-trail";
+import { CoachNotes, CoachRefChip } from "@/components/admin/coach-file";
 import { CoachControls } from "@/components/admin/coach-controls";
 import { ConsoleKpi, ConsolePanel } from "@/components/admin/console-kpi";
 import { STATUS_BAR, STATUS_CHIP } from "@/components/admin/status-tone";
 import { deletionDaysLeft, deletionDueAt } from "@/lib/account/deletion";
 import { requireAdmin } from "@/lib/admin/access";
+import { coachActivity, paymentSummary, profileCompleteness } from "@/lib/admin/coach-file";
+import { coachRef } from "@/lib/admin/ref";
 import { accountStatus, trialDaysLeft } from "@/lib/admin/status";
+import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +30,7 @@ import { cn } from "@/lib/utils";
  * page, and this rebuild is a presentation job.
  */
 export default async function AdminCoachPage({ params }: PageProps<"/admin/coaches/[id]">) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const { id } = await params;
   const t = await getTranslations("admin");
 
@@ -55,6 +59,58 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
     .eq("target_profile_id", id)
     .order("created_at", { ascending: false })
     .limit(50);
+
+  // Everything the file reads beyond the overview row, in one round trip.
+  const [
+    { data: profileRow },
+    { data: offers },
+    { data: bookings },
+    { data: payments },
+    { data: gateways },
+    { data: notes },
+    { data: admins },
+  ] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select(
+        "avatar_url, headline, bio, location, phone_number, whatsapp_number, social_links, custom_fields",
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    supabase.from("offers").select("is_active, updated_at").eq("profile_id", id),
+    supabase
+      .from("bookings")
+      .select("status, no_show, created_at, starts_at, client_email")
+      .eq("profile_id", id)
+      .limit(5000),
+    supabase.from("payments").select("status, amount_cents, currency").eq("profile_id", id),
+    supabase
+      .from("payment_accounts")
+      .select("provider, status, charges_enabled, connected_at")
+      .eq("profile_id", id),
+    supabase
+      .from("admin_notes")
+      .select("id, body, created_at, author_user_id")
+      .eq("profile_id", id)
+      .order("created_at", { ascending: false }),
+    supabase.from("platform_admins").select("user_id, note"),
+  ]);
+
+  // Server Component: one reference time for the whole file.
+  const now = new Date();
+  const activity = coachActivity(bookings ?? [], now);
+  const activeOffers = (offers ?? []).filter((offer) => offer.is_active).length;
+  const lastOfferEdit = (offers ?? []).reduce<string | null>(
+    (latest, offer) => (!latest || offer.updated_at > latest ? offer.updated_at : latest),
+    null,
+  );
+  const completeness = profileRow ? profileCompleteness({ ...profileRow, activeOffers }) : null;
+  const paid = paymentSummary((payments ?? []) as Parameters<typeof paymentSummary>[0]);
+  const adminNames = new Map((admins ?? []).map((row) => [row.user_id, row.note]));
+
+  const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value * 100)} %`);
+  const money = (cents: number, currency: string) =>
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(cents / 100);
 
   const status = accountStatus({
     trial_ends_at: coach.trial_ends_at,
@@ -116,6 +172,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
               >
                 {t(`status.${status}`)}
               </span>
+              <CoachRefChip value={coachRef(coach.id ?? id)} />
             </div>
             <p className="text-ink-muted mt-1.5 text-[13.5px]">{coach.contact_email ?? "—"}</p>
           </div>
@@ -164,20 +221,132 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
         </div>
 
         <ConsolePanel index={3} title={t("coach.facts")}>
-          <dl className="divide-line -my-2.5 divide-y">
-            {facts.map((fact) => (
-              <div key={fact.label} className="flex items-baseline justify-between gap-6 py-2.5">
-                <dt className="text-ink-muted text-[13.5px]">{fact.label}</dt>
-                <dd className="text-ink text-right text-[14px] font-medium tabular-nums">
-                  {fact.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <FactList facts={facts} />
         </ConsolePanel>
       </div>
 
-      <ConsolePanel index={4} title={t("controls.title")} hint={t("controls.subtitle")}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ConsolePanel index={4} title={t("activity.title")} hint={t("activity.hint")}>
+          <FactList
+            facts={[
+              { label: t("activity.recent"), value: String(activity.recentBookings) },
+              { label: t("activity.clients"), value: String(activity.clients) },
+              {
+                label: t("activity.noShow"),
+                value: activity.pastSessions
+                  ? `${percent(activity.noShowRate)} · ${t("activity.sessions", { count: activity.pastSessions })}`
+                  : "—",
+              },
+              { label: t("activity.cancel"), value: percent(activity.cancelRate) },
+              {
+                label: t("activity.offers"),
+                value: t("activity.offersValue", {
+                  active: activeOffers,
+                  total: (offers ?? []).length,
+                }),
+              },
+              { label: t("activity.lastOfferEdit"), value: date(lastOfferEdit) },
+            ]}
+          />
+
+          {completeness ? (
+            <div className="border-line mt-5 border-t pt-4">
+              <div className="flex items-baseline justify-between gap-4">
+                <p className="text-ink-muted text-[13.5px]">{t("activity.completeness")}</p>
+                <p className="text-ink text-[14px] font-semibold tabular-nums">
+                  {percent(completeness.ratio)}
+                </p>
+              </div>
+              <div
+                className="bg-ink/10 mt-2 h-1.5 overflow-hidden rounded-full"
+                role="img"
+                aria-label={`${t("activity.completeness")} ${percent(completeness.ratio)}`}
+              >
+                <div
+                  className="h-full rounded-full bg-[var(--console-accent)]"
+                  style={{ width: `${completeness.ratio * 100}%` }}
+                />
+              </div>
+              {completeness.missing.length > 0 ? (
+                <p className="text-ink-subtle mt-2.5 text-[12.5px] leading-relaxed">
+                  {t("activity.missing", {
+                    items: completeness.missing
+                      .map((item) => t(`activity.items.${item}`))
+                      .join(", "),
+                  })}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </ConsolePanel>
+
+        <ConsolePanel index={5} title={t("billing.title")} hint={t("billing.hint")}>
+          <FactList
+            facts={[
+              {
+                label: t("billing.plan"),
+                value: t("billing.planValue", { price: PLAN_PRICE_MONTHLY }),
+              },
+              {
+                label: t("billing.nextDue"),
+                value: coach.subscription_active
+                  ? t("billing.notWired")
+                  : status === "trial"
+                    ? t("billing.trialUntil", { date: date(coach.trial_ends_at) })
+                    : t("billing.none"),
+              },
+              ...(["stripe", "paypal"] as const).map((provider) => {
+                const account = (gateways ?? []).find((row) => row.provider === provider);
+                return {
+                  label: t(`billing.${provider}`),
+                  value: !account
+                    ? t("billing.gatewayNone")
+                    : account.status === "connected" && account.charges_enabled
+                      ? t("billing.gatewayReady", { date: date(account.connected_at) })
+                      : account.status === "connected"
+                        ? t("billing.gatewayLimited")
+                        : account.status === "disabled"
+                          ? t("billing.gatewayDisabled")
+                          : t("billing.gatewayPending"),
+                };
+              }),
+              {
+                label: t("billing.collected"),
+                value: paid.collected.length
+                  ? paid.collected.map((row) => money(row.cents, row.currency)).join(" · ")
+                  : "—",
+              },
+              {
+                label: t("billing.payments"),
+                value: t("billing.paymentsValue", {
+                  paid: paid.paidCount,
+                  refunded: paid.refundedCount,
+                  failed: paid.failedCount,
+                }),
+              },
+            ]}
+          />
+          <p className="text-ink-subtle mt-4 text-[12px] leading-snug">{t("billing.footnote")}</p>
+        </ConsolePanel>
+      </div>
+
+      <ConsolePanel index={6} title={t("notes.title")} hint={t("notes.hint")}>
+        <CoachNotes
+          profileId={coach.id ?? id}
+          notes={(notes ?? []).map((note) => ({
+            id: note.id,
+            body: note.body,
+            created_at: note.created_at,
+            mine: note.author_user_id === admin.id,
+            author:
+              note.author_user_id === admin.id
+                ? t("notes.you")
+                : (adminNames.get(note.author_user_id) ?? t("notes.otherAdmin")),
+          }))}
+        />
+      </ConsolePanel>
+
+      <ConsolePanel index={7} title={t("controls.title")} hint={t("controls.subtitle")}>
         <CoachControls
           profileId={coach.id ?? id}
           suspended={Boolean(coach.suspended_at)}
@@ -188,7 +357,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
       </ConsolePanel>
 
       <ConsolePanel
-        index={5}
+        index={8}
         title={t("audit.forCoach")}
         hint={t("audit.forCoachHint")}
         className="overflow-hidden"
@@ -196,5 +365,19 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
         <AuditTrail entries={log ?? []} />
       </ConsolePanel>
     </div>
+  );
+}
+
+/** Label on the left, figure on the right: every panel of the file reads this way. */
+function FactList({ facts }: { facts: { label: string; value: string }[] }) {
+  return (
+    <dl className="divide-line -my-2.5 divide-y">
+      {facts.map((fact) => (
+        <div key={fact.label} className="flex items-baseline justify-between gap-6 py-2.5">
+          <dt className="text-ink-muted text-[13.5px]">{fact.label}</dt>
+          <dd className="text-ink text-right text-[14px] font-medium tabular-nums">{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }

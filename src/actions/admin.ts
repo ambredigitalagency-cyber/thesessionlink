@@ -266,3 +266,55 @@ export async function stopImpersonating(): Promise<ActionResult> {
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+/* -------------------------------------------------------------------------- */
+/* Internal notes                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A note left on a coach's file for the other admins. Not audited: the note is
+ * its own record — author and date included — and the coach's account is not
+ * changed by it.
+ */
+export async function addCoachNote(profileId: string, body: string): Promise<ActionResult> {
+  const admin = await requireAdminForAction();
+  const parsed = z
+    .object({ profileId: idSchema, body: z.string().trim().min(1, "required").max(2000) })
+    .safeParse({ profileId, body });
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("admin_notes").insert({
+    profile_id: parsed.data.profileId,
+    author_user_id: admin.id,
+    body: parsed.data.body,
+  });
+
+  if (error) {
+    console.error("[admin] note insert failed", error.code, error.message);
+    return { ok: false, error: "unexpected" };
+  }
+
+  revalidatePath(`/admin/coaches/${parsed.data.profileId}`);
+  return { ok: true };
+}
+
+/** Removes one of the caller's own notes; the policy refuses anyone else's. */
+export async function deleteCoachNote(noteId: string): Promise<ActionResult> {
+  await requireAdminForAction();
+  if (!idSchema.safeParse(noteId).success) return { ok: false, error: "invalid_input" };
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("admin_notes")
+    .delete()
+    .eq("id", noteId)
+    .select("profile_id")
+    .maybeSingle();
+
+  if (error) return { ok: false, error: "unexpected" };
+  if (!data) return { ok: false, error: "not_found" };
+
+  revalidatePath(`/admin/coaches/${data.profile_id}`);
+  return { ok: true };
+}

@@ -9,16 +9,17 @@ import { deleteAccount, updateSettings } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
+import { ScaleSlider } from "@/components/ui/slider";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
 import { ThemeChoice } from "@/components/dashboard/theme-choice";
 import { notify } from "@/lib/notify";
 import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
+import { REMINDER_STOPS } from "@/lib/scales";
 import type { Theme } from "@/lib/theme";
 import type { Tables } from "@/lib/supabase/database.types";
 
 const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "CAD", "AUD", "MAD", "XOF"];
-const REMINDER_HOURS = [2, 4, 12, 24, 48, 72];
 
 function timezoneOptions(current: string) {
   const supported =
@@ -192,16 +193,17 @@ export function SettingsForm({
           </Field>
 
           <Field label={t("reminder")} hint={t("reminderHint")}>
-            <NativeSelect
-              value={String(reminderHours)}
-              onChange={(event) => setReminderHours(Number(event.target.value))}
-            >
-              {REMINDER_HOURS.map((hours) => (
-                <option key={hours} value={hours}>
-                  {t("reminderOption", { count: hours })}
-                </option>
-              ))}
-            </NativeSelect>
+            <ScaleSlider
+              label={t("reminder")}
+              stops={REMINDER_STOPS}
+              value={reminderHours}
+              onChange={setReminderHours}
+              format={(hours) =>
+                hours >= 48 && hours % 24 === 0
+                  ? t("reminderOptionDays", { count: hours / 24 })
+                  : t("reminderOption", { count: hours })
+              }
+            />
           </Field>
         </div>
 

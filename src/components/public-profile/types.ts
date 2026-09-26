@@ -1,6 +1,6 @@
 import type { OfferField } from "@/lib/offers/fields";
 import type { ActionType } from "@/lib/offers/schema";
-import type { SocialKey, ThemeAccent } from "@/lib/validation";
+import type { CardStyle, ProfileLayout, SocialKey, ThemeAccent } from "@/lib/validation";
 
 export type PublicOffer = {
   id: string;
@@ -34,6 +34,10 @@ export type PublicProfile = {
   timezone: string;
   currency: string;
   accent: ThemeAccent;
+  layout: ProfileLayout;
+  cards: CardStyle;
+  /** Profile-level details (experience, languages…), already parsed. */
+  details: OfferField[];
   locale: "en" | "fr";
   /**
    * Gateways this coach can actually be paid through, right now.

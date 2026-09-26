@@ -337,13 +337,13 @@ export function fieldFromSuggestion(suggestion: CategoryField, locale: string): 
 export function availableSuggestions(
   suggestions: CategoryField[],
   fields: OfferField[],
-  actionType: ActionType,
+  actionType: ActionType | undefined,
   locale: string,
 ): CategoryField[] {
   const taken = new Set(fields.map((field) => field.definition.label.trim().toLocaleLowerCase()));
   return suggestions.filter(
     (suggestion) =>
-      !suggestion.skip_for_actions?.includes(actionType) &&
+      !(actionType && suggestion.skip_for_actions?.includes(actionType)) &&
       !taken.has(localized(suggestion.label, locale, suggestion.key).toLocaleLowerCase()),
   );
 }

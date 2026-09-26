@@ -9,6 +9,7 @@ import { ACTION_ICONS, minutesToLabel } from "@/lib/offers/meta";
 import { fieldSummary } from "@/lib/offers/fields";
 import { parseActionConfig } from "@/lib/offers/schema";
 import { cn, formatPrice } from "@/lib/utils";
+import type { CardStyle } from "@/lib/validation";
 
 import type { PublicOffer } from "./types";
 
@@ -61,15 +62,30 @@ export function offerChips(offer: PublicOffer, locale: string, fieldLocale: stri
   return chips;
 }
 
+/**
+ * The three card styles a coach can pick (profiles.theme.cards). Only the
+ * surface changes; content and hierarchy stay identical, so the choice is
+ * about mood, never about what the client can find.
+ */
+const CARD_SURFACE: Record<CardStyle, string> = {
+  outline:
+    "border-line bg-surface hover:border-ink/15 border shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-float)]",
+  soft: "bg-surface border border-transparent shadow-[var(--shadow-float)] hover:shadow-[0_18px_40px_-18px_rgb(0_0_0/0.28)]",
+  accent:
+    "border border-[color-mix(in_oklab,var(--accent)_22%,transparent)] bg-[var(--accent-soft)] hover:border-[color-mix(in_oklab,var(--accent)_45%,transparent)]",
+};
+
 export function OfferCard({
   offer,
   currency,
   locale,
+  variant = "outline",
   onOpen,
 }: {
   offer: PublicOffer;
   currency: string;
   locale: string;
+  variant?: CardStyle;
   onOpen: () => void;
 }) {
   const t = useTranslations("publicProfile");
@@ -82,7 +98,10 @@ export function OfferCard({
     <button
       type="button"
       onClick={onOpen}
-      className="group border-line bg-surface hover:border-ink/15 block w-full overflow-hidden rounded-[var(--radius-lg)] border text-left shadow-[var(--shadow-card)] transition-all duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-float)]"
+      className={cn(
+        "group block w-full overflow-hidden rounded-[var(--radius-lg)] text-left transition-all duration-300 ease-[var(--ease-out-expo)] motion-safe:hover:-translate-y-0.5",
+        CARD_SURFACE[variant],
+      )}
     >
       {offer.main_photo_url ? (
         <div className="bg-ink/5 relative aspect-[16/9] w-full overflow-hidden">
@@ -126,7 +145,15 @@ export function OfferCard({
             {tActions(`${offer.action_type}.label`)}
           </span>
 
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-soft)] px-3 py-1.5 text-[13px] font-medium text-[var(--accent-ink)] transition-colors group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-on)]">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors",
+              // On a tinted card a tinted pill would vanish: it starts solid.
+              variant === "accent"
+                ? "bg-[var(--accent)] text-[var(--accent-on)] group-hover:bg-[var(--accent-hover)]"
+                : "bg-[var(--accent-soft)] text-[var(--accent-ink)] group-hover:bg-[var(--accent)] group-hover:text-[var(--accent-on)]",
+            )}
+          >
             {t(`cta.${offer.action_type}` as "cta.calendar_booking")}
             <ArrowUpRight className="size-3.5" />
           </span>

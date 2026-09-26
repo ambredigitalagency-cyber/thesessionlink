@@ -115,9 +115,32 @@ export const localeSchema = z.enum(["en", "fr"]);
 export const THEME_ACCENTS = ["coral", "ink", "forest", "ocean", "violet", "amber"] as const;
 export type ThemeAccent = (typeof THEME_ACCENTS)[number];
 
+/**
+ * How the public page is laid out. "centered" is the original: everything on
+ * one axis. "banner" puts an accent band behind the header and the avatar
+ * astride it. "compact" sets the header to the side and the offers in two
+ * columns on wide screens — for coaches with many offers.
+ */
+export const PROFILE_LAYOUTS = ["centered", "banner", "compact"] as const;
+export type ProfileLayout = (typeof PROFILE_LAYOUTS)[number];
+
+/** Offer cards: bordered (the original), shadowed without border, or tinted. */
+export const CARD_STYLES = ["outline", "soft", "accent"] as const;
+export type CardStyle = (typeof CARD_STYLES)[number];
+
 export const themeSchema = z.object({
   accent: z.enum(THEME_ACCENTS).default("coral"),
+  layout: z.enum(PROFILE_LAYOUTS).default("centered"),
+  cards: z.enum(CARD_STYLES).default("outline"),
 });
+
+export type ProfileTheme = z.output<typeof themeSchema>;
+
+/** Reads a stored theme, falling back to the defaults for anything missing. */
+export function parseTheme(raw: unknown): ProfileTheme {
+  const parsed = themeSchema.safeParse(raw && typeof raw === "object" ? raw : {});
+  return parsed.success ? parsed.data : themeSchema.parse({});
+}
 
 export const SOCIAL_KEYS = [
   "instagram",
@@ -166,9 +189,10 @@ export const profileDetailsSchema = z.object({
     .nullish()
     .transform((value) => value ?? null),
   social_links: socialLinksSchema.default({}),
-  theme: themeSchema.default({ accent: "coral" }),
+  theme: themeSchema.default({ accent: "coral", layout: "centered", cards: "outline" }),
   calendar_visible: z.boolean().default(true),
   custom_closed_message: optionalText(500),
+  custom_fields: offerFieldsSchema.default([]),
 });
 
 export const contactChannelsSchema = z.object({
@@ -192,6 +216,7 @@ export const onboardingProfileSchema = z.object({
   phone_number: phoneSchema.optional(),
   whatsapp_number: whatsappSchema.optional(),
   social_links: socialLinksSchema.optional(),
+  custom_fields: offerFieldsSchema.optional(),
 });
 
 export const settingsSchema = z.object({

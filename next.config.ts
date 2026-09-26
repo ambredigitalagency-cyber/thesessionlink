@@ -49,6 +49,14 @@ const nextConfig: NextConfig = {
     // Server Actions receive image/profile payloads from the offer editor.
     serverActions: { bodySizeLimit: "2mb" },
   },
+  // The first offer and the share screen left onboarding for the dashboard.
+  // Old links and half-finished sessions land where those steps now live.
+  async redirects() {
+    return [
+      { source: "/onboarding/offer", destination: "/dashboard/offers/new", permanent: false },
+      { source: "/onboarding/share", destination: "/dashboard", permanent: false },
+    ];
+  },
 };
 
 export default withNextIntl(nextConfig);

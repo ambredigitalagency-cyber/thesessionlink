@@ -7,6 +7,7 @@ import { signOut } from "@/actions/auth";
 import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { Logo } from "@/components/brand/logo";
 import { CommandPalette } from "@/components/dashboard/command-palette";
+import { FirstOfferPrompt } from "@/components/dashboard/first-offer-prompt";
 import { DashboardSidebarNav, DashboardTabBar } from "@/components/dashboard/nav";
 import { ShareLink } from "@/components/share/share-link";
 import { getImpersonatedProfile, requireOnboardedProfile } from "@/lib/auth";
@@ -22,11 +23,20 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   const tCommon = await getTranslations("common");
 
   const supabase = await createSupabaseServerClient();
-  const { count: pendingCount } = await supabase
-    .from("bookings")
-    .select("id", { count: "exact", head: true })
-    .eq("profile_id", profile.id)
-    .eq("status", "pending");
+  const [{ count: pendingCount }, { count: liveOffers }] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id)
+      .eq("status", "pending"),
+    // Published offers only: a coach whose offers are all paused shows the
+    // same "being set up" public page as one who has none.
+    supabase
+      .from("offers")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id)
+      .eq("is_active", true),
+  ]);
 
   const publicUrl = absoluteUrl(`/${profile.slug}`, siteUrl);
   const messages = pickMessages(await getMessages(), [
@@ -93,6 +103,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
           </header>
 
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-10 lg:pb-14">
+            {liveOffers === 0 ? <FirstOfferPrompt publicUrl={publicUrl} /> : null}
             {children}
           </main>
         </div>

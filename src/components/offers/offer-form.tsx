@@ -11,6 +11,7 @@ import { ChoiceChips } from "@/components/ui/choice-cards";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { PhaseField, PhaseQuestion, PhaseSwitch } from "@/components/ui/phase";
 import { ToggleRow } from "@/components/ui/primitives";
+import { ScaleSlider } from "@/components/ui/slider";
 import { StepProgress } from "@/components/ui/step-progress";
 import { notify } from "@/lib/notify";
 import { offerFieldsSchema, type OfferField } from "@/lib/offers/fields";
@@ -21,6 +22,7 @@ import {
   type AnyActionConfig,
   type CategoryField,
 } from "@/lib/offers/schema";
+import { PRICE_STOPS } from "@/lib/scales";
 import { fieldErrorsFrom } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
@@ -151,6 +153,12 @@ export function OfferForm({
   const [description, setDescription] = useState(initial?.description ?? "");
   const [priceType, setPriceType] = useState<PriceType>(initial?.price_type ?? "fixed");
   const [price, setPrice] = useState(initial?.price != null ? String(initial.price) : "");
+  const money = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    }).format(value);
   const [photos, setPhotos] = useState<string[]>(initial?.photos ?? []);
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [actionType, setActionType] = useState<ActionType>(startingActionType);
@@ -360,23 +368,31 @@ export function OfferForm({
 
       {priceType === "free" || priceType === "on_request" ? null : (
         <Field label={t("price")} error={errorFor("price")}>
-          <div className="flex gap-2 sm:max-w-60">
-            <Input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              step="0.01"
-              value={price}
-              onChange={(event) => {
-                setPrice(event.target.value);
+          {/* The slider covers the usual prices in round steps; the input
+              beside it takes cents and anything above the scale. */}
+          <ScaleSlider
+            label={t("price")}
+            stops={PRICE_STOPS}
+            value={price === "" ? 0 : Number(price)}
+            onChange={(next) => {
+              setPrice(String(next));
+              clearEssentialError("price");
+            }}
+            format={(value) => (price === "" ? "—" : money(value))}
+            edges={[money(0), money(PRICE_STOPS.at(-1)!)]}
+            exact={{
+              min: 0,
+              max: 99_999_999,
+              step: 0.01,
+              suffix: currency,
+              text: price,
+              invalid: Boolean(errorFor("price")),
+              onText: (text) => {
+                setPrice(text);
                 clearEssentialError("price");
-              }}
-              placeholder="0"
-            />
-            <span className="border-line-strong text-ink-muted flex h-11 items-center rounded-[var(--radius-sm)] border px-3 text-[14px]">
-              {currency}
-            </span>
-          </div>
+              },
+            }}
+          />
         </Field>
       )}
     </div>

@@ -15,10 +15,12 @@ import {
 } from "@/actions/admin";
 import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
-import { Field, Input, NativeSelect } from "@/components/ui/field";
+import { Field, Input } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
+import { ScaleSlider } from "@/components/ui/slider";
 
-const EXTENSIONS = [7, 14, 30, 90];
+/** Within the 1–365 the server accepts. */
+const EXTENSIONS = [1, 3, 7, 14, 21, 30, 45, 60, 90, 180, 365];
 
 /**
  * The interventions the console allows on one account. Every one of them ends
@@ -63,17 +65,14 @@ export function CoachControls({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end gap-3">
-        <Field label={t("controls.extendLabel")} className="w-40">
-          <NativeSelect
-            value={String(days)}
-            onChange={(event) => setDays(Number(event.target.value))}
-          >
-            {EXTENSIONS.map((option) => (
-              <option key={option} value={option}>
-                {t("controls.days", { count: option })}
-              </option>
-            ))}
-          </NativeSelect>
+        <Field label={t("controls.extendLabel")} className="w-full max-w-72">
+          <ScaleSlider
+            label={t("controls.extendLabel")}
+            stops={EXTENSIONS}
+            value={days}
+            onChange={setDays}
+            format={(count) => t("controls.days", { count })}
+          />
         </Field>
         <Button
           variant="secondary"

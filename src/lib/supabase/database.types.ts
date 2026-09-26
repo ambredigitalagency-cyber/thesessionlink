@@ -88,6 +88,52 @@ export type Database = {
           },
         ];
       };
+      admin_notes: {
+        Row: {
+          author_user_id: string;
+          body: string;
+          created_at: string;
+          id: string;
+          profile_id: string;
+        };
+        Insert: {
+          author_user_id: string;
+          body: string;
+          created_at?: string;
+          id?: string;
+          profile_id: string;
+        };
+        Update: {
+          author_user_id?: string;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          profile_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "admin_notes_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admin_notes_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "admin_notes_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       availabilities: {
         Row: {
           created_at: string;
@@ -621,6 +667,7 @@ export type Database = {
           created_at: string;
           currency: string;
           custom_closed_message: string | null;
+          custom_fields: Json;
           deleted_at: string | null;
           deletion_warned_at: string | null;
           display_name: string;
@@ -656,6 +703,7 @@ export type Database = {
           created_at?: string;
           currency?: string;
           custom_closed_message?: string | null;
+          custom_fields?: Json;
           deleted_at?: string | null;
           deletion_warned_at?: string | null;
           display_name: string;
@@ -691,6 +739,7 @@ export type Database = {
           created_at?: string;
           currency?: string;
           custom_closed_message?: string | null;
+          custom_fields?: Json;
           deleted_at?: string | null;
           deletion_warned_at?: string | null;
           display_name?: string;
@@ -906,6 +955,7 @@ export type Database = {
           contact_email: string | null;
           currency: string | null;
           custom_closed_message: string | null;
+          custom_fields: Json | null;
           display_name: string | null;
           headline: string | null;
           id: string | null;
@@ -926,6 +976,7 @@ export type Database = {
           contact_email?: never;
           currency?: string | null;
           custom_closed_message?: string | null;
+          custom_fields?: Json | null;
           display_name?: string | null;
           headline?: string | null;
           id?: string | null;
@@ -946,6 +997,7 @@ export type Database = {
           contact_email?: never;
           currency?: string | null;
           custom_closed_message?: string | null;
+          custom_fields?: Json | null;
           display_name?: string | null;
           headline?: string | null;
           id?: string | null;
@@ -986,6 +1038,7 @@ export type Database = {
           created_at: string;
           currency: string;
           custom_closed_message: string | null;
+          custom_fields: Json;
           deleted_at: string | null;
           deletion_warned_at: string | null;
           display_name: string;

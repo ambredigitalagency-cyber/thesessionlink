@@ -13,7 +13,7 @@ import { parseOfferFields } from "@/lib/offers/fields";
 import { payableProviders } from "@/lib/payments/accounts";
 import { localized } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { ThemeAccent } from "@/lib/validation";
+import { parseTheme } from "@/lib/validation";
 
 async function loadProfile(slug: string) {
   const supabase = await createSupabaseServerClient();
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
     return { title: "Not found" };
   }
 
-  const { profile } = data;
+  const { profile, offers } = data;
   const description =
     profile.headline ?? profile.bio?.slice(0, 160) ?? `Book with ${profile.display_name}`;
 
@@ -98,7 +98,9 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
       description,
       url: `/${slug}`,
     },
-    robots: { index: true, follow: true },
+    // A page still being set up has nothing to find yet; it is indexed once
+    // its first offer is published.
+    robots: offers.length > 0 ? { index: true, follow: true } : { index: false, follow: true },
   };
 }
 
@@ -122,7 +124,7 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     "offers.actions",
   ]);
 
-  const theme = (profile.theme ?? {}) as { accent?: ThemeAccent };
+  const theme = parseTheme(profile.theme);
 
   const viewProfile: PublicProfile = {
     id: profile.id as string,
@@ -141,7 +143,10 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     custom_closed_message: profile.custom_closed_message,
     timezone: profile.timezone ?? "UTC",
     currency: profile.currency ?? "EUR",
-    accent: theme.accent ?? "coral",
+    accent: theme.accent,
+    layout: theme.layout,
+    cards: theme.cards,
+    details: parseOfferFields(profile.custom_fields),
     locale: isLocale(profile.locale) ? profile.locale : "en",
     paymentProviders: await payableProviders(profile.id as string),
   };
