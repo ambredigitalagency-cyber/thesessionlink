@@ -21,7 +21,7 @@ import type {
  *     funds, never owes a payout, and cannot lose them if it disappears.
  *   * Liability follows the money. Refunds, disputes and negative balances are
  *     between the coach and Stripe. With Express, the platform is on the hook
- *     for all three, which is not a promise a 9 €/month product should make.
+ *     for all three, which is not a promise a 19 €/month product should make.
  *   * The coach keeps an account they own: their own dashboard, their own
  *     payout schedule, their own negotiated fees, usable outside this product.
  *   * Express earns its extra responsibility when the platform takes a cut and

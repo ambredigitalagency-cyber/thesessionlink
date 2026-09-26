@@ -7,7 +7,7 @@ import type { Tables } from "@/lib/supabase/database.types";
  * The price is shown on the landing page; billing is not connected yet (see
  * profiles.subscription_active).
  */
-export const PLAN_PRICE_MONTHLY = 9;
+export const PLAN_PRICE_MONTHLY = 19;
 
 /**
  * Listed on the pricing card, in order. Each key is a `landing.pricing.feature`
