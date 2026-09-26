@@ -1378,15 +1378,33 @@
       "title": "Créez votre première offre"
     },
     "profile": {
+      "bioPlaceholder": "Deux ou trois phrases : ce que vous faites, pour qui, et ce qui vous distingue.",
+      "bioPlaceholderCategory": "{category} depuis 5 ans. J'accompagne… Deux ou trois phrases suffisent.",
       "categoryHint": "Choisissez la plus proche — cela ne sert qu'à pré-remplir des suggestions.",
       "categoryTitle": "Votre activité",
       "nameHint": "Votre nom ou votre marque, tel que vos clients vous connaissent.",
       "nameLabel": "Nom du profil",
       "namePlaceholder": "Ana Torres Coaching",
+      "optionalNote": "Facultatif — vous pourrez l'ajouter plus tard depuis votre tableau de bord.",
       "phases": {
+        "bio": {
+          "title": "Dites qui vous êtes",
+          "hint": "Ce texte s'affiche en haut de votre page, sous votre nom.",
+          "label": "À propos de vous"
+        },
         "category": {
           "title": "Quelle est votre activité ?",
           "hint": "Choisissez la plus proche — elle ne sert qu'à pré-remplir des suggestions, modifiables ensuite."
+        },
+        "contact": {
+          "title": "Comment vos clients peuvent-ils vous joindre ?",
+          "hint": "Affiché sur votre page seulement si vous le souhaitez — vous choisirez dans les Réglages.",
+          "phone": "Téléphone",
+          "whatsapp": "WhatsApp",
+          "whatsappHint": "Laissez vide pour utiliser le même numéro que ci-dessus.",
+          "location": "Où vous exercez",
+          "locationHint": "Une ville suffit. Cela aide vos clients à savoir si vous êtes près d'eux.",
+          "locationPlaceholder": "Marrakech, Maroc"
         },
         "name": {
           "title": "Sous quel nom ?",
@@ -1395,6 +1413,22 @@
         "link": {
           "title": "Et votre lien ?",
           "hint": "C'est l'adresse que vous partagerez. Lettres, chiffres et tirets."
+        },
+        "photo": {
+          "title": "Mettez un visage sur le lien",
+          "hint": "Une photo rend une page humaine. Vous pouvez passer et en ajouter une plus tard."
+        },
+        "ready": {
+          "title": "Votre profil est prêt",
+          "hint": "Reste ce qui le rend utile : une offre, pour que vos clients aient quelque chose à réserver.",
+          "cta": "Créer ma première offre"
+        },
+        "socials": {
+          "title": "Où peut-on vous retrouver ?",
+          "hint": "Un pseudo ou un lien complet, selon ce que vous avez. Les champs vides ne s'affichent pas.",
+          "instagram": "@votre_pseudo",
+          "tiktok": "@votre_pseudo",
+          "facebook": "facebook.com/votre-page"
         }
       },
       "previewBody": "Selon votre activité, nous proposerons des champs comme {fields} — gardez ce qui colle, ignorez le reste.",

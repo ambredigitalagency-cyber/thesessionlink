@@ -19,8 +19,11 @@ export function OnboardingSteps({
 }) {
   const t = useTranslations("onboarding.steps");
 
+  // Pas de marge par défaut : le parent espace ses enfants, et en Tailwind v4
+  // `space-y-*` pose sa marge à travers `:where()`, de spécificité nulle —
+  // n'importe quel `mb-*` posé ici la ferait sauter en silence.
   return (
-    <nav aria-label={t("aria")} className={className ?? "mb-8"}>
+    <nav aria-label={t("aria")} className={className}>
       <StepProgress
         label={t("aria")}
         steps={STEPS.map((step) => t(`${step}` as "1"))}

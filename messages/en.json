@@ -1378,15 +1378,33 @@
       "title": "Create your first offer"
     },
     "profile": {
+      "bioPlaceholder": "Two or three sentences: what you do, who you do it for, and what makes you different.",
+      "bioPlaceholderCategory": "{category} for 5 years. I work with… Two or three sentences is plenty.",
       "categoryHint": "Pick the closest one — it only pre-fills suggestions.",
       "categoryTitle": "Your activity",
       "nameHint": "Your name or your brand, as clients know you.",
       "nameLabel": "Profile name",
       "namePlaceholder": "Ana Torres Coaching",
+      "optionalNote": "Optional — you can add this later from your dashboard.",
       "phases": {
+        "bio": {
+          "title": "Say who you are",
+          "hint": "This sits at the top of your page, under your name.",
+          "label": "About you"
+        },
         "category": {
           "title": "What do you do?",
           "hint": "Pick the closest one — it only pre-fills suggestions, and you can change it later."
+        },
+        "contact": {
+          "title": "How can clients reach you?",
+          "hint": "Shown on your page only if you want them to be — you choose later, in Settings.",
+          "phone": "Phone",
+          "whatsapp": "WhatsApp",
+          "whatsappHint": "Leave empty to use the same number as above.",
+          "location": "Where you work",
+          "locationHint": "A city is enough. It helps clients know if you are near them.",
+          "locationPlaceholder": "Marrakech, Morocco"
         },
         "name": {
           "title": "Under which name?",
@@ -1395,6 +1413,22 @@
         "link": {
           "title": "And your link?",
           "hint": "This is the address you will share. Letters, numbers and dashes."
+        },
+        "photo": {
+          "title": "Put a face to the link",
+          "hint": "A photo makes a page feel like a person. You can skip it and add one later."
+        },
+        "ready": {
+          "title": "Your profile is ready",
+          "hint": "Now the part that makes it work: one offer, so clients have something to book.",
+          "cta": "Create my first offer"
+        },
+        "socials": {
+          "title": "Where else can they find you?",
+          "hint": "A handle or a full link, whichever you have. Empty ones simply do not show.",
+          "instagram": "@your_handle",
+          "tiktok": "@your_handle",
+          "facebook": "facebook.com/your-page"
         }
       },
       "previewBody": "Based on your activity, we'll suggest fields like {fields} — keep what fits, ignore the rest.",

@@ -36,7 +36,7 @@ export function FirstOfferForm(props: {
       locale={props.locale}
       profileWhatsapp={props.profileWhatsapp}
       headingLevel={1}
-      progress={(ratio) => <OnboardingSteps current={3} advance={ratio} className="mb-0" />}
+      progress={(ratio) => <OnboardingSteps current={3} advance={ratio} />}
       onSaved={() => router.push("/onboarding/share")}
     />
   );

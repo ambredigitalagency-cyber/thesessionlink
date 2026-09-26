@@ -39,32 +39,51 @@ function useUploader(folder: UploadFolder) {
 /* Avatar                                                                      */
 /* -------------------------------------------------------------------------- */
 
+/**
+ * `size="lg"` is for the screen where the photo *is* the question — the
+ * onboarding step — rather than one row of a settings form. Same control, same
+ * behaviour: only the disc grows and the text stacks under it.
+ */
 export function AvatarUpload({
   value,
   onChange,
   name,
+  size = "md",
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
   name: string;
+  size?: "md" | "lg";
 }) {
   const t = useTranslations("media");
   const inputRef = useRef<HTMLInputElement>(null);
   const { upload, busy } = useUploader("avatar");
+  const large = size === "lg";
 
   return (
-    <div className="flex items-center gap-4">
+    <div
+      className={large ? "flex flex-col items-center gap-4 text-center" : "flex items-center gap-4"}
+    >
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="group border-line-strong bg-canvas relative size-20 shrink-0 overflow-hidden rounded-full border"
+        className={cn(
+          "group border-line-strong bg-canvas relative shrink-0 overflow-hidden rounded-full border",
+          large ? "size-32" : "size-20",
+        )}
         aria-label={t("changePhoto")}
       >
         {value ? (
-          <Image src={value} alt={name} fill sizes="80px" className="object-cover" />
+          <Image
+            src={value}
+            alt={name}
+            fill
+            sizes={large ? "128px" : "80px"}
+            className="object-cover"
+          />
         ) : (
           <span className="text-ink-subtle flex size-full items-center justify-center">
-            <ImagePlus className="size-5" />
+            <ImagePlus className={large ? "size-7" : "size-5"} />
           </span>
         )}
         <span className="bg-scrim/80 absolute inset-0 flex items-center justify-center text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -73,7 +92,7 @@ export function AvatarUpload({
       </button>
 
       <div className="space-y-1.5">
-        <div className="flex gap-2">
+        <div className={cn("flex gap-2", large && "justify-center")}>
           <button
             type="button"
             onClick={() => inputRef.current?.click()}

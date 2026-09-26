@@ -7,6 +7,7 @@ import { toLocale } from "@/lib/i18n/config";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   fieldErrorsFrom,
+  onboardingProfileSchema,
   profileBasicsSchema,
   profileDetailsSchema,
   slugSchema,
@@ -134,6 +135,70 @@ export async function updateProfile(input: unknown): Promise<ActionResult<{ slug
   if (parsed.data.slug !== profile.slug) revalidatePath(`/${parsed.data.slug}`);
 
   return { ok: true, data: { slug: parsed.data.slug } };
+}
+
+/**
+ * Onboarding, one screen at a time.
+ *
+ * Saves what a single screen collected and nothing else. Two reasons it is a
+ * patch and not `updateProfile`:
+ *
+ *   * `updateProfile` validates the whole public profile — name, slug, theme —
+ *     so calling it from a screen that only knows a phone number would mean
+ *     that screen resending fields it has no business owning, and overwriting
+ *     them with whatever it happened to be holding.
+ *   * Saving per screen means abandoning the flow halfway keeps what was
+ *     already answered. The alternative — collecting everything and writing it
+ *     at the end — throws away four screens of typing if someone closes the
+ *     tab on the fifth.
+ *
+ * It refuses once onboarding is finished, so it cannot become a second, weaker
+ * way of editing a live profile: that is what the dashboard is for.
+ */
+export async function updateOnboardingProfile(input: unknown): Promise<ActionResult> {
+  const profile = await requireProfileForAction();
+
+  if (profile.onboarding_completed_at) {
+    return { ok: false, error: "unexpected" };
+  }
+
+  const parsed = onboardingProfileSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "invalid_input", fieldErrors: fieldErrorsFrom(parsed.error) };
+  }
+
+  // Only the keys this screen actually sent: an absent key is "not my screen",
+  // which is not the same as "clear it". Spelled out rather than filtered from
+  // the parsed object, so the column names stay typed against the table.
+  const data = parsed.data;
+  const patch: {
+    avatar_url?: string | null;
+    bio?: string | null;
+    location?: string | null;
+    phone_number?: string | null;
+    whatsapp_number?: string | null;
+    social_links?: Record<string, string | null>;
+  } = {};
+
+  if (data.avatar_url !== undefined) patch.avatar_url = data.avatar_url;
+  if (data.bio !== undefined) patch.bio = data.bio;
+  if (data.location !== undefined) patch.location = data.location;
+  if (data.phone_number !== undefined) patch.phone_number = data.phone_number;
+  if (data.whatsapp_number !== undefined) patch.whatsapp_number = data.whatsapp_number;
+  if (data.social_links !== undefined) patch.social_links = data.social_links;
+
+  if (Object.keys(patch).length === 0) return { ok: true };
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("profiles").update(patch).eq("id", profile.id);
+
+  if (error) {
+    console.error("[profile] onboarding update failed", error.code, error.message);
+    return { ok: false, error: "unexpected" };
+  }
+
+  revalidateProfile(profile.slug);
+  return { ok: true };
 }
 
 /** The "temporarily invisible calendar" switch. */

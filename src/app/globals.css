@@ -256,6 +256,16 @@
   }
 }
 
+@keyframes nudge-down {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
 @keyframes glyph-pulse {
   0%,
   100% {
@@ -516,6 +526,24 @@ body {
     .rise-in {
       animation: rise-in 0.42s var(--ease-out-expo) both;
       animation-delay: var(--rise-delay);
+    }
+  }
+
+  /*
+   * The arrow on the "your profile is ready" screen, leaning towards the
+   * button below it. A loop, so it has to stop outright rather than finish —
+   * hence a media query, and hence the arrow holding one position in the HTML
+   * for every reader. Deciding that in JavaScript is how the server and the
+   * browser end up rendering different transforms.
+   */
+  .nudge-down {
+    --nudge-delay: 0s;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .nudge-down {
+      animation: nudge-down 1.6s ease-in-out infinite;
+      animation-delay: var(--nudge-delay);
     }
   }
 

@@ -78,6 +78,38 @@ const phoneSchema = z
   .nullish()
   .transform((value) => (value ? value : null));
 
+/**
+ * WhatsApp, stored in the one shape its column accepts.
+ *
+ * `profiles.whatsapp_number` carries a check constraint of `^\+?[0-9]{6,20}$`
+ * — a leading plus and digits, nothing else — while people type "+212 6 11 22
+ * 33 44", with the spaces that make a number readable. The looser phone schema
+ * let that through and Postgres refused the row, which surfaced as a generic
+ * "something went wrong" with no field to point at.
+ *
+ * So the value is normalised rather than refused: punctuation is dropped, an
+ * inner plus goes with it, and what reaches the column is canonical. The
+ * constraint stays the guard it was written to be, and nobody is asked to
+ * delete their own spaces.
+ */
+const whatsappSchema = z
+  .string()
+  .trim()
+  .max(40)
+  .nullish()
+  .transform((value) => {
+    if (!value) return null;
+    const digits = value.replace(/[^\d+]/g, "");
+    const normalised = digits.startsWith("+")
+      ? `+${digits.slice(1).replace(/\+/g, "")}`
+      : digits.replace(/\+/g, "");
+    // An answer that normalises to nothing is still an answer, and a wrong
+    // one. Returning null here would quietly swallow what they typed and show
+    // them a page with no WhatsApp on it and no reason why.
+    return normalised === "" ? value : normalised;
+  })
+  .refine((value) => value === null || /^\+?[0-9]{6,20}$/.test(value), "invalid_phone");
+
 export const localeSchema = z.enum(["en", "fr"]);
 
 export const THEME_ACCENTS = ["coral", "ink", "forest", "ocean", "violet", "amber"] as const;
@@ -145,6 +177,23 @@ export const contactChannelsSchema = z.object({
   whatsapp: z.boolean().default(true),
 });
 
+/**
+ * Onboarding, the screens after the link.
+ *
+ * Every field is optional and every screen can be skipped: only the name and
+ * the link make a profile. It is a patch rather than the whole profile, so a
+ * screen saves what it collected without having to resend — or overwrite —
+ * what the screens before it collected.
+ */
+export const onboardingProfileSchema = z.object({
+  avatar_url: optionalText(500).optional(),
+  bio: optionalText(1200).optional(),
+  location: optionalText(120).optional(),
+  phone_number: phoneSchema.optional(),
+  whatsapp_number: whatsappSchema.optional(),
+  social_links: socialLinksSchema.optional(),
+});
+
 export const settingsSchema = z.object({
   contact_email: z
     .email("invalid_email")
@@ -152,7 +201,7 @@ export const settingsSchema = z.object({
     .nullish()
     .transform((value) => (value ? value.toLowerCase() : null)),
   phone_number: phoneSchema,
-  whatsapp_number: phoneSchema,
+  whatsapp_number: whatsappSchema,
   contact_channels: contactChannelsSchema,
   locale: localeSchema,
   timezone: z.string().min(1).max(60),
