@@ -3,13 +3,8 @@
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRef } from "react";
 
-import { Badge } from "@/components/ui/primitives";
-import { cn } from "@/lib/utils";
-
-import { SectionHeading } from "./how-it-works";
-import { useParallax } from "./parallax";
+import { EASE, SectionHeading } from "./section";
 
 /**
  * Illustrative profiles, one per niche. They are labelled as examples on
@@ -25,54 +20,54 @@ export const NICHE_EXAMPLES = [
   { key: "tutor", accent: "forest", slug: "prof-david" },
 ] as const;
 
+/**
+ * Four pages, four trades, one product.
+ *
+ * The cards used to sit at different heights and drift at different speeds,
+ * which was meant to say "four separate pages" and mostly said "four cards
+ * that will not hold still". What actually carries the point is that each one
+ * wears its own accent: the same layout, four identities. So they line up now,
+ * and the colour does the talking — which is also the honest demonstration,
+ * since the accent is the one thing a coach picks about their page.
+ */
 export function Examples() {
   const t = useTranslations("landing.examples");
-  const sectionRef = useRef<HTMLElement>(null);
-
-  /**
-   * Four cards in a straight line read as a table of contents. Letting them
-   * sit at different heights and drift at different speeds makes them read as
-   * four separate pages someone actually made — which is what they are.
-   */
-  const driftA = useParallax(sectionRef, 22);
-  const driftB = useParallax(sectionRef, -18);
-  const drifts = [driftA, driftB, driftA, driftB];
 
   return (
-    <section ref={sectionRef} id="examples" className="py-20 sm:py-28">
+    <section id="examples" className="py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-start">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {NICHE_EXAMPLES.map((example, index) => (
-            // Two layers on purpose: the outer one owns the scroll-linked
-            // drift, the inner one owns the reveal. Sharing `y` between a
-            // motion value and an animation would have them overwrite each
-            // other on every frame.
-            <motion.div
+            <motion.article
               key={example.key}
-              style={{ y: drifts[index] }}
-              className={cn(index % 2 === 1 && "lg:mt-12")}
+              data-accent={example.accent}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: index * 0.07, ease: EASE }}
+              className="group surface-card flex h-full flex-col overflow-hidden p-0 transition-[box-shadow,transform] duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-float)]"
             >
-              <motion.article
-                data-accent={example.accent}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.55, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
-                className="group surface-card h-full overflow-hidden p-5 transition-[box-shadow,border-color] duration-300 hover:shadow-[var(--shadow-float)]"
+              {/* A band of the page's own accent, standing in for the header
+                  photo a real profile would have. */}
+              <div
+                className="relative h-16"
+                style={{
+                  background:
+                    "linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent) 55%, transparent))",
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <span
-                    className="flex size-11 items-center justify-center rounded-full text-[14px] font-semibold text-[var(--accent-on)]"
-                    style={{ background: "var(--accent)" }}
-                  >
-                    {t(`items.${example.key}.initials` as "items.coach.initials")}
-                  </span>
-                  <Badge tone="outline">{t("badge")}</Badge>
-                </div>
+                <span className="border-surface bg-surface absolute -bottom-6 left-5 flex size-12 items-center justify-center rounded-full border-4 text-[14px] font-semibold text-[var(--accent-ink)]">
+                  {t(`items.${example.key}.initials` as "items.coach.initials")}
+                </span>
+                <span className="absolute top-3 right-3 rounded-full bg-black/15 px-2 py-0.5 text-[10.5px] font-medium text-white backdrop-blur-sm">
+                  {t("badge")}
+                </span>
+              </div>
 
-                <h3 className="text-ink mt-4 text-[16px] font-semibold tracking-[-0.02em]">
+              <div className="flex flex-1 flex-col p-5 pt-9">
+                <h3 className="text-ink text-[16px] font-semibold tracking-[-0.02em]">
                   {t(`items.${example.key}.name` as "items.coach.name")}
                 </h3>
                 <p className="text-ink-muted mt-1 text-[13px] leading-relaxed">
@@ -99,17 +94,12 @@ export function Examples() {
                   ))}
                 </ul>
 
-                <p
-                  className={cn(
-                    "mt-4 inline-flex items-center gap-1 text-[12.5px] font-medium",
-                    "text-[var(--accent-ink)]",
-                  )}
-                >
+                <p className="mt-4 inline-flex items-center gap-1 pt-1 text-[12.5px] font-medium text-[var(--accent-ink)]">
                   thesessionlink.com/{example.slug}
                   <ArrowUpRight className="size-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </p>
-              </motion.article>
-            </motion.div>
+              </div>
+            </motion.article>
           ))}
         </div>
       </div>

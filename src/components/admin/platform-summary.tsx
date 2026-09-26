@@ -2,13 +2,24 @@
 
 import { useTranslations } from "next-intl";
 
-import { ColumnChart, ShareBar, StatTile } from "@/components/dashboard/charts";
+import { ConsoleKpi, ConsolePanel } from "@/components/admin/console-kpi";
+import { ColumnChart, ShareBar } from "@/components/dashboard/charts";
 import { ACCOUNT_STATUSES, type PlatformTotals } from "@/lib/admin/status";
 import { OTHER_COLOR, seriesColor } from "@/lib/stats/palette";
 
 /**
- * Platform figures. Same chart pieces as the coach's statistics page — the
- * console looks different, it does not invent a second visual language.
+ * The state of the platform, in four numbers and two pictures.
+ *
+ * What changed is the ranking, not the data. Before, eight figures had the
+ * same weight: four small tiles, a chart, a bar, and a line of per-status
+ * counts at the bottom that nobody reads. Now the four that matter are set
+ * large with their context attached, the two charts get the room a chart
+ * needs, and the per-status breakdown has moved inside the figures it belongs
+ * to instead of trailing the page as a sentence.
+ *
+ * The chart pieces themselves are the coach's — same ColumnChart, same
+ * ShareBar, same validated series palette. The console does not invent a
+ * second way of drawing a number; it decides which numbers come first.
  */
 export function PlatformSummary({
   totals,
@@ -48,57 +59,71 @@ export function PlatformSummary({
     });
   }
 
+  const inactive = totals.byStatus.expired + totals.byStatus.suspended + totals.byStatus.deleted;
+
+  // The last twelve buckets, for the "signed up this month" line.
+  const thisMonth = signups.at(-1)?.count ?? 0;
+
   return (
-    <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile label={t("stats.coaches")} value={String(totals.coaches)} />
-        <StatTile
+    <div className="space-y-5">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ConsoleKpi
+          index={0}
+          label={t("stats.coaches")}
+          value={String(totals.coaches)}
+          parts={[{ value: `+${thisMonth}`, label: t("stats.thisMonth") }]}
+        />
+        <ConsoleKpi
+          index={1}
           label={t("stats.subscribed")}
           value={String(totals.byStatus.subscribed)}
-          hint={t("stats.trialCount", { count: totals.byStatus.trial })}
+          tone="accent"
+          parts={[
+            { value: String(totals.byStatus.trial), label: t("status.trial") },
+            { value: String(totals.byStatus.expired), label: t("status.expired") },
+          ]}
         />
-        <StatTile
+        <ConsoleKpi
+          index={2}
           label={t("stats.revenue")}
           value={`${totals.monthlyRevenue} €`}
-          hint={t("stats.revenueHint", { price: monthlyPrice })}
+          footnote={t("stats.revenueHint", { price: monthlyPrice })}
         />
-        <StatTile
+        <ConsoleKpi
+          index={3}
           label={t("stats.inactive")}
-          value={String(
-            totals.byStatus.expired + totals.byStatus.suspended + totals.byStatus.deleted,
-          )}
-          hint={t("stats.inactiveHint", {
-            suspended: totals.byStatus.suspended,
-            deleted: totals.byStatus.deleted,
-          })}
+          value={String(inactive)}
+          tone={inactive > 0 ? "neutral" : "quiet"}
+          parts={[
+            { value: String(totals.byStatus.suspended), label: t("status.suspended") },
+            { value: String(totals.byStatus.deleted), label: t("status.deleted") },
+          ]}
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="surface-card p-5 sm:p-6">
-          <h2 className="text-ink text-[15px] font-semibold">{t("stats.signups")}</h2>
-          <p className="text-ink-muted mt-0.5 mb-5 text-[13px]">{t("stats.signupsHint")}</p>
+      <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+        <ConsolePanel index={4} title={t("stats.signups")} hint={t("stats.signupsHint")}>
           <ColumnChart
             points={points}
             format={(value) => String(value)}
             title={t("stats.signups")}
-            color="var(--color-ink)"
+            color="var(--console-accent)"
             emptyLabel={t("stats.noData")}
           />
-        </section>
+        </ConsolePanel>
 
-        <section className="surface-card p-5 sm:p-6">
-          <h2 className="text-ink text-[15px] font-semibold">{t("stats.categories")}</h2>
-          <p className="text-ink-muted mt-0.5 mb-5 text-[13px]">{t("stats.categoriesHint")}</p>
+        <ConsolePanel index={5} title={t("stats.categories")} hint={t("stats.categoriesHint")}>
           {slices.length === 0 ? (
             <p className="text-ink-subtle text-[13px]">{t("stats.noData")}</p>
           ) : (
             <ShareBar slices={slices} countLabel={(value) => String(value)} />
           )}
-        </section>
+        </ConsolePanel>
       </div>
 
-      <p className="text-ink-subtle text-[12.5px]">
+      {/* Kept reachable for a screen reader, since the figures above now carry
+          the same counts visually. */}
+      <p className="sr-only">
         {t("stats.statuses", {
           list: ACCOUNT_STATUSES.map(
             (status) => `${t(`status.${status}`)} ${totals.byStatus[status]}`,

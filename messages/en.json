@@ -13,8 +13,10 @@
       },
       "details": "Details",
       "empty": "No intervention recorded.",
+      "entries": "{count, plural, one {# intervention} other {# interventions}}",
       "forCoach": "Intervention history",
       "forCoachHint": "The last 50 actions on this account.",
+      "latest": "Most recent first, 200 at most.",
       "noTarget": "—",
       "subtitle": "Who did what, when, to which account. Append-only.",
       "target": "Coach",
@@ -31,6 +33,7 @@
       "bookings": "Bookings received",
       "daysLeft": "{count} day(s) left",
       "deletionRequested": "Deletion requested on {date} · purge on {due}, in {count, plural, one {# day} other {# days}}",
+      "facts": "The account",
       "lastBooking": "Last booking",
       "offers": "Offers published",
       "signedUp": "Signed up",
@@ -48,7 +51,9 @@
       "offers": "Offers",
       "purgeIn": "Purged in {count, plural, one {# day} other {# days}}",
       "search": "Name, email, link…",
+      "showing": "{shown} of {total} shown",
       "signedUp": "Signed up",
+      "sortBy": "Sort by {column}",
       "status": "Status",
       "title": "Coaches ({count})"
     },
@@ -83,6 +88,7 @@
       "unsuspended": "Account reinstated"
     },
     "nav": {
+      "aria": "Console sections",
       "audit": "Audit log",
       "coaches": "Coaches",
       "myDashboard": "My dashboard",
@@ -104,6 +110,7 @@
       "statuses": "Breakdown: {list}",
       "subscribed": "Subscribers",
       "subtitle": "Who signs up, who stays, what it adds up to.",
+      "thisMonth": "this month",
       "title": "Platform overview",
       "trialCount": "{count} on trial"
     },
@@ -984,9 +991,15 @@
       "tagline": "The booking page for independent professionals."
     },
     "hero": {
+      "annotations": {
+        "booking": "Booked in three taps, with no account",
+        "offers": "Your offers, with their prices",
+        "profile": "Your profile: photo, trade, the way you work"
+      },
       "badge": "One link for your whole business",
       "cta": "Create my profile free",
       "ctaNote": "14-day trial, then €{price}/month",
+      "liveHint": "Real demo — click inside it",
       "points": {
         "anyJob": "Works for any independent job",
         "noCommission": "No commission, no setup call",
@@ -1041,6 +1054,26 @@
       "login": "Log in",
       "pricing": "Pricing"
     },
+    "positioning": {
+      "cold": {
+        "body": "A bare calendar with your name on top. The client picks an hour without seeing what they are buying.",
+        "label": "Too cold",
+        "title": "A booking form"
+      },
+      "eyebrow": "Where it sits",
+      "heavy": {
+        "body": "Programmes, invoicing, progress tracking. Powerful, long to install, and oversized when all you want is to be bookable.",
+        "label": "Too heavy",
+        "title": "Trade software"
+      },
+      "ours": {
+        "body": "Your page, your offers, your prices, the way you work — with booking at the end of it. Ready the same day.",
+        "label": "The right size",
+        "title": "TheSessionLink"
+      },
+      "subtitle": "Between the booking tool that shows nothing of you and the trade platform that takes a week to set up, something was missing: a page that looks like you and fills itself in.",
+      "title": "Warmer than a form, lighter than software."
+    },
     "pricing": {
       "cta": "Start my free trial",
       "eyebrow": "Pricing",
@@ -1061,6 +1094,25 @@
       "title": "One plan, everything included",
       "trialBadge": "14-day trial",
       "trialNote": "14-day trial · card required"
+    },
+    "problem": {
+      "afterBody": "Your offers, your prices, your slots, your terms. The client picks, you get the request in writing — and it stays there.",
+      "afterLabel": "With your link",
+      "afterPoints": {
+        "0": "No account to create, for you or for them",
+        "1": "Every request becomes a client record",
+        "2": "The same link works everywhere, forever"
+      },
+      "afterTitle": "One address, and the question is already answered.",
+      "eyebrow": "The problem",
+      "messages": {
+        "0": "Any room on Saturday?",
+        "1": "What was the price again?",
+        "2": "Can we move it to 6pm?",
+        "3": "Do you take cards?"
+      },
+      "title": "Your bookings live in your DMs.",
+      "todayLabel": "Today"
     }
   },
   "manageBooking": {

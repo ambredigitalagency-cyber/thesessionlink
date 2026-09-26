@@ -1,11 +1,12 @@
 "use client";
 
 import { CalendarCheck, Link2, Sparkles } from "lucide-react";
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useSpring } from "motion/react";
+import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
-import { useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
+
+import { EASE, SectionHeading } from "./section";
 
 const STEPS = [
   { key: "create", icon: Sparkles },
@@ -13,130 +14,50 @@ const STEPS = [
   { key: "fill", icon: CalendarCheck },
 ] as const;
 
+/**
+ * Three steps, as three rows.
+ *
+ * The previous version was a scroll-driven sticky panel: 260vh of page in
+ * which the three steps swapped as you scrolled past. It looked expensive and
+ * it cost the reader something — you could not skim it, you could not get to
+ * step three without scrolling through one and two, and on a phone it fell
+ * back to a plain stack anyway, so the effect only existed for half the
+ * audience. Three rows, alternating sides, say the same thing in a third of
+ * the scroll and read identically on every screen.
+ *
+ * The numbered rail survives, as a line down the left of the row on desktop:
+ * it is what made the sequence feel like a sequence rather than three cards.
+ */
 export function HowItWorks() {
   const t = useTranslations("landing.how");
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
-  useMotionValueEvent(scrollYProgress, "change", (value) => {
-    const next = Math.min(STEPS.length - 1, Math.floor(value * STEPS.length));
-    setActive(next);
-  });
-
-  // Springed so the rail keeps flowing when the wheel stops abruptly. Safe to
-  // leave running under reduced motion: it is a position, not a movement the
-  // reader did not ask for.
-  const railProgress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, mass: 0.4 });
 
   return (
     <section id="how" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
 
-        {/* Mobile: plain stacked steps */}
-        <ol className="mt-12 space-y-4 lg:hidden">
+        <ol className="mt-14 space-y-14 sm:space-y-20">
           {STEPS.map((step, index) => (
             <motion.li
               key={step.key}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="surface-card p-5"
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.55, ease: EASE }}
+              className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16"
             >
-              <StepContent index={index} stepKey={step.key} icon={step.icon} />
-              <div className="mt-4">
+              <div className={cn(index % 2 === 1 && "lg:order-2")}>
+                <StepContent index={index} stepKey={step.key} icon={step.icon} />
+              </div>
+
+              <div className={cn("h-[20rem] sm:h-[23rem]", index % 2 === 1 && "lg:order-1")}>
                 <StepVisual index={index} />
               </div>
             </motion.li>
           ))}
         </ol>
-
-        {/* Desktop: scroll-driven sticky panel */}
-        <div ref={containerRef} className="relative mt-16 hidden h-[260vh] lg:block">
-          <div className="sticky top-24 grid grid-cols-2 items-center gap-16">
-            <ol className="relative space-y-8">
-              {/* One continuous rail behind the three steps, filled by the
-                  same scroll that switches them. It replaces three separate
-                  borders lighting up on their own. */}
-              <span aria-hidden className="bg-line absolute inset-y-0 left-0 w-0.5 rounded-full" />
-              <motion.span
-                aria-hidden
-                style={{ scaleY: railProgress }}
-                className="bg-ink absolute inset-y-0 left-0 w-0.5 origin-top rounded-full"
-              />
-
-              {STEPS.map((step, index) => (
-                <li key={step.key} className="relative pl-6 transition-all duration-500">
-                  <div
-                    className={cn(
-                      "transition-all duration-500",
-                      active === index ? "opacity-100" : "opacity-40",
-                    )}
-                  >
-                    <StepContent index={index} stepKey={step.key} icon={step.icon} />
-                  </div>
-                </li>
-              ))}
-            </ol>
-
-            <div className="relative h-[26rem]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={active}
-                  initial={{ opacity: 0, y: 24, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -24, scale: 0.98 }}
-                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                  className="absolute inset-0"
-                >
-                  <StepVisual index={active} />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
-  );
-}
-
-export function SectionHeading({
-  eyebrow,
-  title,
-  subtitle,
-  align = "left",
-}: {
-  eyebrow?: string;
-  title: string;
-  subtitle?: string;
-  align?: "left" | "center";
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("max-w-2xl", align === "center" && "mx-auto text-center")}
-    >
-      {eyebrow ? (
-        <p className="text-[12.5px] font-medium tracking-[0.12em] text-[var(--accent-ink)] uppercase">
-          {eyebrow}
-        </p>
-      ) : null}
-      <h2 className="text-ink mt-3 text-[32px] leading-[1.08] font-semibold tracking-[-0.035em] sm:text-[42px]">
-        {title}
-      </h2>
-      {subtitle ? (
-        <p className="text-ink-muted mt-4 text-[16.5px] leading-relaxed">{subtitle}</p>
-      ) : null}
-    </motion.div>
   );
 }
 
@@ -152,17 +73,18 @@ function StepContent({
   const t = useTranslations("landing.how");
 
   return (
-    <div>
-      <div className="flex items-center gap-2.5">
-        <span className="bg-ink text-ink-inverse flex size-7 items-center justify-center rounded-full text-[12px] font-semibold">
-          {index + 1}
-        </span>
-        <Icon className="text-ink-muted size-4" />
-      </div>
-      <h3 className="text-ink mt-3 text-[20px] font-semibold tracking-[-0.02em] sm:text-[22px]">
+    <div className="border-line relative lg:border-l lg:pl-7">
+      {/* The number sits on the rule, so three rows read as one sequence. */}
+      <span className="bg-ink text-ink-inverse flex size-8 items-center justify-center rounded-full text-[13px] font-semibold lg:absolute lg:top-0 lg:-left-4">
+        {index + 1}
+      </span>
+
+      <Icon className="mt-4 size-5 text-[var(--accent-ink)] lg:mt-1" aria-hidden />
+
+      <h3 className="text-ink mt-3 text-[24px] leading-tight font-semibold tracking-[-0.025em] sm:text-[28px]">
         {t(`steps.${stepKey}.title` as "steps.create.title")}
       </h3>
-      <p className="text-ink-muted mt-2 max-w-md text-[15px] leading-relaxed">
+      <p className="text-ink-muted mt-3 max-w-md text-[15.5px] leading-relaxed">
         {t(`steps.${stepKey}.body` as "steps.create.body")}
       </p>
     </div>
@@ -215,7 +137,8 @@ function StepVisual({ index }: { index: number }) {
           <motion.div
             key={key}
             initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
             transition={{ delay: 0.1 + position * 0.08, duration: 0.4 }}
             className="border-line flex items-center gap-3 rounded-[var(--radius-md)] border px-3.5 py-3"
           >
@@ -239,7 +162,8 @@ function StepVisual({ index }: { index: number }) {
         <motion.div
           key={row}
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.12 * row, duration: 0.4 }}
           className="border-line flex items-center gap-3 rounded-[var(--radius-md)] border p-3"
         >

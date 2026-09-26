@@ -1,18 +1,24 @@
-import { ShieldCheck } from "lucide-react";
-import Link from "next/link";
+import { LogOut } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 
 import { signOut } from "@/actions/auth";
+import { ConsoleRail, ConsoleRailFooter } from "@/components/admin/console-rail";
 import { requireAdmin } from "@/lib/admin/access";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 
 /**
  * The platform console.
  *
- * Deliberately not built like the coach dashboard: dark chrome, no sidebar, no
- * accent colour. Whoever lands here must know within a glance that they are not
- * in a coach's account.
+ * Deliberately not built like the coach dashboard. That one has a light
+ * sidebar and the coach's own neutral palette; this has a rail that stays dark
+ * in both themes and a steel accent that appears nowhere else in the product.
+ * Whoever lands here must know within a glance that they are not in a coach's
+ * account — and, just as importantly, must not mistake a coach's data for
+ * their own.
+ *
+ * `data-console` scopes that identity: the tokens it switches on are declared
+ * under that attribute, so none of it can leak into a page rendered elsewhere.
  *
  * The guard runs in the layout, so every page below inherits it, and answers a
  * 404 to anyone who is not an admin.
@@ -22,46 +28,36 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const t = await getTranslations("admin");
   const messages = pickMessages(await getMessages(), [...BASE_NAMESPACES, "admin"]);
 
+  const signOutButton = (
+    <form action={signOut}>
+      <button
+        type="submit"
+        className="hover:text-ink inline-flex items-center gap-1.5 transition-colors"
+      >
+        <LogOut className="size-3.5" aria-hidden />
+        {t("nav.signOut")}
+      </button>
+    </form>
+  );
+
   return (
     <NextIntlClientProvider messages={messages}>
-      <div className="bg-canvas min-h-dvh">
-        {/* A bar that is dark in both themes, so its text is light in both:
-            `ink` would have turned it white under a dark theme and taken the
-            white links with it. */}
-        <header className="bg-night text-on-night sticky top-0 z-40">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3.5 sm:px-6">
-            <Link href="/admin" className="flex items-center gap-2 font-semibold">
-              <ShieldCheck className="size-4" />
-              {t("title")}
-            </Link>
+      <div data-console className="bg-canvas flex min-h-dvh flex-col lg:flex-row">
+        <ConsoleRail email={user.email ?? ""} />
 
-            <nav className="flex items-center gap-4 text-[13.5px]">
-              <Link href="/admin" className="text-white/70 transition-colors hover:text-white">
-                {t("nav.coaches")}
-              </Link>
-              <Link
-                href="/admin/audit"
-                className="text-white/70 transition-colors hover:text-white"
-              >
-                {t("nav.audit")}
-              </Link>
-              <Link href="/dashboard" className="text-white/70 transition-colors hover:text-white">
-                {t("nav.myDashboard")}
-              </Link>
-            </nav>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-6 sm:py-9 lg:px-9">
+            {children}
+          </main>
 
-            <div className="ml-auto flex items-center gap-3 text-[12.5px] text-white/60">
-              <span className="hidden sm:inline">{user.email}</span>
-              <form action={signOut}>
-                <button type="submit" className="transition-colors hover:text-white">
-                  {t("nav.signOut")}
-                </button>
-              </form>
-            </div>
+          <ConsoleRailFooter email={user.email ?? ""} signOut={signOutButton} />
+
+          {/* On desktop the rail already carries the identity and the account,
+              so the content column only needs the way out. */}
+          <div className="border-line text-ink-subtle hidden border-t px-4 py-4 text-[12px] sm:px-6 lg:block lg:px-9">
+            {signOutButton}
           </div>
-        </header>
-
-        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">{children}</main>
+        </div>
       </div>
     </NextIntlClientProvider>
   );

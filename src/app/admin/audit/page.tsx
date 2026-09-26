@@ -1,7 +1,8 @@
 import { getTranslations } from "next-intl/server";
 
 import { AuditTrail, type AuditEntry } from "@/components/admin/audit-trail";
-import { Card } from "@/components/ui/primitives";
+import { ConsolePanel } from "@/components/admin/console-kpi";
+import { ConsoleHeader } from "@/components/admin/console-header";
 import { requireAdmin } from "@/lib/admin/access";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -16,18 +17,23 @@ export default async function AdminAuditPage() {
     .order("created_at", { ascending: false })
     .limit(200);
 
+  const entries = (data ?? []) as AuditEntry[];
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-ink text-[26px] font-semibold tracking-[-0.03em]">
-          {t("audit.title")}
-        </h1>
-        <p className="text-ink-muted mt-1 text-[15px]">{t("audit.subtitle")}</p>
-      </div>
+      <ConsoleHeader
+        eyebrow={t("nav.audit")}
+        title={t("audit.title")}
+        subtitle={t("audit.subtitle")}
+      />
 
-      <Card className="p-5 sm:p-6">
-        <AuditTrail entries={(data ?? []) as AuditEntry[]} showTarget />
-      </Card>
+      <ConsolePanel
+        title={t("audit.entries", { count: entries.length })}
+        hint={t("audit.latest")}
+        className="overflow-hidden"
+      >
+        <AuditTrail entries={entries} showTarget />
+      </ConsolePanel>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { FaqAccordion } from "@/components/ui/overlays";
 
-import { SectionHeading } from "./how-it-works";
+import { SectionHeading } from "./section";
 
 const KEYS = ["niche", "payments", "calendar", "clients", "link", "cancel", "language"] as const;
 

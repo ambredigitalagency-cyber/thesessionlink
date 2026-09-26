@@ -17,6 +17,7 @@ import { ACTION_TYPES, type ActionType } from "@/lib/offers/schema";
 import { cn } from "@/lib/utils";
 
 import { ACTION_GLYPHS, GLYPH_ON_DARK } from "./action-glyphs";
+import { EASE, SectionHeading } from "./section";
 
 const SMALL_FEATURES = [
   { key: "crm", icon: UsersRound },
@@ -27,7 +28,6 @@ const SMALL_FEATURES = [
   { key: "bilingual", icon: Globe },
 ] as const;
 
-const EASE = [0.16, 1, 0.3, 1] as const;
 /** Long enough to read the description before it moves on. */
 const DWELL_MS = 5000;
 
@@ -39,21 +39,12 @@ export function Features() {
       <div className="bg-grid-inverse pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)] opacity-40" />
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="max-w-2xl"
-        >
-          <p className="text-[12.5px] font-medium tracking-[0.12em] text-[var(--accent)] uppercase">
-            {t("eyebrow")}
-          </p>
-          <h2 className="mt-3 text-[32px] leading-[1.08] font-semibold tracking-[-0.035em] sm:text-[42px]">
-            {t("title")}
-          </h2>
-          <p className="mt-4 text-[16.5px] leading-relaxed text-white/60">{t("subtitle")}</p>
-        </motion.div>
+        <SectionHeading
+          tone="night"
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          subtitle={t("subtitle")}
+        />
 
         <ActionShowcase />
         <SmallFeatures />
@@ -65,23 +56,25 @@ export function Features() {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The five action types, shown one at a time instead of as five cards.
+ * The five action types, as a menu rather than a carousel.
  *
- * Five boxes in a row said "here is a list"; a coach reading it had to imagine
- * what each one produced. One at a time, with the thing it produces drawn
- * beside it, says "here is what your page will do" — and the five become a
- * choice the reader makes rather than a grid they skim.
+ * They were a strip of pills over one wide panel, which made them look like
+ * five views of one thing. They are not: they are five different products a
+ * visitor can be sold, and choosing between them is the single decision a
+ * coach makes when they publish an offer. So they are now a list you run down,
+ * with the chosen one opening in place and the drawing of what it produces
+ * standing beside it — the shape of a menu, because that is what it is.
  *
- * It advances on its own so the whole set is seen without work, and stops the
- * moment someone takes over: pointer in, keyboard focus, or a system request
- * for less movement.
+ * It still advances on its own so the whole set is seen without work, and
+ * still stops the moment someone takes over: pointer in, keyboard focus, or a
+ * system request for less movement.
  */
 function ActionShowcase() {
   const t = useTranslations("landing.features");
   const tActions = useTranslations("offers.actions");
   const still = useReducedMotion();
 
-  const [active, setActive] = useState<number>(0);
+  const [active, setActive] = useState(0);
   const [held, setHeld] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -97,9 +90,9 @@ function ActionShowcase() {
   const actionType = ACTION_TYPES[active] as ActionType;
   const Glyph = ACTION_GLYPHS[actionType];
 
-  /** Left/right walk the strip, as a tablist is expected to. */
+  /** Up/down walk the menu, as a vertical tablist is expected to. */
   function onKeyDown(event: React.KeyboardEvent) {
-    const delta = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+    const delta = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
     if (!delta) return;
 
     event.preventDefault();
@@ -110,7 +103,7 @@ function ActionShowcase() {
 
   return (
     <div
-      className="mt-12"
+      className="mt-12 grid gap-4 lg:grid-cols-[1.05fr_1fr] lg:gap-8"
       onPointerEnter={() => setHeld(true)}
       onPointerLeave={() => setHeld(false)}
       onFocusCapture={() => setHeld(true)}
@@ -119,9 +112,10 @@ function ActionShowcase() {
       <div
         ref={tabsRef}
         role="tablist"
+        aria-orientation="vertical"
         aria-label={t("actionsLabel")}
         onKeyDown={onKeyDown}
-        className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
+        className="border-line-inverse divide-line-inverse divide-y overflow-hidden rounded-[var(--radius-lg)] border"
       >
         {ACTION_TYPES.map((type, index) => {
           const Icon = ACTION_ICONS[type];
@@ -138,31 +132,64 @@ function ActionShowcase() {
               tabIndex={selected ? 0 : -1}
               onClick={() => setActive(index)}
               className={cn(
-                "relative shrink-0 snap-start rounded-full px-4 py-2.5 text-[13.5px] font-medium whitespace-nowrap transition-colors",
-                selected ? "text-night" : "text-white/55 hover:text-white/85",
+                "relative flex w-full items-start gap-3.5 px-5 py-4 text-left transition-colors",
+                selected ? "bg-white/[0.06]" : "hover:bg-white/[0.03]",
               )}
             >
+              {/* The marker travels between rows, so the menu reads as one
+                  choice moving rather than five states blinking. */}
               {selected ? (
                 <motion.span
-                  layoutId="action-pill"
-                  className="absolute inset-0 rounded-full bg-white"
-                  transition={{ duration: 0.4, ease: EASE }}
+                  layoutId="action-marker"
+                  aria-hidden
+                  className="absolute inset-y-0 left-0 w-0.5 bg-[var(--accent)]"
+                  transition={{ duration: 0.35, ease: EASE }}
                 />
               ) : null}
-              <span className="relative flex items-center gap-2">
-                <Icon className="size-3.5" />
-                {tActions(`${type}.label`)}
+
+              <span
+                className={cn(
+                  "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors",
+                  selected ? "bg-[var(--accent)] text-[var(--accent-on)]" : "bg-white/[0.06]",
+                )}
+              >
+                <Icon className={cn("size-4", !selected && "text-white/60")} />
+              </span>
+
+              <span className="min-w-0">
+                <span
+                  className={cn(
+                    "block text-[16px] font-semibold tracking-[-0.015em] transition-colors",
+                    selected ? "text-on-night" : "text-white/70",
+                  )}
+                >
+                  {tActions(`${type}.label`)}
+                </span>
+
+                {/* The description belongs to the chosen row, not to a panel
+                    somewhere else on the page. */}
+                <AnimatePresence initial={false}>
+                  {selected ? (
+                    <motion.span
+                      key="description"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3, ease: EASE }}
+                      className="block overflow-hidden text-[13.5px] leading-relaxed text-white/60"
+                    >
+                      <span className="mt-1.5 block">{tActions(`${type}.description`)}</span>
+                    </motion.span>
+                  ) : null}
+                </AnimatePresence>
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* The two panels share one grid cell so they cross-fade over each other.
-          `mode="wait"` was the obvious choice and the wrong one: it unmounts
-          the outgoing panel before mounting the next, which left the box empty
-          for a third of a second on every change. */}
-      <div className="border-line-inverse bg-night-soft mt-4 grid min-h-[15rem] overflow-hidden rounded-[var(--radius-lg)] border sm:min-h-[13rem]">
+      {/* What the visitor ends up seeing, drawn. */}
+      <div className="border-line-inverse bg-night-soft grid min-h-[17rem] overflow-hidden rounded-[var(--radius-lg)] border lg:min-h-0">
         <AnimatePresence initial={false}>
           <motion.div
             key={actionType}
@@ -173,49 +200,25 @@ function ActionShowcase() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.35, ease: EASE }}
-            className="col-start-1 row-start-1 grid items-center gap-6 p-6 sm:grid-cols-[1fr_auto] sm:gap-10 sm:p-8"
+            className="col-start-1 row-start-1 flex flex-col items-center justify-center gap-7 p-7"
           >
-            <div>
-              <h3 className="text-[22px] font-semibold tracking-[-0.02em] sm:text-[26px]">
-                {tActions(`${actionType}.label`)}
-              </h3>
-              <p className="mt-2.5 max-w-md text-[15px] leading-relaxed text-white/60">
-                {tActions(`${actionType}.description`)}
-              </p>
-
-              {/* What the visitor actually sees on the public page. */}
-              <div className="mt-6 flex items-center gap-2.5">
-                <span className="text-[11.5px] tracking-[0.1em] text-white/35 uppercase">
-                  {t("onYourPage")}
-                </span>
-                <span
-                  className="rounded-full px-3.5 py-1.5 text-[12.5px] font-medium text-white"
-                  style={{ background: "var(--accent)" }}
-                >
-                  {tActions(`${actionType}.label`)}
-                </span>
-              </div>
+            <div style={GLYPH_ON_DARK}>
+              <Glyph className="h-32 w-48 sm:h-40 sm:w-64" />
             </div>
 
-            <div style={GLYPH_ON_DARK} className="justify-self-center sm:justify-self-end">
-              <Glyph className="h-32 w-48 sm:h-40 sm:w-64" />
+            <div className="flex items-center gap-2.5">
+              <span className="text-[11.5px] tracking-[0.1em] text-white/35 uppercase">
+                {t("onYourPage")}
+              </span>
+              <span
+                className="rounded-full px-3.5 py-1.5 text-[12.5px] font-medium text-[var(--accent-on)]"
+                style={{ background: "var(--accent)" }}
+              >
+                {tActions(`${actionType}.label`)}
+              </span>
             </div>
           </motion.div>
         </AnimatePresence>
-      </div>
-
-      {/* Which of the five is showing, without reading the strip again. */}
-      <div className="mt-3 flex justify-center gap-1.5 sm:justify-start">
-        {ACTION_TYPES.map((type, index) => (
-          <span
-            key={type}
-            aria-hidden
-            className={cn(
-              "h-1 rounded-full transition-all duration-500",
-              index === active ? "w-6 bg-white/70" : "w-1.5 bg-white/20",
-            )}
-          />
-        ))}
       </div>
     </div>
   );

@@ -13,8 +13,10 @@
       },
       "details": "Détail",
       "empty": "Aucune intervention enregistrée.",
+      "entries": "{count, plural, one {# intervention} other {# interventions}}",
       "forCoach": "Historique des interventions",
       "forCoachHint": "Les 50 dernières actions sur ce compte.",
+      "latest": "Les plus récentes d'abord, 200 au maximum.",
       "noTarget": "—",
       "subtitle": "Qui a fait quoi, quand, sur quel compte. Ajoutable, jamais modifiable.",
       "target": "Coach",
@@ -31,6 +33,7 @@
       "bookings": "Réservations reçues",
       "daysLeft": "{count} jour(s) restant(s)",
       "deletionRequested": "Suppression demandée le {date} · purge le {due}, dans {count, plural, one {# jour} other {# jours}}",
+      "facts": "Le compte",
       "lastBooking": "Dernière réservation",
       "offers": "Offres publiées",
       "signedUp": "Inscription",
@@ -48,7 +51,9 @@
       "offers": "Offres",
       "purgeIn": "Purge dans {count, plural, one {# jour} other {# jours}}",
       "search": "Nom, e-mail, lien…",
+      "showing": "{shown} sur {total} affichés",
       "signedUp": "Inscrit le",
+      "sortBy": "Trier par {column}",
       "status": "Statut",
       "title": "Coachs ({count})"
     },
@@ -83,6 +88,7 @@
       "unsuspended": "Compte réactivé"
     },
     "nav": {
+      "aria": "Sections de la console",
       "audit": "Journal",
       "coaches": "Coachs",
       "myDashboard": "Mon dashboard",
@@ -104,6 +110,7 @@
       "statuses": "Répartition : {list}",
       "subscribed": "Abonnés",
       "subtitle": "Qui s'inscrit, qui reste, ce que ça représente.",
+      "thisMonth": "ce mois-ci",
       "title": "Pilotage de la plateforme",
       "trialCount": "{count} en essai"
     },
@@ -984,9 +991,15 @@
       "tagline": "La page de réservation des indépendants."
     },
     "hero": {
+      "annotations": {
+        "booking": "Réservé en trois gestes, sans compte",
+        "offers": "Tes offres, avec leurs prix",
+        "profile": "Ton profil : photo, métier, façon de travailler"
+      },
       "badge": "Un seul lien pour toute ton activité",
       "cta": "Créer mon profil gratuitement",
       "ctaNote": "14 jours d'essai, puis {price} €/mois",
+      "liveHint": "Vraie démo — clique dedans",
       "points": {
         "anyJob": "Pour tous les indépendants",
         "noCommission": "Sans commission, sans démo commerciale",
@@ -1041,6 +1054,26 @@
       "login": "Se connecter",
       "pricing": "Tarif"
     },
+    "positioning": {
+      "cold": {
+        "body": "Un calendrier nu avec ton nom au-dessus. Le client choisit une heure sans voir ce qu'il achète.",
+        "label": "Trop froid",
+        "title": "Un formulaire de rendez-vous"
+      },
+      "eyebrow": "Où ça se situe",
+      "heavy": {
+        "body": "Programmes, facturation, suivi de progression. Puissant, long à installer, et surdimensionné quand tu veux juste être réservable.",
+        "label": "Trop lourd",
+        "title": "Un logiciel métier"
+      },
+      "ours": {
+        "body": "Ta page, tes offres, tes prix, ta façon de travailler — et la réservation au bout. Prêt le jour même.",
+        "label": "La bonne taille",
+        "title": "TheSessionLink"
+      },
+      "subtitle": "Entre l'outil de prise de rendez-vous qui ne montre rien de toi et la plateforme métier qu'il faut une semaine pour installer, il manquait quelque chose : une page qui te ressemble et qui se remplit toute seule.",
+      "title": "Plus chaleureux qu'un formulaire, plus léger qu'un logiciel."
+    },
     "pricing": {
       "cta": "Démarrer mon essai gratuit",
       "eyebrow": "Tarif",
@@ -1061,6 +1094,25 @@
       "title": "Un seul plan, tout inclus",
       "trialBadge": "14 jours d'essai",
       "trialNote": "14 jours d'essai · carte bancaire requise"
+    },
+    "problem": {
+      "afterBody": "Tes offres, tes prix, tes créneaux, tes conditions. Le client choisit, tu reçois la demande par écrit — et elle y reste.",
+      "afterLabel": "Avec ton lien",
+      "afterPoints": {
+        "0": "Aucun compte à créer, ni pour toi ni pour lui",
+        "1": "Chaque demande devient une fiche client",
+        "2": "Le même lien marche partout, tout le temps"
+      },
+      "afterTitle": "Une adresse, et la question est déjà répondue.",
+      "eyebrow": "Le problème",
+      "messages": {
+        "0": "Tu as de la place samedi ?",
+        "1": "C'était quel prix déjà ?",
+        "2": "On peut décaler à 18 h ?",
+        "3": "Tu prends la carte ?"
+      },
+      "title": "Tes réservations vivent dans tes DM.",
+      "todayLabel": "Aujourd'hui"
     }
   },
   "manageBooking": {

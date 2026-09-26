@@ -369,6 +369,36 @@
 }
 
 /*
+ * The platform console.
+ *
+ * Three spaces in this product must never be mistaken for one another: a
+ * coach's public page, which wears their accent; their dashboard, which is
+ * deliberately neutral; and this, which is neither theirs nor public. The
+ * console gets its own hue — a cold steel that appears nowhere else — and its
+ * own chrome, so that landing on it is unambiguous within a glance.
+ *
+ * Steel rather than a warning red: the console is where someone works for an
+ * hour, not an alarm. Red would shout on every screen and mean nothing by the
+ * second one. Cold is enough to say "not your account" while staying calm.
+ *
+ * Scoped under [data-console] so none of it can leak into a coach's page, and
+ * flipping with the theme like everything else.
+ */
+[data-console] {
+  /* The rail, which stays dark in both themes — it is the chrome, not a page. */
+  --console-rail: #16181d;
+  --console-rail-soft: #1e2128;
+  --console-rail-line: #2b2f38;
+  --console-rail-ink: #e8eaee;
+  --console-rail-muted: #9aa1ae;
+
+  /* The steel that marks this space. */
+  --console-accent: light-dark(#3f5f8f, #7da3d9);
+  --console-accent-soft: light-dark(#eaf0f9, #16202e);
+  --console-accent-ink: light-dark(#27405f, #a9c6ef);
+}
+
+/*
  * Event colours, by action type.
  *
  * Deliberately muted and kept apart from the accent presets above: the accent

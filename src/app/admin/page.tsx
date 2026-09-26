@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { AdminCoaches, type CoachRow } from "@/components/admin/coaches-table";
+import { ConsoleHeader } from "@/components/admin/console-header";
 import { PlatformSummary } from "@/components/admin/platform-summary";
 import { isPlatformAdmin, requireAdmin } from "@/lib/admin/access";
 import { platformTotals, signupsByMonth } from "@/lib/admin/status";
@@ -49,13 +50,12 @@ export default async function AdminHomePage() {
   });
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-ink text-[26px] font-semibold tracking-[-0.03em]">
-          {t("stats.title")}
-        </h1>
-        <p className="text-ink-muted mt-1 text-[15px]">{t("stats.subtitle")}</p>
-      </div>
+    <div className="space-y-6">
+      <ConsoleHeader
+        eyebrow={t("nav.coaches")}
+        title={t("stats.title")}
+        subtitle={t("stats.subtitle")}
+      />
 
       <PlatformSummary
         totals={totals}
