@@ -9,12 +9,11 @@ import { CoachControls } from "@/components/admin/coach-controls";
 import { ConsoleKpi, ConsolePanel } from "@/components/admin/console-kpi";
 import { STATUS_BAR, STATUS_CHIP } from "@/components/admin/status-tone";
 import { deletionDaysLeft, deletionDueAt } from "@/lib/account/deletion";
-import { requireAdmin } from "@/lib/admin/access";
+import { adminDb, requireAdmin } from "@/lib/admin/access";
 import { coachActivity, paymentSummary, profileCompleteness } from "@/lib/admin/coach-file";
 import { coachRef } from "@/lib/admin/ref";
 import { accountStatus, trialDaysLeft } from "@/lib/admin/status";
 import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 /**
@@ -34,7 +33,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
   const { id } = await params;
   const t = await getTranslations("admin");
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { data: coach } = await supabase
     .from("admin_coach_overview")
     .select("*")
@@ -55,7 +54,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
 
   const { data: log } = await supabase
     .from("admin_audit_log")
-    .select("id, action, details, created_at, admin_user_id")
+    .select("id, action, details, created_at, admin_user_id, via")
     .eq("target_profile_id", id)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -90,7 +89,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
       .eq("profile_id", id),
     supabase
       .from("admin_notes")
-      .select("id, body, created_at, author_user_id")
+      .select("id, body, created_at, author_user_id, via")
       .eq("profile_id", id)
       .order("created_at", { ascending: false }),
     supabase.from("platform_admins").select("user_id, note"),
@@ -337,11 +336,19 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
             id: note.id,
             body: note.body,
             created_at: note.created_at,
-            mine: note.author_user_id === admin.id,
+            // Mine: my own member notes, or — through the password door —
+            // the notes left through it, the only ones it may remove.
+            mine:
+              admin.kind === "member"
+                ? note.author_user_id === admin.userId
+                : note.via === "password",
             author:
-              note.author_user_id === admin.id
-                ? t("notes.you")
-                : (adminNames.get(note.author_user_id) ?? t("notes.otherAdmin")),
+              note.via === "password"
+                ? t("notes.viaPassword")
+                : admin.kind === "member" && note.author_user_id === admin.userId
+                  ? t("notes.you")
+                  : ((note.author_user_id && adminNames.get(note.author_user_id)) ??
+                    t("notes.otherAdmin")),
           }))}
         />
       </ConsolePanel>
@@ -353,6 +360,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
           pendingDeletion={Boolean(coach.deleted_at)}
           subscribed={Boolean(coach.subscription_active)}
           isAdminAccount={Boolean(adminRow)}
+          canImpersonate={admin.kind === "member"}
         />
       </ConsolePanel>
 

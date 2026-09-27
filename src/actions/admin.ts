@@ -3,13 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { requireAdminForAction } from "@/lib/admin/access";
+import { adminDb, requireAdminForAction, type AdminActor } from "@/lib/admin/access";
 import {
   clearImpersonation,
   impersonationTarget,
   startImpersonation,
 } from "@/lib/admin/impersonation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Json } from "@/lib/supabase/database.types";
 import type { ActionResult } from "@/lib/validation";
 
@@ -21,8 +20,11 @@ import type { ActionResult } from "@/lib/validation";
  * that made the change. The log has no update or delete policy: entries can be
  * added and read, never rewritten.
  *
- * The console never uses a service-role client. Every read and write here is
- * allowed by a named policy, so what an admin can reach is reviewable in SQL.
+ * A platform_admins member works through their own session: every read and
+ * write is allowed by a named policy, so what they can reach is reviewable in
+ * SQL. The console password (solo/demo, see lib/admin/password-access.ts) has
+ * no session, so `adminDb` hands it the service role — and the journal marks
+ * those rows via = 'password', since there is no user to name.
  */
 
 type AuditAction =
@@ -35,14 +37,15 @@ type AuditAction =
   | "restore_account";
 
 async function audit(
-  adminUserId: string,
+  actor: AdminActor,
   action: AuditAction,
   targetProfileId: string | null,
   details: Record<string, unknown>,
 ) {
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(actor);
   const { error } = await supabase.from("admin_audit_log").insert({
-    admin_user_id: adminUserId,
+    admin_user_id: actor.kind === "member" ? actor.userId : null,
+    via: actor.kind,
     action,
     target_profile_id: targetProfileId,
     details: details as Json,
@@ -59,11 +62,11 @@ const idSchema = z.uuid();
  *
  * Suspending one — including your own — would lock the platform's own staff out
  * of the console, and there is no screen to undo it from once locked out. The
- * check reads platform_admins through the caller's session, which the "Admins
- * read the roster" policy allows.
+ * check reads platform_admins through the caller's client, which the "Admins
+ * read the roster" policy allows for members.
  */
-async function targetIsAdmin(profileId: string): Promise<boolean> {
-  const supabase = await createSupabaseServerClient();
+async function targetIsAdmin(actor: AdminActor, profileId: string): Promise<boolean> {
+  const supabase = await adminDb(actor);
   const { data: profile } = await supabase
     .from("profiles")
     .select("user_id")
@@ -91,7 +94,7 @@ export async function extendTrial(profileId: string, days: number): Promise<Acti
     });
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { data: profile } = await supabase
     .from("profiles")
     .select("trial_ends_at")
@@ -111,7 +114,7 @@ export async function extendTrial(profileId: string, days: number): Promise<Acti
 
   if (error) return { ok: false, error: "unexpected" };
 
-  await audit(admin.id, "extend_trial", profileId, {
+  await audit(admin, "extend_trial", profileId, {
     days: parsed.data.days,
     from: profile.trial_ends_at,
     to: trialEndsAt,
@@ -132,7 +135,7 @@ export async function setSubscription(
     .safeParse({ profileId, active, reason });
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { error } = await supabase
     .from("profiles")
     .update({ subscription_active: parsed.data.active })
@@ -140,7 +143,7 @@ export async function setSubscription(
 
   if (error) return { ok: false, error: "unexpected" };
 
-  await audit(admin.id, "set_subscription", profileId, {
+  await audit(admin, "set_subscription", profileId, {
     active: parsed.data.active,
     reason: parsed.data.reason || null,
   });
@@ -155,23 +158,23 @@ export async function suspendProfile(profileId: string, reason: string): Promise
     .object({ profileId: idSchema, reason: z.string().trim().min(3, "required").max(500) })
     .safeParse({ profileId, reason });
   if (!parsed.success) return { ok: false, error: "reason_required" };
-  if (await targetIsAdmin(parsed.data.profileId)) {
+  if (await targetIsAdmin(admin, parsed.data.profileId)) {
     return { ok: false, error: "admin_account_protected" };
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { error } = await supabase
     .from("profiles")
     .update({
       suspended_at: new Date().toISOString(),
       suspension_reason: parsed.data.reason,
-      suspended_by: admin.id,
+      suspended_by: admin.kind === "member" ? admin.userId : null,
     })
     .eq("id", profileId);
 
   if (error) return { ok: false, error: "unexpected" };
 
-  await audit(admin.id, "suspend", profileId, { reason: parsed.data.reason });
+  await audit(admin, "suspend", profileId, { reason: parsed.data.reason });
   revalidatePath("/admin", "layout");
   return { ok: true };
 }
@@ -180,7 +183,7 @@ export async function unsuspendProfile(profileId: string): Promise<ActionResult>
   const admin = await requireAdminForAction();
   if (!idSchema.safeParse(profileId).success) return { ok: false, error: "invalid_input" };
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { error } = await supabase
     .from("profiles")
     .update({ suspended_at: null, suspension_reason: null, suspended_by: null })
@@ -188,7 +191,7 @@ export async function unsuspendProfile(profileId: string): Promise<ActionResult>
 
   if (error) return { ok: false, error: "unexpected" };
 
-  await audit(admin.id, "unsuspend", profileId, {});
+  await audit(admin, "unsuspend", profileId, {});
   revalidatePath("/admin", "layout");
   return { ok: true };
 }
@@ -205,7 +208,7 @@ export async function restoreAccount(profileId: string): Promise<ActionResult> {
   const admin = await requireAdminForAction();
   if (!idSchema.safeParse(profileId).success) return { ok: false, error: "invalid_input" };
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { data: profile } = await supabase
     .from("profiles")
     .select("deleted_at")
@@ -224,7 +227,7 @@ export async function restoreAccount(profileId: string): Promise<ActionResult> {
 
   if (error) return { ok: false, error: "unexpected" };
 
-  await audit(admin.id, "restore_account", profileId, { was_deleted_at: profile.deleted_at });
+  await audit(admin, "restore_account", profileId, { was_deleted_at: profile.deleted_at });
   revalidatePath("/admin", "layout");
   return { ok: true };
 }
@@ -239,8 +242,11 @@ export async function restoreAccount(profileId: string): Promise<ActionResult> {
 export async function impersonate(profileId: string): Promise<ActionResult> {
   const admin = await requireAdminForAction();
   if (!idSchema.safeParse(profileId).success) return { ok: false, error: "invalid_input" };
+  // The dashboard reads the coach's data through the admin's own Supabase
+  // session. The password door has none, so it cannot look through.
+  if (admin.kind === "password") return { ok: false, error: "impersonation_needs_account" };
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, slug, display_name")
@@ -250,7 +256,7 @@ export async function impersonate(profileId: string): Promise<ActionResult> {
   if (!profile) return { ok: false, error: "not_found" };
 
   await startImpersonation(profile.id);
-  await audit(admin.id, "impersonate_start", profile.id, { slug: profile.slug });
+  await audit(admin, "impersonate_start", profile.id, { slug: profile.slug });
 
   revalidatePath("/", "layout");
   return { ok: true };
@@ -261,7 +267,7 @@ export async function stopImpersonating(): Promise<ActionResult> {
   // Recorded before clearing, so the log says whose account was left.
   const target = await impersonationTarget();
   await clearImpersonation();
-  await audit(admin.id, "impersonate_stop", target, {});
+  await audit(admin, "impersonate_stop", target, {});
 
   revalidatePath("/", "layout");
   return { ok: true };
@@ -283,10 +289,11 @@ export async function addCoachNote(profileId: string, body: string): Promise<Act
     .safeParse({ profileId, body });
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(admin);
   const { error } = await supabase.from("admin_notes").insert({
     profile_id: parsed.data.profileId,
-    author_user_id: admin.id,
+    author_user_id: admin.kind === "member" ? admin.userId : null,
+    via: admin.kind,
     body: parsed.data.body,
   });
 
@@ -299,18 +306,17 @@ export async function addCoachNote(profileId: string, body: string): Promise<Act
   return { ok: true };
 }
 
-/** Removes one of the caller's own notes; the policy refuses anyone else's. */
+/** Removes one of the caller's own notes; nobody removes anyone else's. */
 export async function deleteCoachNote(noteId: string): Promise<ActionResult> {
-  await requireAdminForAction();
+  const admin = await requireAdminForAction();
   if (!idSchema.safeParse(noteId).success) return { ok: false, error: "invalid_input" };
 
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("admin_notes")
-    .delete()
-    .eq("id", noteId)
-    .select("profile_id")
-    .maybeSingle();
+  const supabase = await adminDb(admin);
+  let query = supabase.from("admin_notes").delete().eq("id", noteId);
+  // The service role bypasses the policy, so the password door is held to its
+  // own notes here, as a member is by RLS.
+  if (admin.kind === "password") query = query.eq("via", "password");
+  const { data, error } = await query.select("profile_id").maybeSingle();
 
   if (error) return { ok: false, error: "unexpected" };
   if (!data) return { ok: false, error: "not_found" };

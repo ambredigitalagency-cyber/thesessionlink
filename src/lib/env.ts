@@ -43,6 +43,13 @@ export const serverEnv = {
   get cronSecret() {
     return process.env.CRON_SECRET ?? "";
   },
+  /**
+   * Opens the console at /admin/login without a Supabase account. Solo/demo
+   * use only — see src/lib/admin/password-access.ts. Unset = feature off.
+   */
+  get adminAccessPassword() {
+    return process.env.ADMIN_ACCESS_PASSWORD ?? "";
+  },
 };
 
 export const isEmailConfigured = () => Boolean(serverEnv.resendApiKey);

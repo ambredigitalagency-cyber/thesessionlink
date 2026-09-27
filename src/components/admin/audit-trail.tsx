@@ -21,7 +21,9 @@ export type AuditEntry = {
   action: string;
   details: unknown;
   created_at: string;
-  admin_user_id: string;
+  admin_user_id: string | null;
+  /** 'password' when the console password door did it: there is no user. */
+  via?: string;
   target?: { display_name: string | null; id: string } | null;
 };
 
@@ -92,6 +94,11 @@ export function AuditTrail({
                     )}
                   />
                   {t(`audit.actions.${entry.action}` as "audit.actions.suspend")}
+                  {entry.via === "password" ? (
+                    <span className="text-ink-subtle text-[11.5px] font-normal">
+                      {t("audit.viaPassword")}
+                    </span>
+                  ) : null}
                 </span>
               </td>
               {showTarget ? (

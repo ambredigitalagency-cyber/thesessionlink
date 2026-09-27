@@ -21,7 +21,8 @@
       "subtitle": "Who did what, when, to which account. Append-only.",
       "target": "Coach",
       "title": "Audit log",
-      "when": "Date"
+      "when": "Date",
+      "viaPassword": "· via password"
     },
     "banner": {
       "readOnly": "Read-only session: no change will be saved.",
@@ -87,7 +88,8 @@
       "suspended": "Account suspended",
       "title": "Interventions",
       "unsuspend": "Reinstate account",
-      "unsuspended": "Account reinstated"
+      "unsuspended": "Account reinstated",
+      "impersonateNeedsAccount": "Needs an admin account: password access does not open coach accounts."
     },
     "nav": {
       "aria": "Console sections",
@@ -188,7 +190,14 @@
       "empty": "No notes yet.",
       "remove": "Delete note",
       "you": "You",
-      "otherAdmin": "Another admin"
+      "otherAdmin": "Another admin",
+      "viaPassword": "Console (password)"
+    },
+    "access": {
+      "subtitle": "Restricted. Enter the console password.",
+      "password": "Password",
+      "submit": "Access",
+      "passwordIdentity": "Password access"
     }
   },
   "auth": {
@@ -849,7 +858,9 @@
     "too_many_requests": "Too many attempts. Please wait a few minutes.",
     "too_short": "This is a bit too short.",
     "unauthenticated": "Please log in again.",
-    "unexpected": "Something went wrong. Please try again."
+    "unexpected": "Something went wrong. Please try again.",
+    "invalid_password": "Wrong password.",
+    "impersonation_needs_account": "Sign in with an admin account to look into a coach account."
   },
   "landing": {
     "demo": {

@@ -3,25 +3,24 @@ import { getTranslations } from "next-intl/server";
 import { AdminCoaches, type CoachRow } from "@/components/admin/coaches-table";
 import { ConsoleHeader } from "@/components/admin/console-header";
 import { PlatformSummary } from "@/components/admin/platform-summary";
-import { isPlatformAdmin, requireAdmin } from "@/lib/admin/access";
+import { adminDb, currentAdmin, requireAdmin } from "@/lib/admin/access";
 import { platformTotals, signupsByMonth } from "@/lib/admin/status";
 import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function generateMetadata() {
   // Metadata is built before the layout guard runs, so a non-admin would read
   // the console's title on their 404 page. Say nothing until they are one.
-  if (!(await isPlatformAdmin())) return { title: "Not found" };
+  if (!(await currentAdmin())) return { title: "Not found" };
 
   const t = await getTranslations("admin");
   return { title: t("title") };
 }
 
 export default async function AdminHomePage() {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const t = await getTranslations("admin");
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = await adminDb(actor);
   const { data } = await supabase
     .from("admin_coach_overview")
     .select("*")

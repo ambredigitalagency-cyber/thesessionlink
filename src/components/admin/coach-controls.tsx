@@ -33,6 +33,7 @@ export function CoachControls({
   pendingDeletion,
   subscribed,
   isAdminAccount,
+  canImpersonate,
 }: {
   profileId: string;
   suspended: boolean;
@@ -41,6 +42,8 @@ export function CoachControls({
   subscribed: boolean;
   /** Platform admins are out of reach of moderation, including yourself. */
   isAdminAccount: boolean;
+  /** Only a member admin: impersonation runs on their own Supabase session. */
+  canImpersonate: boolean;
 }) {
   const t = useTranslations("admin");
   const tError = useTranslations("errors");
@@ -112,11 +115,14 @@ export function CoachControls({
           variant="secondary"
           onClick={() => run(() => impersonate(profileId), t("controls.impersonating"))}
           loading={pending}
+          disabled={!canImpersonate}
         >
           <LogIn className="size-4" />
           {t("controls.impersonate")}
         </Button>
-        <p className="text-ink-subtle text-[12.5px]">{t("controls.impersonateHint")}</p>
+        <p className="text-ink-subtle text-[12.5px]">
+          {canImpersonate ? t("controls.impersonateHint") : t("controls.impersonateNeedsAccount")}
+        </p>
       </div>
 
       <div className="border-line flex flex-wrap items-center gap-3 border-t pt-5">

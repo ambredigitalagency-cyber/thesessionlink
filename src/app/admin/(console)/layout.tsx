@@ -2,6 +2,7 @@ import { LogOut } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 
+import { leaveConsole } from "@/actions/admin-access";
 import { signOut } from "@/actions/auth";
 import { ConsoleRail, ConsoleRailFooter } from "@/components/admin/console-rail";
 import { requireAdmin } from "@/lib/admin/access";
@@ -20,16 +21,22 @@ import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
  * `data-console` scopes that identity: the tokens it switches on are declared
  * under that attribute, so none of it can leak into a page rendered elsewhere.
  *
- * The guard runs in the layout, so every page below inherits it, and answers a
- * 404 to anyone who is not an admin.
+ * The guard runs in the layout, so every page below inherits it. It lets in a
+ * platform admin or the holder of the console password (solo/demo use), sends
+ * a visitor with no session to /admin/login, and answers a 404 to a signed-in
+ * coach who is neither. /admin/login sits outside this route group, so it
+ * never runs this guard.
  */
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
-  const user = await requireAdmin();
+  const actor = await requireAdmin();
   const t = await getTranslations("admin");
   const messages = pickMessages(await getMessages(), [...BASE_NAMESPACES, "admin"]);
 
+  // The password door has no Supabase session to end: leaving it removes the
+  // console cookie. A member signs out of their account, as before.
+  const identity = actor.kind === "member" ? actor.email : t("access.passwordIdentity");
   const signOutButton = (
-    <form action={signOut}>
+    <form action={actor.kind === "member" ? signOut : leaveConsole}>
       <button
         type="submit"
         className="hover:text-ink inline-flex items-center gap-1.5 transition-colors"
@@ -43,14 +50,18 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
     <NextIntlClientProvider messages={messages}>
       <div data-console className="bg-canvas flex min-h-dvh flex-col lg:flex-row">
-        <ConsoleRail email={user.email ?? ""} />
+        <ConsoleRail identity={identity} showDashboard={actor.kind === "member"} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-6 sm:py-9 lg:px-9">
             {children}
           </main>
 
-          <ConsoleRailFooter email={user.email ?? ""} signOut={signOutButton} />
+          <ConsoleRailFooter
+            identity={identity}
+            showDashboard={actor.kind === "member"}
+            signOut={signOutButton}
+          />
 
           {/* On desktop the rail already carries the identity and the account,
               so the content column only needs the way out. */}

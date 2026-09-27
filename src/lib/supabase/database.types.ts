@@ -42,27 +42,30 @@ export type Database = {
       admin_audit_log: {
         Row: {
           action: string;
-          admin_user_id: string;
+          admin_user_id: string | null;
           created_at: string;
           details: Json;
           id: string;
           target_profile_id: string | null;
+          via: string;
         };
         Insert: {
           action: string;
-          admin_user_id: string;
+          admin_user_id?: string | null;
           created_at?: string;
           details?: Json;
           id?: string;
           target_profile_id?: string | null;
+          via?: string;
         };
         Update: {
           action?: string;
-          admin_user_id?: string;
+          admin_user_id?: string | null;
           created_at?: string;
           details?: Json;
           id?: string;
           target_profile_id?: string | null;
+          via?: string;
         };
         Relationships: [
           {
@@ -90,25 +93,28 @@ export type Database = {
       };
       admin_notes: {
         Row: {
-          author_user_id: string;
+          author_user_id: string | null;
           body: string;
           created_at: string;
           id: string;
           profile_id: string;
+          via: string;
         };
         Insert: {
-          author_user_id: string;
+          author_user_id?: string | null;
           body: string;
           created_at?: string;
           id?: string;
           profile_id: string;
+          via?: string;
         };
         Update: {
-          author_user_id?: string;
+          author_user_id?: string | null;
           body?: string;
           created_at?: string;
           id?: string;
           profile_id?: string;
+          via?: string;
         };
         Relationships: [
           {

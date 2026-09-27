@@ -21,7 +21,8 @@
       "subtitle": "Qui a fait quoi, quand, sur quel compte. Ajoutable, jamais modifiable.",
       "target": "Coach",
       "title": "Journal des interventions",
-      "when": "Date"
+      "when": "Date",
+      "viaPassword": "· via mot de passe"
     },
     "banner": {
       "readOnly": "Session en lecture seule : aucune modification ne sera enregistrée.",
@@ -87,7 +88,8 @@
       "suspended": "Compte suspendu",
       "title": "Interventions",
       "unsuspend": "Réactiver le compte",
-      "unsuspended": "Compte réactivé"
+      "unsuspended": "Compte réactivé",
+      "impersonateNeedsAccount": "Disponible avec un compte admin : l’accès par mot de passe n’ouvre pas les comptes coachs."
     },
     "nav": {
       "aria": "Sections de la console",
@@ -188,7 +190,14 @@
       "empty": "Aucune note pour l'instant.",
       "remove": "Supprimer la note",
       "you": "Vous",
-      "otherAdmin": "Autre admin"
+      "otherAdmin": "Autre admin",
+      "viaPassword": "Console (mot de passe)"
+    },
+    "access": {
+      "subtitle": "Accès réservé. Entrez le mot de passe de la console.",
+      "password": "Mot de passe",
+      "submit": "Accéder",
+      "passwordIdentity": "Accès par mot de passe"
     }
   },
   "auth": {
@@ -849,7 +858,9 @@
     "too_many_requests": "Trop de tentatives. Patientez quelques minutes.",
     "too_short": "C'est un peu trop court.",
     "unauthenticated": "Reconnectez-vous.",
-    "unexpected": "Une erreur est survenue. Réessayez."
+    "unexpected": "Une erreur est survenue. Réessayez.",
+    "invalid_password": "Mot de passe incorrect.",
+    "impersonation_needs_account": "Connectez-vous avec un compte admin pour voir un compte coach."
   },
   "landing": {
     "demo": {

@@ -30,7 +30,18 @@ const SECTIONS = [
   { href: "/admin/audit", key: "audit", icon: ClipboardList, exact: false },
 ] as const;
 
-export function ConsoleRail({ email }: { email: string }) {
+/**
+ * `identity` is the member's email, or a plain label for the password door.
+ * The link to "my dashboard" only exists for a member: the password door has
+ * no coach account to go back to.
+ */
+export function ConsoleRail({
+  identity,
+  showDashboard,
+}: {
+  identity: string;
+  showDashboard: boolean;
+}) {
   const t = useTranslations("admin");
   const pathname = usePathname();
 
@@ -88,18 +99,20 @@ export function ConsoleRail({ email }: { email: string }) {
       </nav>
 
       <div className="mt-auto hidden border-t border-[var(--console-rail-line)] px-3 py-4 lg:block">
-        <Link
-          href="/dashboard"
-          className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[13px] text-[var(--console-rail-muted)] transition-colors hover:bg-[var(--console-rail-soft)]/60 hover:text-[var(--console-rail-ink)]"
-        >
-          <LayoutDashboard className="size-4 shrink-0" aria-hidden />
-          {t("nav.myDashboard")}
-        </Link>
+        {showDashboard ? (
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-[13px] text-[var(--console-rail-muted)] transition-colors hover:bg-[var(--console-rail-soft)]/60 hover:text-[var(--console-rail-ink)]"
+          >
+            <LayoutDashboard className="size-4 shrink-0" aria-hidden />
+            {t("nav.myDashboard")}
+          </Link>
+        ) : null}
         <p
           className="truncate px-3 pt-3 text-[11.5px] text-[var(--console-rail-muted)]"
-          title={email}
+          title={identity}
         >
-          {email}
+          {identity}
         </p>
       </div>
     </div>
@@ -110,16 +123,26 @@ export function ConsoleRail({ email }: { email: string }) {
  * What the rail carries on desktop but has no room for once it is a bar: the
  * way back to one's own dashboard, who is signed in, and the way out.
  */
-export function ConsoleRailFooter({ email, signOut }: { email: string; signOut: React.ReactNode }) {
+export function ConsoleRailFooter({
+  identity,
+  showDashboard,
+  signOut,
+}: {
+  identity: string;
+  showDashboard: boolean;
+  signOut: React.ReactNode;
+}) {
   const t = useTranslations("admin");
 
   return (
     <div className="border-line text-ink-subtle flex flex-wrap items-center gap-x-4 gap-y-2 border-t px-4 py-4 text-[12px] sm:px-6 lg:hidden">
-      <Link href="/dashboard" className="hover:text-ink inline-flex items-center gap-1.5">
-        <LayoutDashboard className="size-3.5" aria-hidden />
-        {t("nav.myDashboard")}
-      </Link>
-      <span className="min-w-0 truncate">{email}</span>
+      {showDashboard ? (
+        <Link href="/dashboard" className="hover:text-ink inline-flex items-center gap-1.5">
+          <LayoutDashboard className="size-3.5" aria-hidden />
+          {t("nav.myDashboard")}
+        </Link>
+      ) : null}
+      <span className="min-w-0 truncate">{identity}</span>
       <span className="ml-auto">{signOut}</span>
     </div>
   );
