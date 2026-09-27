@@ -7,6 +7,7 @@ import { signOut } from "@/actions/auth";
 import { ConsoleRail, ConsoleRailFooter } from "@/components/admin/console-rail";
 import { requireAdmin } from "@/lib/admin/access";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 /**
  * The platform console.
@@ -30,7 +31,11 @@ import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const actor = await requireAdmin();
   const t = await getTranslations("admin");
-  const messages = pickMessages(await getMessages(), [...BASE_NAMESPACES, "admin"]);
+  const messages = pickMessages(await getMessages(), [
+    ...BASE_NAMESPACES,
+    "admin",
+    "bookingStatus",
+  ]);
 
   // The password door has no Supabase session to end: leaving it removes the
   // console cookie. A member signs out of their account, as before.
@@ -53,7 +58,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
         <ConsoleRail identity={identity} showDashboard={actor.kind === "member"} />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-7 sm:px-6 sm:py-9 lg:px-9">
+          <div className="mx-auto flex w-full max-w-6xl justify-end px-4 pt-4 sm:px-6 lg:px-9">
+            <PreferenceToggles tone="steel" />
+          </div>
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-3 pb-7 sm:px-6 sm:pb-9 lg:px-9">
             {children}
           </main>
 

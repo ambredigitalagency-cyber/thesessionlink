@@ -1,9 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 
 import { adminDb, requireAdminForAction, type AdminActor } from "@/lib/admin/access";
+import { sendBookingStatusUpdate } from "@/lib/emails/send";
+import { prepareOffer } from "@/lib/offers/prepare";
+import { parseActionConfig } from "@/lib/offers/schema";
 import {
   clearImpersonation,
   impersonationTarget,
@@ -34,7 +38,10 @@ type AuditAction =
   | "unsuspend"
   | "impersonate_start"
   | "impersonate_stop"
-  | "restore_account";
+  | "restore_account"
+  | "edit_offer"
+  | "edit_booking"
+  | "export_data";
 
 async function audit(
   actor: AdminActor,
@@ -322,5 +329,169 @@ export async function deleteCoachNote(noteId: string): Promise<ActionResult> {
   if (!data) return { ok: false, error: "not_found" };
 
   revalidatePath(`/admin/coaches/${data.profile_id}`);
+  return { ok: true };
+}
+
+/* -------------------------------------------------------------------------- */
+/* Direct interventions                                                        */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Edits a coach's offer from the console.
+ *
+ * Same validation as the coach's own form (lib/offers/prepare), same columns,
+ * never the photos: those are uploaded under the coach's own storage folder,
+ * so they stay the coach's to change. Every edit is journaled with the fields
+ * that changed.
+ */
+export async function adminUpdateOffer(offerId: string, input: unknown): Promise<ActionResult> {
+  const admin = await requireAdminForAction();
+  if (!idSchema.safeParse(offerId).success) return { ok: false, error: "invalid_input" };
+
+  const prepared = prepareOffer(input);
+  if (!prepared.ok) return { ok: false, error: prepared.error, fieldErrors: prepared.fieldErrors };
+
+  const supabase = await adminDb(admin);
+  const { data: before } = await supabase
+    .from("offers")
+    .select(
+      "id, profile_id, title, description, price, price_type, action_type, action_config, custom_fields, is_active, photos, profiles(slug)",
+    )
+    .eq("id", offerId)
+    .maybeSingle();
+  if (!before) return { ok: false, error: "not_found" };
+
+  // Photos are the coach's: an intervention never carries them.
+  const values: Omit<typeof prepared.values, "photos"> = { ...prepared.values };
+  delete (values as Partial<typeof prepared.values>).photos;
+  const { error } = await supabase.from("offers").update(values).eq("id", offerId);
+  if (error) {
+    console.error("[admin] offer update failed", error.code, error.message);
+    return { ok: false, error: "unexpected" };
+  }
+
+  // Compare like with like: the stored config may lack keys that validation
+  // fills with their defaults, which is not a change anyone made.
+  const previous = {
+    ...before,
+    action_config: parseActionConfig(before.action_type, before.action_config),
+  };
+  const changed = (Object.keys(values) as (keyof typeof values)[]).filter(
+    (key) =>
+      JSON.stringify(values[key] ?? null) !==
+      JSON.stringify(previous[key as keyof typeof previous] ?? null),
+  );
+  await audit(admin, "edit_offer", before.profile_id, {
+    offer_id: offerId,
+    title: values.title,
+    changed,
+  });
+
+  const slug = (before.profiles as { slug: string } | null)?.slug;
+  if (slug) revalidatePath(`/${slug}`);
+  revalidatePath("/admin", "layout");
+  return { ok: true };
+}
+
+const bookingInterventionSchema = z.object({
+  bookingId: idSchema,
+  change: z.enum(["confirm", "cancel", "mark_no_show", "clear_no_show"]),
+  note: z.string().trim().max(1000).optional(),
+  notifyClient: z.boolean().default(true),
+});
+
+/**
+ * Changes a booking's status from the console: confirm, cancel, or mark the
+ * client absent (and take it back). The rules are the coach's: a no-show is
+ * only for a confirmed session already started. Confirming and cancelling
+ * email the client like the coach's own buttons do, unless the admin unticks
+ * it. An optional note is appended to the booking's internal notes, signed
+ * "Console", so the coach sees what was done and why.
+ */
+export async function adminUpdateBooking(input: {
+  bookingId: string;
+  change: "confirm" | "cancel" | "mark_no_show" | "clear_no_show";
+  note?: string;
+  notifyClient?: boolean;
+}): Promise<ActionResult> {
+  const admin = await requireAdminForAction();
+  const parsed = bookingInterventionSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid_input" };
+  const { bookingId, change, note, notifyClient } = parsed.data;
+
+  const supabase = await adminDb(admin);
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("id, profile_id, status, no_show, starts_at, internal_notes, offer_title")
+    .eq("id", bookingId)
+    .maybeSingle();
+  if (!booking) return { ok: false, error: "not_found" };
+
+  const patch: {
+    status?: "confirmed" | "cancelled";
+    cancelled_at?: string | null;
+    cancelled_by?: "pro" | null;
+    no_show?: boolean;
+    internal_notes?: string;
+  } = {};
+
+  if (change === "confirm") {
+    patch.status = "confirmed";
+    patch.cancelled_at = null;
+    patch.cancelled_by = null;
+  } else if (change === "cancel") {
+    patch.status = "cancelled";
+    patch.cancelled_at = new Date().toISOString();
+    patch.cancelled_by = "pro";
+  } else {
+    if (booking.status !== "confirmed" || !booking.starts_at)
+      return { ok: false, error: "not_available" };
+    if (new Date(booking.starts_at) > new Date()) return { ok: false, error: "session_not_past" };
+    patch.no_show = change === "mark_no_show";
+  }
+
+  if (note) {
+    const stamp = new Intl.DateTimeFormat("fr-FR", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "Europe/Paris",
+    }).format(new Date());
+    patch.internal_notes = [booking.internal_notes, `[Console · ${stamp}] ${note}`]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  const { data: updated, error } = await supabase
+    .from("bookings")
+    .update(patch)
+    .eq("id", bookingId)
+    .select("*")
+    .single();
+  if (error || !updated) {
+    if (error?.code === "23P01") return { ok: false, error: "slot_taken" };
+    console.error("[admin] booking update failed", error?.code, error?.message);
+    return { ok: false, error: "unexpected" };
+  }
+
+  const emails = notifyClient && (change === "confirm" || change === "cancel");
+  if (emails) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", booking.profile_id)
+      .single();
+    if (profile) after(async () => sendBookingStatusUpdate({ booking: updated, profile }));
+  }
+
+  await audit(admin, "edit_booking", booking.profile_id, {
+    booking_id: bookingId,
+    offer: booking.offer_title,
+    change,
+    from: change.endsWith("no_show") ? { no_show: booking.no_show } : { status: booking.status },
+    client_notified: Boolean(emails),
+    note: note || null,
+  });
+
+  revalidatePath("/admin", "layout");
   return { ok: true };
 }

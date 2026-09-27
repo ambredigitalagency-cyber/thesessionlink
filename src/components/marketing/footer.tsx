@@ -3,8 +3,6 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/brand/logo";
 
-import { LocaleSwitcher } from "./locale-switcher";
-
 export async function MarketingFooter() {
   const t = await getTranslations("landing.footer");
 
@@ -26,7 +24,6 @@ export async function MarketingFooter() {
           <a href="#pricing" className="hover:text-ink transition-colors">
             {t("pricing")}
           </a>
-          <LocaleSwitcher />
         </div>
       </div>
 

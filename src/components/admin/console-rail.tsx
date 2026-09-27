@@ -77,7 +77,7 @@ export function ConsoleRail({
                   href={href}
                   aria-current={current ? "page" : undefined}
                   className={cn(
-                    "relative flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-[13.5px] font-medium transition-colors",
+                    "relative flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2.5 text-[13.5px] font-medium transition-[color,background-color,transform] motion-safe:active:scale-[0.98]",
                     "focus-visible:outline-offset-[-2px]",
                     current
                       ? "bg-[var(--console-rail-soft)] text-[var(--console-rail-ink)]"

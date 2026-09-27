@@ -5,6 +5,12 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { AuditTrail } from "@/components/admin/audit-trail";
 import { CoachNotes, CoachRefChip } from "@/components/admin/coach-file";
+import {
+  CoachBookingsPanel,
+  CoachEvolution,
+  CoachOffersPanel,
+  ExportMenu,
+} from "@/components/admin/coach-insights";
 import { CoachControls } from "@/components/admin/coach-controls";
 import { ConsoleKpi, ConsolePanel } from "@/components/admin/console-kpi";
 import { STATUS_BAR, STATUS_CHIP } from "@/components/admin/status-tone";
@@ -13,7 +19,10 @@ import { adminDb, requireAdmin } from "@/lib/admin/access";
 import { coachActivity, paymentSummary, profileCompleteness } from "@/lib/admin/coach-file";
 import { coachRef } from "@/lib/admin/ref";
 import { accountStatus, trialDaysLeft } from "@/lib/admin/status";
+import { ACTION_TYPES } from "@/lib/offers/schema";
 import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
+import { computeStats, type StatsBooking } from "@/lib/stats/compute";
+import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
 /**
@@ -70,19 +79,29 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
     { data: gateways },
     { data: notes },
     { data: admins },
+    { data: windows },
+    { data: timeOff },
+    { data: signIns },
   ] = await Promise.all([
     supabase
       .from("profiles")
       .select(
-        "avatar_url, headline, bio, location, phone_number, whatsapp_number, social_links, custom_fields",
+        "avatar_url, headline, bio, location, phone_number, whatsapp_number, social_links, custom_fields, timezone, currency, locale",
       )
       .eq("id", id)
       .maybeSingle(),
-    supabase.from("offers").select("is_active, updated_at").eq("profile_id", id),
+    supabase
+      .from("offers")
+      .select("id, title, action_type, price, price_type, is_active, updated_at, position")
+      .eq("profile_id", id)
+      .order("position"),
     supabase
       .from("bookings")
-      .select("status, no_show, created_at, starts_at, client_email")
+      .select(
+        "id, offer_id, offer_title, client_name, status, no_show, quantity, created_at, starts_at, ends_at, requested_date, client_email, payment_status, payment_amount_cents, payment_currency",
+      )
       .eq("profile_id", id)
+      .order("created_at", { ascending: false })
       .limit(5000),
     supabase.from("payments").select("status, amount_cents, currency").eq("profile_id", id),
     supabase
@@ -95,7 +114,28 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
       .eq("profile_id", id)
       .order("created_at", { ascending: false }),
     supabase.from("platform_admins").select("user_id, note"),
+    supabase.from("availabilities").select("weekday, start_time, end_time").eq("profile_id", id),
+    supabase.from("time_off").select("starts_on, ends_on").eq("profile_id", id),
+    coach.user_id
+      ? supabase
+          .from("coach_sign_ins")
+          .select("id, created_at, method, device, ip_prefix")
+          .eq("user_id", coach.user_id)
+          .order("created_at", { ascending: false })
+          .limit(20)
+      : Promise.resolve({
+          data: [] as {
+            id: number;
+            created_at: string;
+            method: string;
+            device: string | null;
+            ip_prefix: string | null;
+          }[],
+        }),
   ]);
+  const { data: sessions } = coach.user_id
+    ? await supabase.rpc("admin_active_sessions", { p_user_id: coach.user_id })
+    : { data: [] };
 
   // Server Component: one reference time for the whole file.
   const now = new Date();
@@ -108,6 +148,83 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
   const completeness = profileRow ? profileCompleteness({ ...profileRow, activeOffers }) : null;
   const paid = paymentSummary((payments ?? []) as Parameters<typeof paymentSummary>[0]);
   const adminNames = new Map((admins ?? []).map((row) => [row.user_id, row.note]));
+
+  // The coach's own statistics engine, over the last 90 days, week by week.
+  const timezone = profileRow?.timezone ?? "Europe/Paris";
+  const currency = profileRow?.currency ?? "EUR";
+  const stats = computeStats({
+    bookings: (bookings ?? []) as StatsBooking[],
+    offers: (offers ?? []).map((offer) => ({
+      id: offer.id,
+      price: offer.price,
+      price_type: offer.price_type as "fixed" | "from" | "free" | "on_request",
+    })),
+    offerTitles: new Map((offers ?? []).map((offer) => [offer.id, offer.title])),
+    windows: windows ?? [],
+    timeOff: timeOff ?? [],
+    timezone,
+    range: "90d",
+    now,
+  });
+  const weekLabel = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+    timeZone: timezone,
+  });
+  const bookingPoints = stats.buckets.map((bucket) => ({
+    key: bucket.key,
+    label: weekLabel.format(bucket.start),
+    value: bucket.bookings,
+  }));
+  const revenuePoints = stats.buckets.map((bucket) => ({
+    key: bucket.key,
+    label: weekLabel.format(bucket.start),
+    value: bucket.revenue,
+  }));
+
+  const tActions = await getTranslations("offers.actions");
+  const tCommon = await getTranslations("common");
+  const offerRows = (offers ?? []).map((offer) => {
+    const price = formatPrice(offer.price, currency, locale, offer.price_type as "fixed");
+    return {
+      id: offer.id,
+      title: offer.title,
+      actionLabel: ACTION_TYPES.includes(offer.action_type)
+        ? tActions(`${offer.action_type}.label`)
+        : offer.action_type,
+      priceLabel:
+        price.type === "free"
+          ? tCommon("free")
+          : price.type === "on_request"
+            ? tCommon("onRequest")
+            : price.type === "from"
+              ? tCommon("from", { price: price.amount ?? "" })
+              : (price.amount ?? ""),
+      isActive: offer.is_active,
+    };
+  });
+  const moment = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: timezone,
+  });
+  const day = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
+  const bookingRows = (bookings ?? []).slice(0, 15).map((booking) => ({
+    id: booking.id,
+    offerTitle: booking.offer_title,
+    clientName: booking.client_name,
+    when: booking.starts_at
+      ? moment.format(new Date(booking.starts_at))
+      : booking.requested_date
+        ? day.format(new Date(booking.requested_date))
+        : moment.format(new Date(booking.created_at)),
+    status: booking.status as "pending" | "confirmed" | "cancelled",
+    noShow: booking.no_show,
+    canMarkNoShow:
+      booking.status === "confirmed" &&
+      Boolean(booking.starts_at) &&
+      new Date(booking.starts_at!) <= now,
+  }));
 
   const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value * 100)} %`);
   const money = (cents: number, currency: string) =>
@@ -178,14 +295,17 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
             <p className="text-ink-muted mt-1.5 text-[13.5px]">{coach.contact_email ?? "—"}</p>
           </div>
 
-          <Link
-            href={`/${coach.slug}`}
-            target="_blank"
-            className="border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-colors"
-          >
-            /{coach.slug}
-            <ExternalLink className="size-3.5" aria-hidden />
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <ExportMenu coachId={coach.id ?? id} />
+            <Link
+              href={`/${coach.slug}`}
+              target="_blank"
+              className="border-line-strong text-ink-muted hover:border-ink/30 hover:text-ink inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] transition-colors"
+            >
+              /{coach.slug}
+              <ExternalLink className="size-3.5" aria-hidden />
+            </Link>
+          </div>
         </div>
 
         {coach.deleted_at ? (
@@ -225,6 +345,21 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
           <FactList facts={facts} />
         </ConsolePanel>
       </div>
+
+      <ConsolePanel index={4} title={t("evolution.title")} hint={t("evolution.hint")}>
+        <CoachEvolution
+          bookings={bookingPoints}
+          revenue={revenuePoints}
+          shares={stats.offers.map((offer) => ({
+            id: offer.id,
+            label: offer.label,
+            value: offer.bookings,
+            share: offer.share,
+          }))}
+          currency={currency}
+          locale={locale}
+        />
+      </ConsolePanel>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ConsolePanel index={4} title={t("activity.title")} hint={t("activity.hint")}>
@@ -331,7 +466,78 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
         </ConsolePanel>
       </div>
 
-      <ConsolePanel index={6} title={t("notes.title")} hint={t("notes.hint")}>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ConsolePanel
+          index={6}
+          title={t("intervention.offersTitle")}
+          hint={t("intervention.offersHint")}
+        >
+          <CoachOffersPanel coachId={coach.id ?? id} offers={offerRows} />
+        </ConsolePanel>
+        <ConsolePanel
+          index={6}
+          title={t("intervention.bookingsTitle")}
+          hint={t("intervention.bookingsHint")}
+        >
+          <CoachBookingsPanel bookings={bookingRows} />
+        </ConsolePanel>
+      </div>
+
+      <ConsolePanel index={6} title={t("signIns.title")} hint={t("signIns.hint")}>
+        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <p className="text-ink-muted mb-2 text-[12.5px] font-medium">{t("signIns.history")}</p>
+            {(signIns ?? []).length === 0 ? (
+              <p className="text-ink-subtle text-[13px]">{t("signIns.empty")}</p>
+            ) : (
+              <ol className="divide-line -my-1.5 divide-y">
+                {(signIns ?? []).map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-baseline justify-between gap-4 py-2 text-[13px]"
+                  >
+                    <span className="text-ink tabular-nums">
+                      {moment.format(new Date(entry.created_at))}
+                    </span>
+                    <span className="text-ink-muted min-w-0 truncate text-right">
+                      {t(`signIns.method.${entry.method as "magic_link"}`)}
+                      {entry.device ? ` · ${entry.device}` : ""}
+                      {entry.ip_prefix ? ` · ${entry.ip_prefix}` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </div>
+          <div>
+            <p className="text-ink-muted mb-2 text-[12.5px] font-medium">{t("signIns.sessions")}</p>
+            {(sessions ?? []).length === 0 ? (
+              <p className="text-ink-subtle text-[13px]">{t("signIns.noSession")}</p>
+            ) : (
+              <ul className="space-y-2">
+                {(sessions ?? []).map((session, index) => (
+                  <li
+                    key={index}
+                    className="border-line rounded-[var(--radius-sm)] border px-3 py-2 text-[12.5px] hover:border-[var(--console-accent)]/40 motion-safe:transition-colors"
+                  >
+                    {/* No device here: Supabase records whoever opened the session,
+                        which is this server confirming the link, not the coach's
+                        browser. The real device is in the history on the left. */}
+                    <p className="text-ink">
+                      {t("signIns.activeSince", {
+                        since: moment.format(new Date(session.created_at)),
+                        last: moment.format(new Date(session.refreshed_at)),
+                      })}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </ConsolePanel>
+
+      <ConsolePanel index={7} title={t("notes.title")} hint={t("notes.hint")}>
         <CoachNotes
           profileId={coach.id ?? id}
           notes={(notes ?? []).map((note) => ({

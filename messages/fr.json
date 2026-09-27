@@ -9,7 +9,10 @@
         "restore_account": "Suppression annulée",
         "set_subscription": "Abonnement modifié",
         "suspend": "Compte suspendu",
-        "unsuspend": "Compte réactivé"
+        "unsuspend": "Compte réactivé",
+        "edit_offer": "Offre modifiée",
+        "edit_booking": "Réservation modifiée",
+        "export_data": "Données exportées"
       },
       "details": "Détail",
       "empty": "Aucune intervention enregistrée.",
@@ -198,6 +201,63 @@
       "password": "Mot de passe",
       "submit": "Accéder",
       "passwordIdentity": "Accès par mot de passe"
+    },
+    "evolution": {
+      "title": "Évolution",
+      "hint": "Les 90 derniers jours, semaine par semaine — les mêmes chiffres que ses Statistiques.",
+      "bookings": "Réservations reçues",
+      "revenue": "Chiffre d’affaires déclaratif",
+      "byOffer": "Par offre",
+      "empty": "Pas encore de données."
+    },
+    "intervention": {
+      "title": "Intervention sur le compte d’un coach",
+      "offerBody": "Vous modifiez une offre de {coach}. Le changement est visible tout de suite sur sa page et inscrit au journal, avec les champs modifiés. Les photos restent gérées par le coach.",
+      "offersTitle": "Offres",
+      "offersHint": "Intervenir sur une offre ouvre l’éditeur du coach, en mode intervention.",
+      "bookingsTitle": "Dernières réservations",
+      "bookingsHint": "Confirmer, annuler, marquer une absence. Chaque intervention est journalisée.",
+      "noOffers": "Aucune offre.",
+      "noBookings": "Aucune réservation.",
+      "hidden": "masquée",
+      "editOffer": "Intervenir",
+      "intervene": "Intervenir",
+      "actionsFor": "Intervenir sur la réservation de {client}",
+      "noShow": "Absent",
+      "changes": {
+        "confirm": "Confirmer la réservation",
+        "cancel": "Annuler la réservation",
+        "mark_no_show": "Marquer le client absent",
+        "clear_no_show": "Retirer la mention d’absence"
+      },
+      "bookingWarning": "Vous agissez à la place du coach. L’intervention est inscrite au journal et, si vous ajoutez une note, dans les notes internes de la réservation.",
+      "notePlaceholder": "Motif (facultatif) — visible par le coach dans ses notes",
+      "notifyClient": "Prévenir le client par e-mail, comme le ferait le coach",
+      "cancelAction": "Annuler",
+      "apply": "Appliquer",
+      "done": "Intervention enregistrée."
+    },
+    "export": {
+      "title": "Exporter",
+      "json": "Tout (JSON)",
+      "csvOffers": "Offres (CSV)",
+      "csvClients": "Clients (CSV)",
+      "csvBookings": "Réservations (CSV)",
+      "note": "Sans les notes de santé des clients. Chaque export est journalisé."
+    },
+    "signIns": {
+      "title": "Connexions",
+      "hint": "Historique enregistré par la plateforme et sessions actives. Lecture seule.",
+      "history": "Dernières connexions",
+      "sessions": "Sessions actives",
+      "empty": "Aucune connexion enregistrée depuis la mise en place de l’historique.",
+      "noSession": "Aucune session active.",
+      "activeSince": "Ouverte le {since} · dernière activité {last}",
+      "method": {
+        "magic_link": "Lien magique",
+        "google": "Google",
+        "other": "Autre"
+      }
     }
   },
   "auth": {
@@ -268,7 +328,20 @@
     "skip": "Passer",
     "today": "Aujourd'hui",
     "viewPage": "Voir la page",
-    "yes": "Oui"
+    "yes": "Oui",
+    "preferences": {
+      "language": "Langue",
+      "theme": "Thème",
+      "languages": {
+        "fr": "Français",
+        "en": "English"
+      },
+      "themes": {
+        "light": "Clair",
+        "system": "Comme l’appareil",
+        "dark": "Sombre"
+      }
+    }
   },
   "dashboard": {
     "availability": {
@@ -1530,7 +1603,8 @@
       "visible": "Visible sur ma page",
       "visibleHint": "Masquez une offre sans la supprimer.",
       "skip": "Passer",
-      "skipToReview": "Passer au récapitulatif"
+      "skipToReview": "Passer au récapitulatif",
+      "photosReadOnly": "{count, plural, =0 {Pas de photo.} one {# photo.} other {# photos.}} Les photos se gèrent depuis le compte du coach."
     },
     "payment": {
       "hint": "Le client règle au moment de réserver. L'argent arrive directement sur votre compte.",

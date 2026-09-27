@@ -7,6 +7,7 @@ import { useEffect } from "react";
 
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export default function ErrorPage({
   error,
@@ -22,7 +23,8 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center px-4 py-16 text-center">
+    <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-16 text-center">
+      <PreferenceToggles tone="paper" className="absolute top-4 right-4 z-20" />
       <Link href="/" className="inline-block">
         <Logo />
       </Link>

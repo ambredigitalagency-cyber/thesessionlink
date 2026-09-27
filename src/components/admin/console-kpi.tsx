@@ -47,6 +47,8 @@ export function ConsoleKpi({
       style={{ "--rise-delay": `${index * 0.05}s` } as CSSProperties}
       className={cn(
         "rise-in border-line bg-surface flex flex-col rounded-[var(--radius-lg)] border p-5",
+        // A card that answers the pointer, gently: a lift and a steel edge.
+        "hover:border-[var(--console-accent)]/30 hover:shadow-[var(--shadow-card)] motion-safe:transition-[transform,box-shadow,border-color] motion-safe:duration-300 motion-safe:ease-[var(--ease-out-expo)] motion-safe:hover:-translate-y-0.5",
         tone === "accent" && "border-[var(--console-accent)]/35",
       )}
     >
@@ -104,7 +106,10 @@ export function ConsolePanel({
   return (
     <section
       style={{ "--rise-delay": `${index * 0.05}s` } as CSSProperties}
-      className={cn("rise-in border-line bg-surface rounded-[var(--radius-lg)] border", className)}
+      className={cn(
+        "rise-in border-line bg-surface rounded-[var(--radius-lg)] border transition-shadow duration-300 hover:shadow-[var(--shadow-card)]",
+        className,
+      )}
     >
       <div className="border-line flex flex-wrap items-start justify-between gap-3 border-b px-5 py-4 sm:px-6">
         <div className="min-w-0">

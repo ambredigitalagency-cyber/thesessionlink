@@ -414,6 +414,33 @@ export type Database = {
           },
         ];
       };
+      coach_sign_ins: {
+        Row: {
+          created_at: string;
+          device: string | null;
+          id: number;
+          ip_prefix: string | null;
+          method: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          device?: string | null;
+          id?: never;
+          ip_prefix?: string | null;
+          method: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          device?: string | null;
+          id?: never;
+          ip_prefix?: string | null;
+          method?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       offers: {
         Row: {
           action_config: Json;
@@ -1028,6 +1055,13 @@ export type Database = {
       };
     };
     Functions: {
+      admin_active_sessions: {
+        Args: { p_user_id: string };
+        Returns: {
+          created_at: string;
+          refreshed_at: string;
+        }[];
+      };
       check_rate_limit: {
         Args: { p_bucket: string; p_limit: number; p_window: string };
         Returns: boolean;

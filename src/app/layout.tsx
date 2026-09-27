@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 
 import { siteUrl } from "@/lib/env";
 import { MotionProvider } from "@/components/motion-provider";
+import { ThemeProvider } from "@/components/preferences/theme-provider";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { parseTheme, THEME_COLORS, THEME_COOKIE } from "@/lib/theme";
 
@@ -78,7 +79,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider messages={pickMessages(messages, BASE_NAMESPACES)}>
-          <MotionProvider>{children}</MotionProvider>
+          <ThemeProvider initial={theme}>
+            <MotionProvider>{children}</MotionProvider>
+          </ThemeProvider>
         </NextIntlClientProvider>
         <Toaster
           // Sonner paints its own surface, so it needs telling; left alone it

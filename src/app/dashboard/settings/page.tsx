@@ -1,11 +1,9 @@
-import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { PaymentGateways } from "@/components/dashboard/payment-gateways";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { requireOnboardedProfile, requireUser } from "@/lib/auth";
 import { gatewayStates } from "@/lib/payments/accounts";
-import { parseTheme, THEME_COOKIE } from "@/lib/theme";
 
 export async function generateMetadata() {
   const t = await getTranslations("dashboard.nav");
@@ -23,7 +21,6 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
   const raw = Array.isArray(query.payments) ? query.payments[0] : query.payments;
   const notice = typeof raw === "string" && NOTICES.includes(raw) ? raw : null;
   const gateways = await gatewayStates(profile.id);
-  const theme = parseTheme((await cookies()).get(THEME_COOKIE)?.value);
 
   return (
     <>
@@ -35,7 +32,6 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
       <SettingsForm
         profile={profile}
         accountEmail={user.email ?? ""}
-        theme={theme}
         payments={<PaymentGateways gateways={gateways} notice={notice} />}
       />
     </>

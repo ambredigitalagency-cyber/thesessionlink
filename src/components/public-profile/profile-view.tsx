@@ -20,6 +20,7 @@ import { OfferCard, OfferPrice } from "./offer-card";
 import { OfferDetails } from "./offer-details";
 import { OfferGallery } from "./offer-gallery";
 import type { PublicOffer, PublicProfile } from "./types";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export function PublicProfileView({
   profile,
@@ -125,6 +126,9 @@ export function PublicProfileView({
 
   return (
     <div data-accent={profile.accent} className="relative">
+      <div className="absolute top-4 right-4 z-20">
+        <PreferenceToggles tone="glass" />
+      </div>
       {layout === "banner" ? (
         // The band sits behind the top of the page; the avatar is placed so
         // that it straddles its lower edge (container padding = band − half

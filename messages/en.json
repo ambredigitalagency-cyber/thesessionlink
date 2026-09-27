@@ -9,7 +9,10 @@
         "restore_account": "Deletion cancelled",
         "set_subscription": "Subscription changed",
         "suspend": "Account suspended",
-        "unsuspend": "Account reinstated"
+        "unsuspend": "Account reinstated",
+        "edit_offer": "Offer edited",
+        "edit_booking": "Booking edited",
+        "export_data": "Data exported"
       },
       "details": "Details",
       "empty": "No intervention recorded.",
@@ -198,6 +201,63 @@
       "password": "Password",
       "submit": "Access",
       "passwordIdentity": "Password access"
+    },
+    "evolution": {
+      "title": "Over time",
+      "hint": "The last 90 days, week by week — the same figures as their Statistics.",
+      "bookings": "Bookings received",
+      "revenue": "Declared revenue",
+      "byOffer": "By offer",
+      "empty": "No data yet."
+    },
+    "intervention": {
+      "title": "Acting on a coach’s account",
+      "offerBody": "You are editing an offer of {coach}. The change shows on their page at once and is written to the audit log, with the fields changed. Photos stay with the coach.",
+      "offersTitle": "Offers",
+      "offersHint": "Acting on an offer opens the coach’s editor, as an intervention.",
+      "bookingsTitle": "Latest bookings",
+      "bookingsHint": "Confirm, cancel, mark a no-show. Every intervention is logged.",
+      "noOffers": "No offers.",
+      "noBookings": "No bookings.",
+      "hidden": "hidden",
+      "editOffer": "Intervene",
+      "intervene": "Intervene",
+      "actionsFor": "Act on {client}’s booking",
+      "noShow": "No-show",
+      "changes": {
+        "confirm": "Confirm the booking",
+        "cancel": "Cancel the booking",
+        "mark_no_show": "Mark the client as a no-show",
+        "clear_no_show": "Remove the no-show mark"
+      },
+      "bookingWarning": "You are acting on the coach’s behalf. The intervention is written to the audit log and, if you add a note, to the booking’s internal notes.",
+      "notePlaceholder": "Reason (optional) — the coach sees it in their notes",
+      "notifyClient": "Email the client, as the coach would",
+      "cancelAction": "Cancel",
+      "apply": "Apply",
+      "done": "Intervention saved."
+    },
+    "export": {
+      "title": "Export",
+      "json": "Everything (JSON)",
+      "csvOffers": "Offers (CSV)",
+      "csvClients": "Clients (CSV)",
+      "csvBookings": "Bookings (CSV)",
+      "note": "Clients’ health notes are left out. Every export is logged."
+    },
+    "signIns": {
+      "title": "Sign-ins",
+      "hint": "History recorded by the platform, and live sessions. Read-only.",
+      "history": "Latest sign-ins",
+      "sessions": "Live sessions",
+      "empty": "No sign-in recorded since the history started.",
+      "noSession": "No live session.",
+      "activeSince": "Opened {since} · last active {last}",
+      "method": {
+        "magic_link": "Magic link",
+        "google": "Google",
+        "other": "Other"
+      }
     }
   },
   "auth": {
@@ -268,7 +328,20 @@
     "skip": "Skip",
     "today": "Today",
     "viewPage": "View page",
-    "yes": "Yes"
+    "yes": "Yes",
+    "preferences": {
+      "language": "Language",
+      "theme": "Theme",
+      "languages": {
+        "fr": "Français",
+        "en": "English"
+      },
+      "themes": {
+        "light": "Light",
+        "system": "Match device",
+        "dark": "Dark"
+      }
+    }
   },
   "dashboard": {
     "availability": {
@@ -1530,7 +1603,8 @@
       "visible": "Visible on my page",
       "visibleHint": "Hide an offer without deleting it.",
       "skip": "Skip",
-      "skipToReview": "Skip to review"
+      "skipToReview": "Skip to review",
+      "photosReadOnly": "{count, plural, =0 {No photos.} one {# photo.} other {# photos.}} Photos are managed from the coach’s account."
     },
     "payment": {
       "hint": "The client pays when they book. The money goes straight to your account.",

@@ -16,7 +16,6 @@ import { notify } from "@/lib/notify";
 import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
 import { REMINDER_STOPS } from "@/lib/scales";
-import type { Theme } from "@/lib/theme";
 import type { Tables } from "@/lib/supabase/database.types";
 
 const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "CAD", "AUD", "MAD", "XOF"];
@@ -30,13 +29,10 @@ function timezoneOptions(current: string) {
 export function SettingsForm({
   profile,
   accountEmail,
-  theme,
   payments,
 }: {
   profile: Tables<"profiles">;
   accountEmail: string;
-  /** Read from the cookie by the page; belongs to the device, not the account. */
-  theme: Theme;
   /** Rendered by the page: the gateways read a table this form never touches. */
   payments?: ReactNode;
 }) {
@@ -226,7 +222,7 @@ export function SettingsForm({
       <Card className="p-5 sm:p-7">
         <CardHeader title={t("appearance.title")} description={t("appearance.hint")} />
         <div className="mt-5">
-          <ThemeChoice value={theme} />
+          <ThemeChoice />
         </div>
       </Card>
 

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 
+import { recordSignIn } from "@/lib/auth/record-sign-in";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -20,8 +21,11 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) redirect(next);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      await recordSignIn(data.session);
+      redirect(next);
+    }
   }
 
   redirect("/login?error=invalid_link");

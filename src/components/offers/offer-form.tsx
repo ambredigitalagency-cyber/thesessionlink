@@ -23,7 +23,7 @@ import {
   type CategoryField,
 } from "@/lib/offers/schema";
 import { PRICE_STOPS } from "@/lib/scales";
-import { fieldErrorsFrom } from "@/lib/validation";
+import { fieldErrorsFrom, type ActionResult } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
 import { ActionTypePicker } from "./action-type-picker";
@@ -123,6 +123,16 @@ type Props = {
   submitLabel?: string;
   onSaved?: (offerId: string) => void;
   onCancel?: () => void;
+  /**
+   * Replaces the coach's own save. The console uses it to route an edit
+   * through its audited intervention instead of createOffer/updateOffer.
+   */
+  save?: (payload: Record<string, unknown>) => Promise<ActionResult<unknown>>;
+  /**
+   * False when photos cannot be changed from here: uploads land in the
+   * signed-in user's storage folder, which is only right for the coach.
+   */
+  photosEditable?: boolean;
 };
 
 export function OfferForm({
@@ -140,6 +150,8 @@ export function OfferForm({
   submitLabel,
   onSaved,
   onCancel,
+  save,
+  photosEditable = true,
 }: Props) {
   const t = useTranslations("offers.form");
   const tError = useTranslations("errors");
@@ -300,8 +312,9 @@ export function OfferForm({
     };
 
     startTransition(async () => {
-      const result =
-        mode === "edit" && initial
+      const result = save
+        ? await save(payload)
+        : mode === "edit" && initial
           ? await updateOffer(initial.id, payload)
           : await createOffer(payload);
 
@@ -437,7 +450,13 @@ export function OfferForm({
     />
   );
 
-  const photosSection = <OfferPhotosUpload value={photos} onChange={setPhotos} />;
+  const photosSection = photosEditable ? (
+    <OfferPhotosUpload value={photos} onChange={setPhotos} />
+  ) : (
+    <p className="bg-ink/[0.03] text-ink-muted rounded-[var(--radius-md)] p-4 text-[13px] leading-relaxed">
+      {t("photosReadOnly", { count: photos.length })}
+    </p>
+  );
 
   /* ---------------------------------------------------------------------- */
   /* Editing: every section on one page                                      */

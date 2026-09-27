@@ -9,6 +9,7 @@ import { Logo } from "@/components/brand/logo";
 import { currentAdmin } from "@/lib/admin/access";
 import { passwordAccessEnabled } from "@/lib/admin/password-access";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export const metadata: Metadata = {
   title: "Console",
@@ -34,8 +35,9 @@ export default async function ConsoleLoginPage() {
     <NextIntlClientProvider messages={messages}>
       <main
         data-console
-        className="flex min-h-dvh items-center justify-center bg-[var(--console-rail)] px-4 py-16 text-[var(--console-rail-ink)]"
+        className="relative flex min-h-dvh items-center justify-center bg-[var(--console-rail)] px-4 py-16 text-[var(--console-rail-ink)]"
       >
+        <PreferenceToggles tone="night" className="absolute top-4 right-4" />
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center text-center">
             {/* The same wordmark as everywhere else, lit for the dark rail. */}

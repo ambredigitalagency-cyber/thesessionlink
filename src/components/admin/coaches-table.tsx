@@ -232,7 +232,7 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
                   <td className="py-3 pl-3">
                     <ChevronRight
                       aria-hidden
-                      className="text-ink-subtle size-4 transition-colors group-hover:text-[var(--console-accent)]"
+                      className="text-ink-subtle size-4 transition-[color,transform] duration-200 group-hover:text-[var(--console-accent)] motion-safe:group-hover:translate-x-0.5"
                     />
                   </td>
                 </tr>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/primitives";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,7 @@ export default async function ManageBookingPage({
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-12">
+        <PreferenceToggles tone="paper" className="absolute top-4 right-4 z-20" />
         <div className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] opacity-50" />
 
         <div className="relative w-full max-w-md">

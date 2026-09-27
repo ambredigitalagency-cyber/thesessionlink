@@ -1,3 +1,4 @@
+import { LogOut } from "lucide-react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 
@@ -5,6 +6,7 @@ import { signOut } from "@/actions/auth";
 import { Logo } from "@/components/brand/logo";
 import { requireUser } from "@/lib/auth";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export default async function OnboardingLayout({ children }: LayoutProps<"/onboarding">) {
   await requireUser();
@@ -24,14 +26,20 @@ export default async function OnboardingLayout({ children }: LayoutProps<"/onboa
 
       <header className="relative flex items-center justify-between px-5 py-5 sm:px-8">
         <Logo />
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="text-ink-muted hover:text-ink text-[13px] underline underline-offset-4 transition-colors"
-          >
-            {t("logout")}
-          </button>
-        </form>
+        <div className="flex items-center gap-3">
+          <PreferenceToggles tone="paper" />
+          <form action={signOut}>
+            <button
+              type="submit"
+              aria-label={t("logout")}
+              title={t("logout")}
+              className="text-ink-muted hover:text-ink inline-flex items-center gap-1.5 text-[13px] transition-colors"
+            >
+              <LogOut className="size-4 sm:hidden" aria-hidden />
+              <span className="hidden underline underline-offset-4 sm:inline">{t("logout")}</span>
+            </button>
+          </form>
+        </div>
       </header>
 
       <main className="relative mx-auto w-full max-w-2xl flex-1 px-5 pt-4 pb-20 sm:px-8">

@@ -4,12 +4,14 @@ import { getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export default async function NotFound() {
   const t = await getTranslations("notFound");
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-16 text-center">
+      <PreferenceToggles tone="paper" className="absolute top-4 right-4 z-20" />
       <div className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] opacity-50" />
 
       <div className="relative max-w-md">

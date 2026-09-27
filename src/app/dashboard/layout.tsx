@@ -15,6 +15,7 @@ import { siteUrl } from "@/lib/env";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/utils";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export default async function DashboardLayout({ children }: LayoutProps<"/dashboard">) {
   const profile = await requireOnboardedProfile();
@@ -88,21 +89,32 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Mobile header */}
           <header className="border-line bg-canvas/90 sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur-xl lg:hidden">
-            <Link href="/dashboard">
-              <Logo />
+            <Link href="/dashboard" className="shrink-0">
+              <Logo className="text-[15px]" />
             </Link>
-            <a
-              href={publicUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="border-line-strong text-ink inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12.5px] font-medium"
-            >
-              {tCommon("viewPage")}
-              <ExternalLink className="size-3.5" />
-            </a>
+            <div className="flex items-center gap-2">
+              <PreferenceToggles tone="paper" />
+              {/* Icon only on a phone: the toggles need the room. */}
+              <a
+                href={publicUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={tCommon("viewPage")}
+                title={tCommon("viewPage")}
+                className="border-line-strong text-ink inline-flex size-8 items-center justify-center rounded-full border sm:w-auto sm:gap-1.5 sm:px-3"
+              >
+                <span className="hidden text-[12.5px] font-medium sm:inline">
+                  {tCommon("viewPage")}
+                </span>
+                <ExternalLink className="size-3.5" />
+              </a>
+            </div>
           </header>
 
-          <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-10 lg:pb-14">
+          <div className="mx-auto hidden w-full max-w-5xl justify-end px-10 pt-5 lg:flex">
+            <PreferenceToggles tone="paper" />
+          </div>
+          <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-4 lg:pb-14">
             {liveOffers === 0 ? <FirstOfferPrompt publicUrl={publicUrl} /> : null}
             {children}
           </main>

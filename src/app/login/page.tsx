@@ -7,6 +7,7 @@ import { GoogleButton } from "@/components/auth/google-button";
 import { Logo } from "@/components/brand/logo";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { safeNextPath } from "@/lib/safe-redirect";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 export async function generateMetadata() {
   const t = await getTranslations("auth");
@@ -24,6 +25,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-12">
+      <PreferenceToggles tone="paper" className="absolute top-4 right-4 z-20" />
       <div className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)] opacity-60" />
 
       <div className="relative w-full max-w-[26rem]">

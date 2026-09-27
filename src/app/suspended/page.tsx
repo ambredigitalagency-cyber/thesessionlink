@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { deletionDaysLeft, deletionDueAt } from "@/lib/account/deletion";
 import { getCurrentProfile, requireUser } from "@/lib/auth";
 import { supportAddress } from "@/lib/env";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 /**
  * Where a coach lands when the tools are closed to them — suspended by an
@@ -31,7 +32,8 @@ export default async function SuspendedPage() {
   const deletedAt = profile.deleted_at;
 
   return (
-    <main className="bg-canvas flex min-h-dvh flex-col items-center justify-center px-4 py-16">
+    <main className="bg-canvas relative flex min-h-dvh flex-col items-center justify-center px-4 py-16">
+      <PreferenceToggles tone="paper" className="absolute top-4 right-4 z-20" />
       <Logo />
       <div className="surface-card mt-8 max-w-md p-7 text-center">
         <span className="bg-warning-soft text-warning mx-auto flex size-11 items-center justify-center rounded-full">

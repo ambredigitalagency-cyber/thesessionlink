@@ -7,8 +7,7 @@ import { useEffect, useState } from "react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-import { LocaleSwitcher } from "./locale-switcher";
+import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 
 const LINKS = [
   { href: "#how", key: "how" },
@@ -37,9 +36,9 @@ export function MarketingNav() {
           : "border-b border-transparent",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
-        <Link href="/" aria-label="TheSessionLink">
-          <Logo />
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6">
+        <Link href="/" aria-label="TheSessionLink" className="shrink-0">
+          <Logo className="text-[14.5px] sm:text-[17px]" />
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -55,11 +54,11 @@ export function MarketingNav() {
         </nav>
 
         <div className="flex items-center gap-1.5">
-          <LocaleSwitcher />
+          <PreferenceToggles tone="brand" dense />
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
             <Link href="/login">{t("login")}</Link>
           </Button>
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="max-sm:px-2.5 max-sm:text-[12.5px]">
             <Link href="/login?intent=signup">{t("cta")}</Link>
           </Button>
         </div>
