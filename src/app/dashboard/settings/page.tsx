@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { PaymentGateways } from "@/components/dashboard/payment-gateways";
 import { SettingsForm } from "@/components/dashboard/settings-form";
+import { SubscriptionCard } from "@/components/dashboard/subscription-card";
 import { requireOnboardedProfile, requireUser } from "@/lib/auth";
 import { gatewayStates } from "@/lib/payments/accounts";
 
@@ -21,6 +22,8 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
   const raw = Array.isArray(query.payments) ? query.payments[0] : query.payments;
   const notice = typeof raw === "string" && NOTICES.includes(raw) ? raw : null;
   const gateways = await gatewayStates(profile.id);
+  // Server Component: one reference time for the request.
+  const now = new Date();
 
   return (
     <>
@@ -29,6 +32,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
         <p className="text-ink-muted mt-1 text-[15px]">{t("subtitle")}</p>
       </header>
 
+      <SubscriptionCard profile={profile} now={now} />
       <SettingsForm
         profile={profile}
         accountEmail={user.email ?? ""}

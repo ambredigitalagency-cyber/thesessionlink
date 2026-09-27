@@ -8,6 +8,7 @@ import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { Logo } from "@/components/brand/logo";
 import { CommandPalette } from "@/components/dashboard/command-palette";
 import { FirstOfferPrompt } from "@/components/dashboard/first-offer-prompt";
+import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { DashboardSidebarNav, DashboardTabBar } from "@/components/dashboard/nav";
 import { ShareLink } from "@/components/share/share-link";
 import { getImpersonatedProfile, requireOnboardedProfile } from "@/lib/auth";
@@ -40,6 +41,8 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   ]);
 
   const publicUrl = absoluteUrl(`/${profile.slug}`, siteUrl);
+  // Server Component: one reference time for the request.
+  const now = new Date();
   const messages = pickMessages(await getMessages(), [
     ...BASE_NAMESPACES,
     "dashboard",
@@ -115,6 +118,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
             <PreferenceToggles tone="paper" />
           </div>
           <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-6 pb-24 sm:px-6 lg:px-10 lg:pt-4 lg:pb-14">
+            <TrialBanner profile={profile} now={now} />
             {liveOffers === 0 ? <FirstOfferPrompt publicUrl={publicUrl} /> : null}
             {children}
           </main>

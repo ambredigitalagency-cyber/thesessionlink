@@ -517,6 +517,55 @@ export type Database = {
           },
         ];
       };
+      paddle_webhook_events: {
+        Row: {
+          event_id: string;
+          event_type: string;
+          occurred_at: string;
+          outcome: string;
+          profile_id: string | null;
+          received_at: string;
+        };
+        Insert: {
+          event_id: string;
+          event_type: string;
+          occurred_at: string;
+          outcome: string;
+          profile_id?: string | null;
+          received_at?: string;
+        };
+        Update: {
+          event_id?: string;
+          event_type?: string;
+          occurred_at?: string;
+          outcome?: string;
+          profile_id?: string | null;
+          received_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "paddle_webhook_events_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "paddle_webhook_events_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "paddle_webhook_events_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       payment_accounts: {
         Row: {
           charges_enabled: boolean;
@@ -710,12 +759,17 @@ export type Database = {
           location: string | null;
           notify_new_bookings: boolean;
           onboarding_completed_at: string | null;
+          paddle_customer_id: string | null;
+          paddle_subscription_id: string | null;
           payment_method: string | null;
           phone_number: string | null;
           reminder_hours_before: number;
           slug: string;
           social_links: Json;
           subscription_active: boolean;
+          subscription_renews_at: string | null;
+          subscription_status: string | null;
+          subscription_synced_at: string | null;
           suspended_at: string | null;
           suspended_by: string | null;
           suspension_reason: string | null;
@@ -746,12 +800,17 @@ export type Database = {
           location?: string | null;
           notify_new_bookings?: boolean;
           onboarding_completed_at?: string | null;
+          paddle_customer_id?: string | null;
+          paddle_subscription_id?: string | null;
           payment_method?: string | null;
           phone_number?: string | null;
           reminder_hours_before?: number;
           slug: string;
           social_links?: Json;
           subscription_active?: boolean;
+          subscription_renews_at?: string | null;
+          subscription_status?: string | null;
+          subscription_synced_at?: string | null;
           suspended_at?: string | null;
           suspended_by?: string | null;
           suspension_reason?: string | null;
@@ -782,12 +841,17 @@ export type Database = {
           location?: string | null;
           notify_new_bookings?: boolean;
           onboarding_completed_at?: string | null;
+          paddle_customer_id?: string | null;
+          paddle_subscription_id?: string | null;
           payment_method?: string | null;
           phone_number?: string | null;
           reminder_hours_before?: number;
           slug?: string;
           social_links?: Json;
           subscription_active?: boolean;
+          subscription_renews_at?: string | null;
+          subscription_status?: string | null;
+          subscription_synced_at?: string | null;
           suspended_at?: string | null;
           suspended_by?: string | null;
           suspension_reason?: string | null;
@@ -1088,12 +1152,17 @@ export type Database = {
           location: string | null;
           notify_new_bookings: boolean;
           onboarding_completed_at: string | null;
+          paddle_customer_id: string | null;
+          paddle_subscription_id: string | null;
           payment_method: string | null;
           phone_number: string | null;
           reminder_hours_before: number;
           slug: string;
           social_links: Json;
           subscription_active: boolean;
+          subscription_renews_at: string | null;
+          subscription_status: string | null;
+          subscription_synced_at: string | null;
           suspended_at: string | null;
           suspended_by: string | null;
           suspension_reason: string | null;

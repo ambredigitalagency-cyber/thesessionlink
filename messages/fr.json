@@ -782,6 +782,34 @@
       "cta": "Créer ma première offre",
       "preview": "Voir ma page",
       "later": "Plus tard"
+    },
+    "billing": {
+      "title": "Abonnement",
+      "hint": "Un seul plan, tout inclus. Paiement sécurisé par Paddle, qui gère aussi la TVA et les factures.",
+      "subscribe": "S’abonner — {price} €/mois",
+      "manage": "Gérer mon abonnement",
+      "thanks": "Merci ! Votre abonnement s’active dans quelques secondes.",
+      "unavailable": "L’abonnement en ligne n’est pas disponible pour le moment. Réessayez plus tard.",
+      "state": {
+        "trialing": "Abonné · période d’essai",
+        "trialingBody": "Aucun prélèvement avant le {date}, puis {price} €/mois. Résiliable à tout moment depuis « Gérer mon abonnement ».",
+        "active": "Abonné",
+        "activeBody": "Prochain prélèvement de {price} € le {date}.",
+        "pastDue": "Paiement en échec",
+        "pastDueBody": "Votre dernier paiement n’est pas passé. Paddle réessaie automatiquement ; mettez à jour votre carte depuis « Gérer mon abonnement ».",
+        "canceled": "Abonnement résilié",
+        "canceledBody": "Vous pouvez vous réabonner à tout moment ; votre page et vos données sont conservées.",
+        "manual": "Abonnement actif",
+        "manualBody": "Votre abonnement a été activé par l’équipe TheSessionLink.",
+        "freeTrial": "{count, plural, one {Essai gratuit · # jour restant} other {Essai gratuit · # jours restants}}",
+        "freeTrialBody": "Votre essai se termine le {date}. Abonnez-vous quand vous voulez pour {price} €/mois — le premier paiement n’a lieu qu’à la fin de la période d’essai.",
+        "trialOver": "Essai terminé",
+        "trialOverBody": "Abonnez-vous pour {price} €/mois pour garder votre page en ligne et continuer à recevoir des réservations."
+      },
+      "banner": {
+        "ending": "{count, plural, one {Votre essai gratuit se termine demain.} other {Votre essai gratuit se termine dans # jours.}} Abonnez-vous pour {price} €/mois, sans rien perdre.",
+        "ended": "Votre essai gratuit est terminé. Abonnez-vous pour {price} €/mois pour continuer."
+      }
     }
   },
   "emails": {
@@ -933,7 +961,9 @@
     "unauthenticated": "Reconnectez-vous.",
     "unexpected": "Une erreur est survenue. Réessayez.",
     "invalid_password": "Mot de passe incorrect.",
-    "impersonation_needs_account": "Connectez-vous avec un compte admin pour voir un compte coach."
+    "impersonation_needs_account": "Connectez-vous avec un compte admin pour voir un compte coach.",
+    "already_subscribed": "Vous êtes déjà abonné.",
+    "billing_unavailable": "L’abonnement en ligne n’est pas disponible pour le moment."
   },
   "landing": {
     "demo": {

@@ -782,6 +782,34 @@
       "cta": "Create my first offer",
       "preview": "View my page",
       "later": "Later"
+    },
+    "billing": {
+      "title": "Subscription",
+      "hint": "One plan, everything included. Secure payment by Paddle, which also handles VAT and invoices.",
+      "subscribe": "Subscribe — €{price}/month",
+      "manage": "Manage my subscription",
+      "thanks": "Thank you! Your subscription activates in a few seconds.",
+      "unavailable": "Online subscription is not available right now. Please try again later.",
+      "state": {
+        "trialing": "Subscribed · trial period",
+        "trialingBody": "No charge before {date}, then €{price}/month. Cancel anytime from “Manage my subscription”.",
+        "active": "Subscribed",
+        "activeBody": "Next charge of €{price} on {date}.",
+        "pastDue": "Payment failed",
+        "pastDueBody": "Your last payment didn’t go through. Paddle retries automatically; update your card from “Manage my subscription”.",
+        "canceled": "Subscription cancelled",
+        "canceledBody": "You can subscribe again anytime; your page and data are kept.",
+        "manual": "Subscription active",
+        "manualBody": "Your subscription was activated by the TheSessionLink team.",
+        "freeTrial": "{count, plural, one {Free trial · # day left} other {Free trial · # days left}}",
+        "freeTrialBody": "Your trial ends on {date}. Subscribe whenever you like for €{price}/month — the first payment only happens at the end of the trial.",
+        "trialOver": "Trial over",
+        "trialOverBody": "Subscribe for €{price}/month to keep your page online and keep receiving bookings."
+      },
+      "banner": {
+        "ending": "{count, plural, one {Your free trial ends tomorrow.} other {Your free trial ends in # days.}} Subscribe for €{price}/month and lose nothing.",
+        "ended": "Your free trial is over. Subscribe for €{price}/month to continue."
+      }
     }
   },
   "emails": {
@@ -933,7 +961,9 @@
     "unauthenticated": "Please log in again.",
     "unexpected": "Something went wrong. Please try again.",
     "invalid_password": "Wrong password.",
-    "impersonation_needs_account": "Sign in with an admin account to look into a coach account."
+    "impersonation_needs_account": "Sign in with an admin account to look into a coach account.",
+    "already_subscribed": "You are already subscribed.",
+    "billing_unavailable": "Online subscription is not available right now."
   },
   "landing": {
     "demo": {
