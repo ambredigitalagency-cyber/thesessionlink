@@ -564,7 +564,7 @@ export function ProfileSetupForm({
         {phase === "category" ? (
           // The category only pre-fills suggestions, so it has always been
           // skippable. Losing that to the new flow would be a regression.
-          <Button type="button" variant="ghost" onClick={() => goTo("name")}>
+          <Button type="button" size="lg" variant="secondary" onClick={() => goTo("name")}>
             {tCommon("skip")}
           </Button>
         ) : phase === "name" ? (
@@ -585,11 +585,13 @@ export function ProfileSetupForm({
           </Button>
         ) : (
           // Everything after the link is optional, so every one of those
-          // screens offers both doors. The last one opens the dashboard.
+          // screens offers both doors, at the same size: skipping is a full
+          // answer, not a small print escape. The last one opens the dashboard.
           <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="ghost"
+              size="lg"
+              variant="secondary"
               disabled={pending}
               onClick={() => saveAndGo(null, next)}
             >

@@ -1352,7 +1352,31 @@
       "unlimited": "Unlimited",
       "whatsappNumber": "WhatsApp number",
       "whatsappNumberHint": "Leave empty to use your profile number ({number}).",
-      "whatsappNumberMissing": "No number in your profile yet — add one here or in settings."
+      "whatsappNumberMissing": "No number in your profile yet — add one here or in settings.",
+      "advanced": "Advanced settings",
+      "advancedHint": "The defaults suit most cases. Only change what matters to you.",
+      "summary": {
+        "bufferNone": "no break",
+        "buffer": "{value} break",
+        "noticeNone": "no notice",
+        "notice": "{value} notice",
+        "horizon": "bookable up to {value} ahead",
+        "confirmAuto": "confirmed automatically",
+        "confirmManual": "you confirm each request",
+        "phone": {
+          "hidden": "phone not asked",
+          "optional": "phone optional",
+          "required": "phone required"
+        },
+        "maxQuantity": "up to {count, plural, one {# spot} other {# spots}} per booking",
+        "ctaDefault": "default button",
+        "ctaCustom": "button “{label}”",
+        "budget": "budget asked",
+        "dateAsked": "preferred date asked",
+        "paymentOn": "online payment",
+        "whatsappOwn": "number {number}",
+        "whatsappProfile": "profile number ({number})"
+      }
     },
     "fields": {
       "add": "Add a field",
@@ -1504,7 +1528,9 @@
       "titlePlaceholder": "60-minute personal training",
       "updated": "Offer updated",
       "visible": "Visible on my page",
-      "visibleHint": "Hide an offer without deleting it."
+      "visibleHint": "Hide an offer without deleting it.",
+      "skip": "Skip",
+      "skipToReview": "Skip to review"
     },
     "payment": {
       "hint": "The client pays when they book. The money goes straight to your account.",

@@ -267,6 +267,17 @@ export function OfferForm({
     goTo(PHASES[PHASES.indexOf(phase) + 1]);
   }
 
+  /** Leaves an optional screen as it is. Details added and then abandoned are dropped. */
+  function skip() {
+    if (phase === "details") setFields(initial?.custom_fields ?? []);
+    goTo(PHASES[PHASES.indexOf(phase) + 1]);
+  }
+
+  /** From the settings straight to the review: details and photos stay empty. */
+  function skipToReview() {
+    goTo("review");
+  }
+
   function submit() {
     const firstError = Object.keys(validate("all"))[0];
     if (firstError) {
@@ -583,10 +594,24 @@ export function OfferForm({
             {submitLabel ?? t("create")}
           </Button>
         ) : (
-          <Button type="button" size="lg" onClick={next}>
-            {t("continue")}
-            <ArrowRight className="size-4" />
-          </Button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            {/* Details and photos are optional. After the settings, the way
+                past both is one tap; on each of them, skipping is as visible
+                as going on — never a small grey link. */}
+            {phase === "settings" ? (
+              <Button type="button" size="lg" variant="secondary" onClick={skipToReview}>
+                {t("skipToReview")}
+              </Button>
+            ) : phase === "details" || phase === "photos" ? (
+              <Button type="button" size="lg" variant="secondary" onClick={skip}>
+                {t("skip")}
+              </Button>
+            ) : null}
+            <Button type="button" size="lg" onClick={next}>
+              {t("continue")}
+              <ArrowRight className="size-4" />
+            </Button>
+          </div>
         )}
       </div>
     </div>

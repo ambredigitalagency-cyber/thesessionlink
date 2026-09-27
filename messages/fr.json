@@ -1352,7 +1352,31 @@
       "unlimited": "Illimité",
       "whatsappNumber": "Numéro WhatsApp",
       "whatsappNumberHint": "Laissez vide pour utiliser le numéro de votre profil ({number}).",
-      "whatsappNumberMissing": "Aucun numéro dans votre profil — ajoutez-le ici ou dans les paramètres."
+      "whatsappNumberMissing": "Aucun numéro dans votre profil — ajoutez-le ici ou dans les paramètres.",
+      "advanced": "Paramètres avancés",
+      "advancedHint": "Les valeurs par défaut conviennent à la plupart des cas. Ne changez que ce qui compte pour vous.",
+      "summary": {
+        "bufferNone": "aucune pause",
+        "buffer": "pause de {value}",
+        "noticeNone": "sans préavis",
+        "notice": "préavis de {value}",
+        "horizon": "réservable jusqu’à {value} à l’avance",
+        "confirmAuto": "confirmation automatique",
+        "confirmManual": "vous confirmez chaque demande",
+        "phone": {
+          "hidden": "téléphone non demandé",
+          "optional": "téléphone facultatif",
+          "required": "téléphone obligatoire"
+        },
+        "maxQuantity": "{count, plural, one {# place} other {# places}} max par réservation",
+        "ctaDefault": "bouton par défaut",
+        "ctaCustom": "bouton « {label} »",
+        "budget": "budget demandé",
+        "dateAsked": "date souhaitée demandée",
+        "paymentOn": "paiement en ligne",
+        "whatsappOwn": "numéro {number}",
+        "whatsappProfile": "numéro du profil ({number})"
+      }
     },
     "fields": {
       "add": "Ajouter un champ",
@@ -1504,7 +1528,9 @@
       "titlePlaceholder": "Coaching personnel — 60 minutes",
       "updated": "Offre mise à jour",
       "visible": "Visible sur ma page",
-      "visibleHint": "Masquez une offre sans la supprimer."
+      "visibleHint": "Masquez une offre sans la supprimer.",
+      "skip": "Passer",
+      "skipToReview": "Passer au récapitulatif"
     },
     "payment": {
       "hint": "Le client règle au moment de réserver. L'argent arrive directement sur votre compte.",
