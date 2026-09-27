@@ -2,7 +2,7 @@
 
 import { Check, Copy, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { addCoachNote, deleteCoachNote } from "@/actions/admin";
@@ -55,13 +55,14 @@ export type CoachNote = {
 
 export function CoachNotes({ profileId, notes }: { profileId: string; notes: CoachNote[] }) {
   const t = useTranslations("admin.notes");
+  const locale = useLocale();
   const tError = useTranslations("errors");
   const router = useRouter();
   const [draft, setDraft] = useState("");
   const [pending, startTransition] = useTransition();
 
   const date = (value: string) =>
-    new Intl.DateTimeFormat("fr-FR", {
+    new Intl.DateTimeFormat(locale, {
       dateStyle: "medium",
       timeStyle: "short",
       timeZone: "Europe/Paris",

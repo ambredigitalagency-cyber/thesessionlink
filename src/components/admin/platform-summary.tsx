@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { ConsoleKpi, ConsolePanel } from "@/components/admin/console-kpi";
 import { ColumnChart, ShareBar } from "@/components/dashboard/charts";
@@ -31,8 +31,9 @@ export function PlatformSummary({
   monthlyPrice: number;
 }) {
   const t = useTranslations("admin");
+  const locale = useLocale();
 
-  const monthLabel = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: "UTC" });
+  const monthLabel = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" });
   const points = signups.map((bucket) => ({
     key: bucket.key,
     label: monthLabel.format(new Date(`${bucket.key}-01T12:00:00Z`)),

@@ -1,7 +1,7 @@
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { AuditTrail } from "@/components/admin/audit-trail";
 import { CoachNotes, CoachRefChip } from "@/components/admin/coach-file";
@@ -32,6 +32,8 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
   const admin = await requireAdmin();
   const { id } = await params;
   const t = await getTranslations("admin");
+  // Dates and amounts follow the console's language, like its labels.
+  const locale = await getLocale();
 
   const supabase = await adminDb(admin);
   const { data: coach } = await supabase
@@ -109,7 +111,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
 
   const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value * 100)} %`);
   const money = (cents: number, currency: string) =>
-    new Intl.NumberFormat("fr-FR", { style: "currency", currency }).format(cents / 100);
+    new Intl.NumberFormat(locale, { style: "currency", currency }).format(cents / 100);
 
   const status = accountStatus({
     trial_ends_at: coach.trial_ends_at,
@@ -120,7 +122,7 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
 
   const date = (value: string | null) =>
     value
-      ? new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" }).format(
+      ? new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(
           new Date(value),
         )
       : "—";

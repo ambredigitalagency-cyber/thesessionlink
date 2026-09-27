@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
@@ -46,12 +46,13 @@ export function AuditTrail({
   showTarget?: boolean;
 }) {
   const t = useTranslations("admin");
+  const locale = useLocale();
 
   if (entries.length === 0) {
     return <p className="text-ink-subtle text-[13px]">{t("audit.empty")}</p>;
   }
 
-  const when = new Intl.DateTimeFormat("fr-FR", {
+  const when = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "UTC",

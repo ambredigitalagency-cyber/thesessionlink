@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { AdminCoaches, type CoachRow } from "@/components/admin/coaches-table";
 import { ConsoleHeader } from "@/components/admin/console-header";
@@ -44,7 +44,7 @@ export default async function AdminHomePage() {
 
   const totals = platformTotals(coaches, {
     monthlyPrice: PLAN_PRICE_MONTHLY,
-    locale: "fr",
+    locale: await getLocale(),
     unknownLabel: t("stats.noCategory"),
   });
 

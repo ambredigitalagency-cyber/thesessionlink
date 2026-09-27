@@ -32,7 +32,7 @@
     "coach": {
       "back": "Tous les coachs",
       "bookings": "Réservations reçues",
-      "daysLeft": "{count} jour(s) restant(s)",
+      "daysLeft": "{count, plural, one {# jour restant} other {# jours restants}}",
       "deletionRequested": "Suppression demandée le {date} · purge le {due}, dans {count, plural, one {# jour} other {# jours}}",
       "facts": "Le compte",
       "lastBooking": "Dernière réservation",
@@ -63,7 +63,7 @@
     "controls": {
       "adminProtected": "Compte administrateur : la suspension est refusée, y compris sur votre propre compte. Retirez-le de platform_admins d'abord.",
       "cancel": "Annuler",
-      "days": "{count} jours",
+      "days": "{count, plural, one {# jour} other {# jours}}",
       "extend": "Prolonger",
       "extendLabel": "Prolonger l'essai de",
       "extended": "Essai prolongé",
@@ -103,7 +103,7 @@
       "categoriesHint": "La catégorie choisie à l'inscription.",
       "coaches": "Coachs inscrits",
       "inactive": "Comptes inactifs",
-      "inactiveHint": "dont {suspended} suspendu(s) · {deleted} en suppression",
+      "inactiveHint": "dont {suspended, plural, one {# suspendu} other {# suspendus}} · {deleted} en suppression",
       "noCategory": "Sans catégorie",
       "noData": "Aucune donnée",
       "otherCategories": "Autres activités",

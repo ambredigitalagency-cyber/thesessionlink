@@ -2,7 +2,7 @@
 
 import { ArrowUpDown, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { ConsolePanel } from "@/components/admin/console-kpi";
@@ -50,6 +50,7 @@ const FILTER_ORDER = ["subscribed", "trial", "expired", "suspended", "deleted"] 
  */
 export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
   const t = useTranslations("admin");
+  const locale = useLocale();
 
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<AccountStatus | "all">("all");
@@ -90,7 +91,7 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
   }, [coaches, query, status, sort]);
 
   const format = (value: string) =>
-    new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeZone: "UTC" }).format(
+    new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(
       new Date(value),
     );
 

@@ -32,7 +32,7 @@
     "coach": {
       "back": "All coaches",
       "bookings": "Bookings received",
-      "daysLeft": "{count} day(s) left",
+      "daysLeft": "{count, plural, one {# day left} other {# days left}}",
       "deletionRequested": "Deletion requested on {date} · purge on {due}, in {count, plural, one {# day} other {# days}}",
       "facts": "The account",
       "lastBooking": "Last booking",
@@ -63,7 +63,7 @@
     "controls": {
       "adminProtected": "Admin account: suspension is refused, including on your own. Remove it from platform_admins first.",
       "cancel": "Cancel",
-      "days": "{count} days",
+      "days": "{count, plural, one {# day} other {# days}}",
       "extend": "Extend",
       "extendLabel": "Extend the trial by",
       "extended": "Trial extended",
