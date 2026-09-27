@@ -381,6 +381,9 @@
   --console-rail-line: #2b2f38;
   --console-rail-ink: #e8eaee;
   --console-rail-muted: #9aa1ae;
+  /* The steel as it reads on the rail: the dark-theme value, in both themes,
+     because the rail itself never turns light. */
+  --console-rail-accent: #7da3d9;
 
   /* The steel that marks this space. */
   --console-accent: light-dark(#3f5f8f, #7da3d9);

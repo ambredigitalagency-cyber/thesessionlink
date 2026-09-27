@@ -1,10 +1,11 @@
-import { ShieldCheck } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 
 import { ConsoleLoginForm } from "@/components/admin/console-login-form";
+import { ConsoleTag } from "@/components/admin/console-rail";
+import { Logo } from "@/components/brand/logo";
 import { currentAdmin } from "@/lib/admin/access";
 import { passwordAccessEnabled } from "@/lib/admin/password-access";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
@@ -37,11 +38,12 @@ export default async function ConsoleLoginPage() {
       >
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center text-center">
-            <span className="flex size-11 items-center justify-center rounded-[var(--radius-sm)] bg-[var(--console-accent)]/20 text-[var(--console-accent)]">
-              <ShieldCheck className="size-5" aria-hidden />
-            </span>
-            <h1 className="mt-4 text-[22px] font-semibold tracking-[-0.02em]">{t("title")}</h1>
-            <p className="mt-1.5 text-[13.5px] text-[var(--console-rail-muted)]">
+            {/* The same wordmark as everywhere else, lit for the dark rail. */}
+            <h1 className="flex flex-col items-center gap-3">
+              <Logo tone="console" className="text-[26px]" />
+              <ConsoleTag label={t("title")} />
+            </h1>
+            <p className="mt-4 text-[13.5px] text-[var(--console-rail-muted)]">
               {t("access.subtitle")}
             </p>
           </div>

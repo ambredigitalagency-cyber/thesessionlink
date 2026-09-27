@@ -1,10 +1,11 @@
 "use client";
 
-import { ClipboardList, LayoutDashboard, ShieldCheck, Users } from "lucide-react";
+import { ClipboardList, LayoutDashboard, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 
 /**
@@ -57,12 +58,14 @@ export function ConsoleRail({
         "flex flex-col",
       )}
     >
-      <div className="flex items-center gap-2.5 px-4 py-3.5 lg:px-5 lg:py-6">
-        <span className="flex size-7 items-center justify-center rounded-[var(--radius-xs)] bg-[var(--console-accent)]/20 text-[var(--console-accent)]">
-          <ShieldCheck className="size-4" />
-        </span>
-        <span className="text-[14.5px] font-semibold tracking-[-0.01em]">{t("title")}</span>
-      </div>
+      {/* The product's own wordmark, then the space it opens onto. */}
+      <Link
+        href="/admin"
+        className="flex items-center gap-2.5 px-4 py-3.5 lg:flex-col lg:items-start lg:gap-2 lg:px-5 lg:py-6"
+      >
+        <Logo tone="console" className="text-[16px]" />
+        <ConsoleTag label={t("title")} />
+      </Link>
 
       <nav aria-label={t("nav.aria")} className="px-2 pb-3 lg:px-3 lg:pb-0">
         <ul className="flex gap-1 lg:flex-col">
@@ -145,5 +148,19 @@ export function ConsoleRailFooter({
       <span className="min-w-0 truncate">{identity}</span>
       <span className="ml-auto">{signOut}</span>
     </div>
+  );
+}
+
+/** "Console", set small in steel beside the wordmark: same brand, other room. */
+export function ConsoleTag({ label, className }: { label: string; className?: string }) {
+  return (
+    <span
+      className={cn(
+        "rounded-full border border-[var(--console-rail-accent)]/35 px-2 py-0.5 text-[10.5px] font-semibold tracking-[0.12em] text-[var(--console-rail-accent)] uppercase",
+        className,
+      )}
+    >
+      {label}
+    </span>
   );
 }
