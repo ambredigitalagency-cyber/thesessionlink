@@ -3,6 +3,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { AdminCoaches, type CoachRow } from "@/components/admin/coaches-table";
 import { ConsoleHeader } from "@/components/admin/console-header";
 import { PlatformSummary } from "@/components/admin/platform-summary";
+import { UnfinishedSignups } from "@/components/admin/unfinished-signups";
 import { adminDb, currentAdmin, requireAdmin } from "@/lib/admin/access";
 import { platformTotals, signupsByMonth } from "@/lib/admin/status";
 import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
@@ -21,11 +22,16 @@ export default async function AdminHomePage() {
   const t = await getTranslations("admin");
 
   const supabase = await adminDb(actor);
-  const { data } = await supabase
-    .from("admin_coach_overview")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1000);
+  const [{ data }, { data: unfinished, error: unfinishedError }] = await Promise.all([
+    supabase
+      .from("admin_coach_overview")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(1000),
+    // Signed up, no profile yet: invisible in the view above, which lists profiles.
+    supabase.rpc("admin_unfinished_signups"),
+  ]);
+  if (unfinishedError) console.error("[admin] unfinished sign-ups", unfinishedError);
 
   const coaches: CoachRow[] = (data ?? []).map((row) => ({
     id: row.id ?? "",
@@ -63,6 +69,8 @@ export default async function AdminHomePage() {
       />
 
       <AdminCoaches coaches={coaches} />
+
+      <UnfinishedSignups signups={unfinished ?? []} index={9} />
     </div>
   );
 }

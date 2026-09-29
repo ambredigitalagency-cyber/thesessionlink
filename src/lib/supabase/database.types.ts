@@ -1132,6 +1132,17 @@ export type Database = {
           refreshed_at: string;
         }[];
       };
+      admin_unfinished_signups: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          email: string;
+          email_confirmed: boolean;
+          last_sign_in_at: string;
+          provider: string;
+          user_id: string;
+        }[];
+      };
       check_rate_limit: {
         Args: { p_bucket: string; p_limit: number; p_window: string };
         Returns: boolean;

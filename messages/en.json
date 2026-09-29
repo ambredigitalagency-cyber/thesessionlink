@@ -258,6 +258,15 @@
         "google": "Google",
         "other": "Other"
       }
+    },
+    "unfinished": {
+      "title": "Unfinished sign-ups ({count})",
+      "hint": "Account created, but sign-up stopped before choosing a name and a link: no profile yet, so not in the coach list.",
+      "emailProvider": "Email",
+      "noEmail": "(no email)",
+      "createdOn": "Created {date}",
+      "lastSeen": "seen {date}",
+      "neverSignedIn": "never signed in"
     }
   },
   "auth": {

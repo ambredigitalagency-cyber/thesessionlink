@@ -258,6 +258,15 @@
         "google": "Google",
         "other": "Autre"
       }
+    },
+    "unfinished": {
+      "title": "Inscriptions non terminées ({count})",
+      "hint": "Compte créé, mais l’inscription s’est arrêtée avant le choix du nom et du lien : pas encore de profil, donc absents de la liste des coachs.",
+      "emailProvider": "E-mail",
+      "noEmail": "(sans e-mail)",
+      "createdOn": "Créé le {date}",
+      "lastSeen": "vu le {date}",
+      "neverSignedIn": "jamais connecté"
     }
   },
   "auth": {
