@@ -54,7 +54,7 @@ export default async function StatsPage({ searchParams }: PageProps<"/dashboard/
         .from("availabilities")
         .select("weekday, start_time, end_time")
         .eq("profile_id", profile.id),
-      supabase.from("time_off").select("starts_on, ends_on").eq("profile_id", profile.id),
+      supabase.from("time_off").select("starts_on, ends_on, start_time, end_time").eq("profile_id", profile.id),
     ]);
 
   const stats = computeStats({

@@ -1,4 +1,10 @@
 import { localDateKey, localParts } from "@/lib/scheduling/slots";
+import {
+  blockedMinutes,
+  isFullDayOff,
+  minutesLeft,
+  type TimeOffRange,
+} from "@/lib/scheduling/time-off";
 
 /**
  * Dashboard statistics.
@@ -43,7 +49,7 @@ export type StatsOffer = {
 };
 
 export type OpeningWindow = { weekday: number; start_time: string; end_time: string };
-export type TimeOffRange = { starts_on: string; ends_on: string };
+export type { TimeOffRange } from "@/lib/scheduling/time-off";
 
 export type Bucket = { key: string; start: Date; end: Date; bookings: number; revenue: number };
 
@@ -170,30 +176,35 @@ export function openMinutesBetween(
     merged.set(window.weekday, list);
   }
 
-  const perWeekday = new Map<number, number>();
+  const perWeekday = new Map<number, [number, number][]>();
   for (const [weekday, ranges] of merged) {
     const sorted = [...ranges].sort((a, b) => a[0] - b[0]);
-    let total = 0;
+    const open: [number, number][] = [];
     let [openFrom, openTo] = sorted[0];
 
     for (const [start, end] of sorted.slice(1)) {
       if (start <= openTo) {
         openTo = Math.max(openTo, end);
       } else {
-        total += openTo - openFrom;
+        open.push([openFrom, openTo]);
         [openFrom, openTo] = [start, end];
       }
     }
 
-    perWeekday.set(weekday, total + (openTo - openFrom));
+    open.push([openFrom, openTo]);
+    perWeekday.set(weekday, open);
   }
 
   let minutes = 0;
   for (let cursor = from.getTime(); cursor < to.getTime(); cursor += DAY) {
     const date = new Date(cursor);
     const dateKey = localDateKey(date, timezone);
-    if (timeOff.some((range) => dateKey >= range.starts_on && dateKey <= range.ends_on)) continue;
-    minutes += perWeekday.get(localParts(date, timezone).weekday) ?? 0;
+    if (isFullDayOff(dateKey, timeOff)) continue;
+    // Hours blocked that day come off the open time they fall in.
+    const blocked = blockedMinutes(dateKey, timeOff);
+    for (const [start, end] of perWeekday.get(localParts(date, timezone).weekday) ?? []) {
+      minutes += minutesLeft(start, end, blocked);
+    }
   }
 
   return minutes;

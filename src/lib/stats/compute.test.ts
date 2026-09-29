@@ -156,6 +156,28 @@ describe("fill rate", () => {
     ).toBe(3 * 60);
   });
 
+  it("takes blocked hours off the open time they fall in", () => {
+    const from = new Date("2026-10-05T00:00:00Z");
+    const to = new Date("2026-10-12T00:00:00Z");
+    // 11:00-14:00 on the Tuesday overlaps the 09:00-12:00 window by one hour.
+    expect(
+      openMinutesBetween(
+        windows,
+        [
+          {
+            starts_on: "2026-10-06",
+            ends_on: "2026-10-06",
+            start_time: "11:00",
+            end_time: "14:00",
+          },
+        ],
+        from,
+        to,
+        TZ,
+      ),
+    ).toBe(5 * 60);
+  });
+
   it("is the share of open time actually booked, cancelled sessions aside", () => {
     const held = (day: string, hours: number) =>
       booking({

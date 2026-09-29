@@ -355,14 +355,17 @@
       "offerHint": "Par défaut, « {title} » suit vos horaires hebdomadaires.",
       "offerTitle": "Disponibilités de cette offre",
       "overridesNote": "Ces offres utilisent leurs propres horaires : {offers}.",
-      "timeOffHint": "Vacances et journées où vous n'êtes tout simplement pas disponible.",
+      "timeOffHint": "Vacances, journées ou quelques heures où vous n’êtes pas disponible. Aussi possible directement depuis le calendrier.",
       "timeOffLabel": "Libellé",
       "timeOffLabelPlaceholder": "Vacances",
       "timeOffTitle": "Absences",
       "to": "Au",
       "unavailable": "Indisponible",
       "weeklyHint": "Utilisés par toutes les offres réservables sur créneau. Heures en {timezone}.",
-      "weeklyTitle": "Horaires hebdomadaires"
+      "weeklyTitle": "Horaires hebdomadaires",
+      "wholeDay": "Toute la journée",
+      "wholeDayHint": "Décochez pour ne bloquer que certaines heures de chaque jour.",
+      "blockedHours": "Heures bloquées"
     },
     "bookings": {
       "actionTypeFilter": "Type d'action",
@@ -461,7 +464,31 @@
         "kanban": "Vue kanban",
         "list": "Vue liste"
       },
-      "weekHint": "Glisse une séance vers un autre créneau. Les règles de disponibilité et le battement entre séances sont revérifiés ; un créneau refusé remet la séance à sa place."
+      "weekHint": "Glisse une séance vers un autre créneau. Les règles de disponibilité et le battement entre séances sont revérifiés ; un créneau refusé remet la séance à sa place.",
+      "block": {
+        "short": "Bloqué",
+        "blockDay": "Bloquer la journée",
+        "blockHours": "Bloquer des heures",
+        "blockSeveral": "Plusieurs jours…",
+        "pickEnd": "Touchez le dernier jour",
+        "dayTitle": "Bloquer le {day}",
+        "rangeTitle": "Bloquer du {from} au {to}",
+        "rangeDays": "{count, plural, one {# jour} other {# jours}}",
+        "confirm": "Bloquer",
+        "hoursConfirm": "Bloquer ces heures",
+        "hoursLabel": "Heures bloquées",
+        "labelPlaceholder": "Motif, facultatif — ex. rendez-vous médical",
+        "labelAria": "Motif du blocage",
+        "dayBlocked": "Journée bloquée",
+        "partBlocked": "heures bloquées",
+        "rangeBlocked": "Bloqué du {from} au {to}",
+        "hoursBlocked": "Bloqué {from} – {to}",
+        "unblock": "Débloquer",
+        "unblockHours": "Débloquer {from} – {to}",
+        "blocked": "C’est bloqué : plus aucun client ne peut réserver sur ce créneau.",
+        "unblocked": "Débloqué : le créneau est de nouveau réservable.",
+        "dragHint": "Astuce : glissez d’un jour à l’autre pour bloquer plusieurs jours d’un coup."
+      }
     },
     "clients": {
       "address": "Adresse",

@@ -355,14 +355,17 @@
       "offerHint": "By default \"{title}\" uses your weekly hours.",
       "offerTitle": "Availability for this offer",
       "overridesNote": "These offers use their own hours: {offers}.",
-      "timeOffHint": "Holidays and days you are simply not available.",
+      "timeOffHint": "Holidays, days or a few hours when you are not available. You can also do it straight from the calendar.",
       "timeOffLabel": "Label",
       "timeOffLabelPlaceholder": "Holidays",
       "timeOffTitle": "Time off",
       "to": "To",
       "unavailable": "Unavailable",
       "weeklyHint": "Used by every offer booked on a time slot. Times are in {timezone}.",
-      "weeklyTitle": "Weekly hours"
+      "weeklyTitle": "Weekly hours",
+      "wholeDay": "All day",
+      "wholeDayHint": "Turn off to block only some hours of each day.",
+      "blockedHours": "Blocked hours"
     },
     "bookings": {
       "actionTypeFilter": "Action type",
@@ -461,7 +464,31 @@
         "kanban": "Board view",
         "list": "List view"
       },
-      "weekHint": "Drag a session to another slot. Availability rules and the buffer between sessions are re-checked; a refused slot puts the session back."
+      "weekHint": "Drag a session to another slot. Availability rules and the buffer between sessions are re-checked; a refused slot puts the session back.",
+      "block": {
+        "short": "Blocked",
+        "blockDay": "Block the day",
+        "blockHours": "Block hours",
+        "blockSeveral": "Several days…",
+        "pickEnd": "Tap the last day",
+        "dayTitle": "Block {day}",
+        "rangeTitle": "Block {from} to {to}",
+        "rangeDays": "{count, plural, one {# day} other {# days}}",
+        "confirm": "Block",
+        "hoursConfirm": "Block these hours",
+        "hoursLabel": "Blocked hours",
+        "labelPlaceholder": "Reason, optional — e.g. doctor’s appointment",
+        "labelAria": "Reason for the block",
+        "dayBlocked": "Day blocked",
+        "partBlocked": "hours blocked",
+        "rangeBlocked": "Blocked {from} to {to}",
+        "hoursBlocked": "Blocked {from} – {to}",
+        "unblock": "Unblock",
+        "unblockHours": "Unblock {from} – {to}",
+        "blocked": "Blocked: clients can no longer book that time.",
+        "unblocked": "Unblocked: that time can be booked again.",
+        "dragHint": "Tip: drag from one day to another to block several days at once."
+      }
     },
     "clients": {
       "address": "Address",

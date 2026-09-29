@@ -115,7 +115,10 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
       .order("created_at", { ascending: false }),
     supabase.from("platform_admins").select("user_id, note"),
     supabase.from("availabilities").select("weekday, start_time, end_time").eq("profile_id", id),
-    supabase.from("time_off").select("starts_on, ends_on").eq("profile_id", id),
+    supabase
+      .from("time_off")
+      .select("starts_on, ends_on, start_time, end_time")
+      .eq("profile_id", id),
     coach.user_id
       ? supabase
           .from("coach_sign_ins")

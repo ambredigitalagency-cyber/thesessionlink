@@ -289,15 +289,32 @@ export const weeklyScheduleSchema = z.object({
   rules: z.array(availabilityRuleSchema).max(60),
 });
 
+const clockTime = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "invalid_time")
+  .nullish()
+  .transform((value) => value ?? null);
+
+/** A whole-day block, or — with both times — only those hours on each day. */
 export const timeOffSchema = z
   .object({
     starts_on: z.iso.date(),
     ends_on: z.iso.date(),
+    start_time: clockTime,
+    end_time: clockTime,
     label: optionalText(80),
   })
   .refine((range) => range.ends_on >= range.starts_on, {
     message: "end_before_start",
     path: ["ends_on"],
+  })
+  .refine((range) => (range.start_time === null) === (range.end_time === null), {
+    message: "invalid_time",
+    path: ["end_time"],
+  })
+  .refine((range) => !range.start_time || !range.end_time || range.end_time > range.start_time, {
+    message: "end_before_start",
+    path: ["end_time"],
   });
 
 /* -------------------------------------------------------------------------- */

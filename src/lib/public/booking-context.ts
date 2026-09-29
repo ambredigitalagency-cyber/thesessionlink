@@ -65,7 +65,7 @@ export async function getBookingContext(
       .eq("profile_id", profile.id),
     supabase
       .from("time_off")
-      .select("starts_on, ends_on")
+      .select("starts_on, ends_on, start_time, end_time")
       .eq("profile_id", profile.id)
       .gte("ends_on", window.from.toISOString().slice(0, 10)),
     supabase

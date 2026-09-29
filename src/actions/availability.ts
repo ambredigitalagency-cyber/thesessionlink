@@ -69,6 +69,9 @@ function hasOverlap(rules: { weekday: number; start_time: string; end_time: stri
 export async function addTimeOff(input: {
   starts_on: string;
   ends_on: string;
+  /** Both or neither: without them the whole of each day is blocked. */
+  start_time?: string | null;
+  end_time?: string | null;
   label?: string | null;
 }): Promise<ActionResult> {
   const profile = await requireProfileForAction();
@@ -83,6 +86,8 @@ export async function addTimeOff(input: {
     profile_id: profile.id,
     starts_on: parsed.data.starts_on,
     ends_on: parsed.data.ends_on,
+    start_time: parsed.data.start_time,
+    end_time: parsed.data.end_time,
     label: parsed.data.label,
   });
 

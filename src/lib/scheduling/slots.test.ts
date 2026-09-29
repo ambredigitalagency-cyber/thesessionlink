@@ -104,6 +104,33 @@ describe("generateSlots", () => {
     expect(generateSlots(baseInput({ timeOff }))).toHaveLength(0);
   });
 
+  it("blocks only the hours of a timed block, and only on its days", () => {
+    // 09:00-12:00 Paris on Thursday 1 October: 10:30-11:15 blocked takes
+    // the 10:00 and 11:00 slots and leaves 09:00.
+    const timeOff = [
+      { starts_on: "2026-10-01", ends_on: "2026-10-01", start_time: "10:30", end_time: "11:15" },
+    ];
+    expect(hours(generateSlots(baseInput({ timeOff })))).toEqual(["2026-10-01T07:00:00.000Z"]);
+
+    const twoDays = baseInput({ timeOff, to: new Date("2026-10-02T22:00:00Z") });
+    expect(
+      hours(generateSlots(twoDays)).filter((iso) => iso.startsWith("2026-10-02")),
+    ).toHaveLength(3);
+  });
+
+  it("greys out, rather than hides, the slots a timed block covers", () => {
+    const timeOff = [
+      {
+        starts_on: "2026-10-01",
+        ends_on: "2026-10-01",
+        start_time: "09:00:00",
+        end_time: "10:00:00",
+      },
+    ];
+    const grid = generateSlotGrid(baseInput({ timeOff }));
+    expect(grid.map((slot) => slot.status)).toEqual(["unavailable", "available", "available"]);
+  });
+
   it("ignores weekdays without a rule", () => {
     const saturday = new Date("2026-10-03T05:00:00Z");
     const slots = generateSlots(

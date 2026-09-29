@@ -1,6 +1,6 @@
 "use client";
 
-import { Plane, Plus, X } from "lucide-react";
+import { Clock, Plane, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
@@ -9,8 +9,19 @@ import { addTimeOff, deleteTimeOff } from "@/actions/availability";
 import { notify } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
+import { ToggleRow } from "@/components/ui/primitives";
+import { TimeRangeSlider } from "@/components/ui/slider";
 
-type Entry = { id: string; starts_on: string; ends_on: string; label: string | null };
+import { clock } from "./calendar-blocking";
+
+type Entry = {
+  id: string;
+  starts_on: string;
+  ends_on: string;
+  start_time: string | null;
+  end_time: string | null;
+  label: string | null;
+};
 
 export function TimeOffManager({ entries, locale }: { entries: Entry[]; locale: string }) {
   const t = useTranslations("dashboard.availability");
@@ -23,18 +34,27 @@ export function TimeOffManager({ entries, locale }: { entries: Entry[]; locale: 
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [label, setLabel] = useState("");
+  const [wholeDay, setWholeDay] = useState(true);
+  const [hours, setHours] = useState({ start: "12:00", end: "14:00" });
   const [pending, startTransition] = useTransition();
 
   function submit() {
     if (!start || !end) return;
 
     startTransition(async () => {
-      const result = await addTimeOff({ starts_on: start, ends_on: end, label: label || null });
+      const result = await addTimeOff({
+        starts_on: start,
+        ends_on: end,
+        start_time: wholeDay ? null : hours.start,
+        end_time: wholeDay ? null : hours.end,
+        label: label || null,
+      });
       if (result.ok) {
         setAdding(false);
         setStart("");
         setEnd("");
         setLabel("");
+        setWholeDay(true);
         router.refresh();
       } else {
         notify.error(tError(result.error as "unexpected"));
@@ -56,11 +76,21 @@ export function TimeOffManager({ entries, locale }: { entries: Entry[]; locale: 
               key={entry.id}
               className="border-line bg-surface flex items-center gap-3 rounded-[var(--radius-md)] border px-3.5 py-2.5"
             >
-              <Plane className="text-ink-subtle size-4 shrink-0" />
+              {entry.start_time ? (
+                <Clock className="text-ink-subtle size-4 shrink-0" />
+              ) : (
+                <Plane className="text-ink-subtle size-4 shrink-0" />
+              )}
               <div className="min-w-0 flex-1">
                 <p className="text-ink text-[14px] font-medium">
                   {format(entry.starts_on)}
                   {entry.ends_on !== entry.starts_on ? ` → ${format(entry.ends_on)}` : ""}
+                  {entry.start_time && entry.end_time ? (
+                    <span className="text-ink-muted font-normal tabular-nums">
+                      {" "}
+                      · {clock(entry.start_time)} – {clock(entry.end_time)}
+                    </span>
+                  ) : null}
                 </p>
                 {entry.label ? (
                   <p className="text-ink-muted truncate text-[12.5px]">{entry.label}</p>
@@ -103,6 +133,24 @@ export function TimeOffManager({ entries, locale }: { entries: Entry[]; locale: 
               />
             </Field>
           </div>
+          <div className="divide-line border-line divide-y border-y">
+            <ToggleRow
+              title={t("wholeDay")}
+              description={t("wholeDayHint")}
+              checked={wholeDay}
+              onCheckedChange={setWholeDay}
+            />
+          </div>
+          {wholeDay ? null : (
+            <div className="rise-in">
+              <TimeRangeSlider
+                label={t("blockedHours")}
+                start={hours.start}
+                end={hours.end}
+                onChange={setHours}
+              />
+            </div>
+          )}
           <Field label={t("timeOffLabel")} optional>
             <Input
               value={label}

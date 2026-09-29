@@ -1,5 +1,9 @@
 import { TZDate } from "@date-fns/tz";
 
+import { blockedMinutes, isFullDayOff, overlapsBlocked, type TimeOffRange } from "./time-off";
+
+export type { TimeOffRange } from "./time-off";
+
 /**
  * Slot engine.
  *
@@ -17,11 +21,6 @@ export type AvailabilityRule = {
   weekday: number; // 0 = Sunday … 6 = Saturday
   start_time: string; // "09:00:00"
   end_time: string; // "17:00:00", "24:00:00" allowed
-};
-
-export type TimeOffRange = {
-  starts_on: string; // "2026-08-01"
-  ends_on: string;
 };
 
 export type BusyRange = {
@@ -113,10 +112,6 @@ export function rulesForOffer(rules: AvailabilityRule[], offerId: string): Avail
   return specific.length > 0 ? specific : rules.filter((rule) => rule.offer_id === null);
 }
 
-function isDayOff(dateKey: string, timeOff: TimeOffRange[]): boolean {
-  return timeOff.some((range) => dateKey >= range.starts_on && dateKey <= range.ends_on);
-}
-
 /**
  * Every slot of the window, graded.
  *
@@ -172,7 +167,9 @@ function collectSlots(input: SlotEngineInput, includeUnavailable: boolean): Grad
     const dateKey = localDateKey(cursor, timezone);
     const dayRules = rulesByWeekday.get(weekday) ?? [];
 
-    if (dayRules.length > 0 && !isDayOff(dateKey, timeOff)) {
+    if (dayRules.length > 0 && !isFullDayOff(dateKey, timeOff)) {
+      // Hours blocked on this day only: the slot exists, it is just not offered.
+      const blockedToday = blockedMinutes(dateKey, timeOff);
       for (const rule of dayRules) {
         const windowStart = parseTimeToMinutes(rule.start_time);
         const windowEnd = parseTimeToMinutes(rule.end_time);
@@ -184,11 +181,13 @@ function collectSlots(input: SlotEngineInput, includeUnavailable: boolean): Grad
           if (start < earliest || start >= latest) continue;
           if (end <= start) continue;
 
-          const blocked = busy.some(
-            (range) =>
-              start.getTime() < range.end.getTime() + bufferMinutes * MINUTE &&
-              end.getTime() + bufferMinutes * MINUTE > range.start.getTime(),
-          );
+          const blocked =
+            overlapsBlocked(offset, offset + durationMinutes, blockedToday) ||
+            busy.some(
+              (range) =>
+                start.getTime() < range.end.getTime() + bufferMinutes * MINUTE &&
+                end.getTime() + bufferMinutes * MINUTE > range.start.getTime(),
+            );
           const bookable = !blocked && start >= bookableFrom;
           if (!bookable && !includeUnavailable) continue;
 

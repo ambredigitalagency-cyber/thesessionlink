@@ -2,15 +2,17 @@
 
 import { CalendarDays, ChevronLeft, ChevronRight, LayoutGrid, Plane } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/primitives";
 import { Button } from "@/components/ui/button";
 import { ACTION_ICONS, BOOKING_STATUS_TONE, weekdayLabel } from "@/lib/offers/meta";
 import type { ActionType } from "@/lib/offers/schema";
 import { localDateKey } from "@/lib/scheduling/slots";
+import { isTimed } from "@/lib/scheduling/time-off";
 
 import { BookingsWeek } from "./bookings-week";
+import { DayBlockPanel, RangeConfirm, type CalendarTimeOff } from "./calendar-blocking";
 import { cn } from "@/lib/utils";
 
 export type CalendarBooking = {
@@ -24,11 +26,21 @@ export type CalendarBooking = {
   action_type: ActionType;
 };
 
-type TimeOff = { id: string; starts_on: string; ends_on: string; label: string | null };
-
 function dateKey(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
+
+/** Every day of a range, as keys, both ends included. */
+function daysOf(from: string, to: string): string[] {
+  const days: string[] = [];
+  const end = new Date(`${to}T00:00:00Z`).getTime();
+  for (let day = new Date(`${from}T00:00:00Z`).getTime(); day <= end; day += 86_400_000) {
+    days.push(new Date(day).toISOString().slice(0, 10));
+  }
+  return days;
+}
+
+const ordered = (a: string, b: string): [string, string] => (a <= b ? [a, b] : [b, a]);
 
 export function BookingsCalendar({
   bookings,
@@ -37,11 +49,12 @@ export function BookingsCalendar({
   locale,
 }: {
   bookings: CalendarBooking[];
-  timeOff: TimeOff[];
+  timeOff: CalendarTimeOff[];
   timezone: string;
   locale: string;
 }) {
   const t = useTranslations("dashboard.bookings");
+  const tBlock = useTranslations("dashboard.bookings.block");
   const tag = locale === "fr" ? "fr-FR" : "en-US";
   const today = new Date();
   const todayKey = localDateKey(today, timezone);
@@ -49,6 +62,36 @@ export function BookingsCalendar({
   const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
   const [selected, setSelected] = useState<string>(todayKey);
   const [mode, setMode] = useState<"month" | "week">("month");
+
+  /*
+   * Blocking several days: press on a day and drag to another (mouse, pen),
+   * or — where dragging would scroll the page — "Several days…" then a tap on
+   * the last day. Either way the range lands in `range` and waits for a
+   * confirmation, so a stray drag never blocks anything on its own.
+   */
+  const [drag, setDrag] = useState<{ from: string; to: string } | null>(null);
+  const [pickFrom, setPickFrom] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const [range, setRange] = useState<{ from: string; to: string } | null>(null);
+
+  useEffect(() => {
+    if (!drag) return;
+    // Re-subscribed on every move, so `drag` here is always the latest range.
+    const current = drag;
+    function release() {
+      setDrag(null);
+      if (current.from === current.to) return;
+      const [from, to] = ordered(current.from, current.to);
+      // Only what is still ahead can be blocked.
+      if (to >= todayKey) setRange({ from: from < todayKey ? todayKey : from, to });
+    }
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+    };
+  }, [drag, todayKey]);
 
   /** Monday of the week holding the selected day, as a local date key. */
   const weekStart = useMemo(() => {
@@ -96,17 +139,33 @@ export function BookingsCalendar({
     return map;
   }, [bookings, timezone]);
 
-  const offDays = useMemo(() => {
-    const set = new Set<string>();
-    for (const range of timeOff) {
-      const start = new Date(`${range.starts_on}T00:00:00Z`);
-      const end = new Date(`${range.ends_on}T00:00:00Z`);
-      for (let day = start; day <= end; day = new Date(day.getTime() + 86_400_000)) {
-        set.add(day.toISOString().slice(0, 10));
+  /** Blocks by day: whole days in `offDays`, every block (timed or not) in `blocksByDay`. */
+  const { offDays, partDays, blocksByDay } = useMemo(() => {
+    const off = new Set<string>();
+    const part = new Set<string>();
+    const map = new Map<string, CalendarTimeOff[]>();
+    for (const block of timeOff) {
+      for (const key of daysOf(block.starts_on, block.ends_on)) {
+        (isTimed(block) ? part : off).add(key);
+        map.set(key, [...(map.get(key) ?? []), block]);
       }
     }
-    return set;
+    return { offDays: off, partDays: part, blocksByDay: map };
   }, [timeOff]);
+
+  /** The range being drawn, being picked, or waiting for confirmation. */
+  const preview = useMemo(() => {
+    const ends = drag
+      ? [drag.from, drag.to]
+      : pickFrom && hovered
+        ? [pickFrom, hovered]
+        : range
+          ? [range.from, range.to]
+          : null;
+    if (!ends) return null;
+    const [from, to] = ordered(ends[0], ends[1]);
+    return { from, to };
+  }, [drag, pickFrom, hovered, range]);
 
   const firstOfMonth = new Date(Date.UTC(cursor.year, cursor.month, 1));
   const daysInMonth = new Date(Date.UTC(cursor.year, cursor.month + 1, 0)).getUTCDate();
@@ -126,6 +185,16 @@ export function BookingsCalendar({
       const next = new Date(Date.UTC(current.year, current.month + delta, 1));
       return { year: next.getUTCFullYear(), month: next.getUTCMonth() };
     });
+  }
+
+  function pickDay(key: string) {
+    if (pickFrom) {
+      const [from, to] = ordered(pickFrom, key);
+      setPickFrom(null);
+      setHovered(null);
+      if (to >= todayKey) setRange({ from: from < todayKey ? todayKey : from, to });
+    }
+    setSelected(key);
   }
 
   return (
@@ -194,7 +263,10 @@ export function BookingsCalendar({
       {mode === "week" ? (
         <BookingsWeek
           bookings={bookings}
+          timeOff={timeOff}
           weekStart={weekStart}
+          selected={selected}
+          onSelectDay={setSelected}
           timezone={timezone}
           locale={locale}
           onOpen={(id) => {
@@ -209,7 +281,7 @@ export function BookingsCalendar({
         />
       ) : (
         <div className="surface-card p-4 sm:p-5">
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-1 select-none">
             {[1, 2, 3, 4, 5, 6, 0].map((weekday) => (
               <div
                 key={weekday}
@@ -230,31 +302,62 @@ export function BookingsCalendar({
               const isToday = key === todayKey;
               const isSelected = key === selected;
               const isOff = offDays.has(key);
+              const isPart = !isOff && partDays.has(key);
+              const inPreview =
+                preview !== null && key >= preview.from && key <= preview.to && key >= todayKey;
               const hasPending = dayBookings.some((booking) => booking.status === "pending");
 
               return (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => setSelected(key)}
+                  data-day={key}
+                  onClick={() => pickDay(key)}
+                  onPointerDown={(event) => {
+                    // Touch scrolls the page; ranges there go through "Several days".
+                    if (event.pointerType === "touch" || event.button !== 0) return;
+                    setRange(null);
+                    setDrag({ from: key, to: key });
+                  }}
+                  onPointerEnter={() => {
+                    if (drag) setDrag({ ...drag, to: key });
+                    if (pickFrom) setHovered(key);
+                  }}
                   className={cn(
-                    "relative flex aspect-square flex-col items-center justify-center gap-1 rounded-[var(--radius-xs)] text-[13px] transition-colors",
-                    isSelected
-                      ? "bg-ink text-ink-inverse"
-                      : isOff
-                        ? "bg-ink/[0.04] text-ink-subtle"
-                        : "text-ink hover:bg-ink/5",
+                    "relative flex aspect-square flex-col items-center justify-center gap-1 overflow-hidden rounded-[var(--radius-xs)] text-[13px]",
+                    "transition-[background-color,color,box-shadow] duration-150",
+                    inPreview
+                      ? "bg-[var(--accent-soft)] text-[var(--accent-ink)] ring-1 ring-[var(--accent)]/40 ring-inset"
+                      : isSelected
+                        ? "bg-ink text-ink-inverse"
+                        : isOff
+                          ? "text-ink-subtle"
+                          : "text-ink hover:bg-ink/5",
                   )}
                   aria-current={isToday ? "date" : undefined}
+                  aria-label={
+                    isOff
+                      ? `${day} — ${tBlock("dayBlocked")}`
+                      : isPart
+                        ? `${day} — ${tBlock("partBlocked")}`
+                        : undefined
+                  }
                 >
+                  {isOff && !isSelected && !inPreview ? (
+                    <span aria-hidden className="blocked-hatch absolute inset-0" />
+                  ) : null}
+
                   <span
-                    className={cn("font-medium", isToday && !isSelected && "text-[var(--accent)]")}
+                    className={cn(
+                      "relative font-medium",
+                      isToday && !isSelected && !inPreview && "text-[var(--accent)]",
+                    )}
                   >
                     {day}
                   </span>
 
                   {dayBookings.length > 0 ? (
-                    <span className="flex items-center gap-0.5">
+                    <span className="relative flex items-center gap-0.5">
                       {dayBookings.slice(0, 3).map((booking) => (
                         <span
                           key={booking.id}
@@ -270,7 +373,18 @@ export function BookingsCalendar({
                       ))}
                     </span>
                   ) : isOff ? (
-                    <Plane className="size-3 opacity-50" />
+                    <Plane className="relative size-3 opacity-50" />
+                  ) : null}
+
+                  {/* Some hours of the day are blocked: a hatched rule along the bottom. */}
+                  {isPart ? (
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "blocked-hatch absolute inset-x-2 bottom-1 h-1 rounded-full",
+                        isSelected && "opacity-60 invert",
+                      )}
+                    />
                   ) : null}
 
                   {hasPending && !isSelected ? (
@@ -280,8 +394,21 @@ export function BookingsCalendar({
               );
             })}
           </div>
+          <p className="text-ink-subtle mt-3 text-center text-[12.5px] max-sm:hidden">
+            {tBlock("dragHint")}
+          </p>
         </div>
       )}
+
+      {range ? (
+        <RangeConfirm
+          key={`${range.from}|${range.to}`}
+          from={range.from}
+          to={range.to}
+          locale={locale}
+          onDone={() => setRange(null)}
+        />
+      ) : null}
 
       <div>
         <p className="text-ink-subtle mb-3 text-[13px] font-medium tracking-wide uppercase">
@@ -292,6 +419,27 @@ export function BookingsCalendar({
             timeZone: "UTC",
           }).format(new Date(`${selected}T12:00:00Z`))}
         </p>
+
+        <div className="mb-4">
+          <DayBlockPanel
+            key={selected}
+            day={selected}
+            isPast={selected < todayKey}
+            blocks={blocksByDay.get(selected) ?? []}
+            locale={locale}
+            picking={pickFrom !== null}
+            onPickRange={() => {
+              if (pickFrom) {
+                setPickFrom(null);
+                setHovered(null);
+              } else {
+                setRange(null);
+                setMode("month");
+                setPickFrom(selected);
+              }
+            }}
+          />
+        </div>
 
         {selectedBookings.length === 0 ? (
           <p className="border-line-strong text-ink-muted rounded-[var(--radius-md)] border border-dashed px-4 py-8 text-center text-[13.5px]">

@@ -25,7 +25,7 @@ export default async function BookingsCalendarPage() {
       .limit(1000),
     supabase
       .from("time_off")
-      .select("id, starts_on, ends_on, label")
+      .select("id, starts_on, ends_on, start_time, end_time, label")
       .eq("profile_id", profile.id)
       .gte("ends_on", from.toISOString().slice(0, 10)),
   ]);

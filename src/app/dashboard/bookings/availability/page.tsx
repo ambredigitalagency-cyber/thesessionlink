@@ -19,7 +19,7 @@ export default async function AvailabilityPage() {
       .is("offer_id", null),
     supabase
       .from("time_off")
-      .select("id, starts_on, ends_on, label")
+      .select("id, starts_on, ends_on, start_time, end_time, label")
       .eq("profile_id", profile.id)
       .order("starts_on"),
     supabase

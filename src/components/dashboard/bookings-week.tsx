@@ -21,9 +21,11 @@ import { useMemo, useState, useTransition } from "react";
 import { rescheduleBooking } from "@/actions/bookings";
 import { TZDate } from "@date-fns/tz";
 import { notify } from "@/lib/notify";
+import { blockedMinutes, isFullDayOff } from "@/lib/scheduling/time-off";
 import { cn } from "@/lib/utils";
 
 import type { CalendarBooking } from "./bookings-calendar";
+import { clock, type CalendarTimeOff } from "./calendar-blocking";
 
 const START_HOUR = 7;
 const END_HOUR = 22;
@@ -63,17 +65,27 @@ function cellId(dayIso: string, minutes: number) {
  * minimum notice — with the no-overlap constraint as the backstop. The move is
  * shown straight away and rolled back if the server refuses, so a rejected drop
  * visibly snaps home instead of failing quietly.
+ *
+ * Blocked time is drawn hatched under the events: whole columns for days off,
+ * bands for blocked hours. A day's header selects it, which opens the blocking
+ * panel under the grid — the hours slider lives there.
  */
 export function BookingsWeek({
   bookings,
+  timeOff,
   weekStart,
+  selected,
+  onSelectDay,
   timezone,
   locale,
   onOpen,
 }: {
   bookings: CalendarBooking[];
+  timeOff: CalendarTimeOff[];
   /** Monday of the displayed week, as a local date key (YYYY-MM-DD). */
   weekStart: string;
+  selected: string;
+  onSelectDay: (day: string) => void;
   timezone: string;
   locale: string;
   onOpen: (id: string) => void;
@@ -206,12 +218,20 @@ export function BookingsWeek({
         <div className="grid min-w-[44rem] grid-cols-[3.25rem_repeat(7,minmax(0,1fr))] gap-px">
           <div />
           {days.map((day) => (
-            <div
+            <button
               key={day.iso}
-              className="text-ink-muted pb-2 text-center text-[12.5px] font-medium capitalize"
+              type="button"
+              aria-pressed={day.iso === selected}
+              onClick={() => onSelectDay(day.iso)}
+              className={cn(
+                "mx-0.5 mb-1.5 rounded-full py-1 text-center text-[12.5px] font-medium capitalize transition-colors",
+                day.iso === selected
+                  ? "bg-ink text-ink-inverse"
+                  : "text-ink-muted hover:bg-ink/5 hover:text-ink",
+              )}
             >
               {day.label}
-            </div>
+            </button>
           ))}
 
           <div className="relative" style={{ height: ROWS * ROW_HEIGHT }}>
@@ -240,6 +260,8 @@ export function BookingsWeek({
                   onHour={row % 2 === 0}
                 />
               ))}
+
+              <Blocked dayIso={day.iso} timeOff={timeOff} label={t("block.short")} />
 
               {events
                 .filter((item) => item.dayIso === day.iso)
@@ -272,6 +294,58 @@ export function BookingsWeek({
       <p className="text-ink-subtle mt-3 text-center text-[12.5px]">{t("weekHint")}</p>
     </DndContext>
   );
+}
+
+/** Hatched blocked time for one day column, drawn under the events. */
+function Blocked({
+  dayIso,
+  timeOff,
+  label,
+}: {
+  dayIso: string;
+  timeOff: CalendarTimeOff[];
+  label: string;
+}) {
+  if (isFullDayOff(dayIso, timeOff)) {
+    return (
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <span className="blocked-hatch absolute inset-0" />
+        <span className="text-ink-subtle absolute inset-x-0 top-2 text-center text-[11px] font-medium">
+          {label}
+        </span>
+      </div>
+    );
+  }
+
+  const top = START_HOUR * 60;
+  const bottom = END_HOUR * 60;
+  return blockedMinutes(dayIso, timeOff).map(([from, to]) => {
+    const start = Math.max(from, top);
+    const end = Math.min(to, bottom);
+    if (end <= start) return null;
+    return (
+      <div
+        key={from}
+        aria-hidden
+        className="border-ink/15 pointer-events-none absolute inset-x-0 overflow-hidden border-y border-dashed"
+        style={{
+          top: ((start - top) / ROW_MINUTES) * ROW_HEIGHT,
+          height: ((end - start) / ROW_MINUTES) * ROW_HEIGHT,
+        }}
+      >
+        <span className="blocked-hatch absolute inset-0" />
+        <span className="text-ink-subtle relative block px-1.5 pt-0.5 text-[10.5px] tabular-nums">
+          {clock(
+            `${String(Math.floor(from / 60)).padStart(2, "0")}:${String(from % 60).padStart(2, "0")}`,
+          )}
+          –
+          {clock(
+            `${String(Math.floor(to / 60)).padStart(2, "0")}:${String(to % 60).padStart(2, "0")}`,
+          )}
+        </span>
+      </div>
+    );
+  });
 }
 
 function Cell({ dayIso, minutes, onHour }: { dayIso: string; minutes: number; onHour: boolean }) {

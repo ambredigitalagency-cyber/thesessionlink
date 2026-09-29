@@ -893,26 +893,32 @@ export type Database = {
       time_off: {
         Row: {
           created_at: string;
+          end_time: string | null;
           ends_on: string;
           id: string;
           label: string | null;
           profile_id: string;
+          start_time: string | null;
           starts_on: string;
         };
         Insert: {
           created_at?: string;
+          end_time?: string | null;
           ends_on: string;
           id?: string;
           label?: string | null;
           profile_id: string;
+          start_time?: string | null;
           starts_on: string;
         };
         Update: {
           created_at?: string;
+          end_time?: string | null;
           ends_on?: string;
           id?: string;
           label?: string | null;
           profile_id?: string;
+          start_time?: string | null;
           starts_on?: string;
         };
         Relationships: [

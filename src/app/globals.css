@@ -204,6 +204,13 @@
   }
 }
 
+@keyframes hatch-in {
+  from {
+    opacity: 0;
+    background-position: 14px 0;
+  }
+}
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -419,6 +426,25 @@ body {
     border: 1px solid var(--color-line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-card);
+  }
+
+  /*
+   * Time the pro has blocked: a hatch rather than a flat grey, so a blocked
+   * day never reads as an empty one. It fades in when a block is added; with
+   * reduced motion it is simply there.
+   */
+  .blocked-hatch {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(12 12 13 / 0.07) 0 5px,
+      transparent 5px 10px
+    );
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .blocked-hatch {
+      animation: hatch-in 0.45s var(--ease-out-expo) both;
+    }
   }
 
   .hairline {
