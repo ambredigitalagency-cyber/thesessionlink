@@ -116,7 +116,7 @@ export function SubscribeButton({
           settings: {
             displayMode: "overlay",
             locale,
-            theme: document.documentElement.dataset.theme === "dark" ? "dark" : "light",
+            theme: "light",
           },
         });
       } catch {

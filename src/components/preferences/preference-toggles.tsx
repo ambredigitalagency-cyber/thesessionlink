@@ -1,6 +1,5 @@
 "use client";
 
-import { Monitor, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -12,20 +11,16 @@ import {
 } from "react";
 
 import { setLocale } from "@/actions/settings";
-import { useTheme } from "@/components/preferences/theme-provider";
 import type { Locale } from "@/lib/i18n/config";
-import { THEMES, type Theme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
 /**
- * Language and theme, as two small slide toggles in the corner of every page.
+ * The language, as a small slide toggle in the corner of every page: FR | EN.
  *
  * A thumb that slides between positions, like a switch, rather than a menu: a
- * menu hides the answer behind a tap, a toggle shows it. Two toggles side by
- * side rather than one control for both, because they answer different
- * questions — FR | EN, and ☀ | ◐ | ☾ (light, the device's choice, dark).
+ * menu hides the answer behind a tap, a toggle shows it.
  *
- * Each is a radio group: arrow keys move the choice, the thumb follows. The
+ * It is a radio group: arrow keys move the choice, the thumb follows. The
  * slide is a transform transition gated by motion-safe, so with reduced
  * motion the thumb simply appears in its new place.
  *
@@ -163,12 +158,8 @@ function SlideToggle<T extends string>({
   );
 }
 
-const THEME_ICONS: Record<Theme, typeof Sun> = { light: Sun, system: Monitor, dark: Moon };
 /** French first: the product speaks French first. */
 const LOCALE_ORDER: Locale[] = ["fr", "en"];
-
-/** Light on the left, dark on the right, the device's choice between them. */
-const THEME_ORDER: Theme[] = ["light", "system", "dark"];
 
 export function PreferenceToggles({
   tone = "paper",
@@ -183,7 +174,6 @@ export function PreferenceToggles({
   const locale = useLocale() as Locale;
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const { theme, setTheme } = useTheme();
 
   function changeLocale(next: Locale) {
     startTransition(async () => {
@@ -206,21 +196,6 @@ export function PreferenceToggles({
           content: <span className="uppercase">{item}</span>,
           title: t(`languages.${item}`),
         }))}
-      />
-      <SlideToggle
-        label={t("theme")}
-        value={theme}
-        onChange={setTheme}
-        tone={tone}
-        dense={dense}
-        options={THEME_ORDER.filter((item) => THEMES.includes(item)).map((item) => {
-          const Icon = THEME_ICONS[item];
-          return {
-            value: item,
-            content: <Icon className="size-3.5" aria-hidden />,
-            title: t(`themes.${item}`),
-          };
-        })}
       />
     </div>
   );

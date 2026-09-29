@@ -331,15 +331,9 @@
     "yes": "Oui",
     "preferences": {
       "language": "Langue",
-      "theme": "Thème",
       "languages": {
         "fr": "Français",
         "en": "English"
-      },
-      "themes": {
-        "light": "Clair",
-        "system": "Comme l’appareil",
-        "dark": "Sombre"
       }
     }
   },
@@ -671,13 +665,6 @@
       }
     },
     "settings": {
-      "appearance": {
-        "title": "Apparence",
-        "hint": "Ne s'applique qu'à cet appareil, et prend effet immédiatement.",
-        "light": "Clair",
-        "dark": "Sombre",
-        "system": "Système"
-      },
       "channelsHint": "Ce que vos clients voient et peuvent utiliser sur votre page publique.",
       "channelsTitle": "Canaux de contact",
       "contactEmail": "E-mail de contact",

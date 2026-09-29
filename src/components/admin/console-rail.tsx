@@ -15,11 +15,8 @@ import { cn } from "@/lib/utils";
  * navigate, not enough to say where you are. A rail says both: it is present
  * on every screen, it marks the current section, and it is structurally
  * unlike anything else in the product. The coach's dashboard has a light
- * sidebar on paper; the console has a dark rail in both themes. Nobody who has
- * seen one will mistake it for the other.
- *
- * It stays dark under a dark theme too, because it is chrome rather than a
- * page: the content beside it is what follows the reader's preference.
+ * sidebar on paper; the console has a dark rail. Nobody who has seen one will
+ * mistake it for the other.
  *
  * On a phone the rail lies down and becomes a row along the top — same items,
  * same order, same marker — rather than a drawer that has to be opened to find

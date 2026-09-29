@@ -108,8 +108,7 @@ function GalleryArrow({
       onClick={onClick}
       aria-label={label}
       className={cn(
-        // Over a photograph, so it darkens in both themes: built from ink it
-        // turned into a white pill with white arrows on the dark page.
+        // Over a photograph, so it is the scrim: it always darkens.
         "bg-scrim hover:bg-scrim/90 absolute top-1/2 -translate-y-1/2 rounded-full p-1.5 text-white backdrop-blur transition-colors",
         side === "left" ? "left-2.5" : "right-2.5",
       )}

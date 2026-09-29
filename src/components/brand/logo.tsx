@@ -3,8 +3,7 @@ import { cn } from "@/lib/utils";
 /**
  * Wordmark: the dot is the "link" that everything hangs on.
  *
- * `console` is the same mark on the admin console's rail, which stays dark in
- * both themes: light letters from the rail's own ink, and the dot in the
+ * `console` is the same mark on the admin console's dark rail: light letters from the rail's own ink, and the dot in the
  * console's steel instead of the product accent — the brand is the same, the
  * colour says which space you are in. Only meaningful under [data-console],
  * where those tokens exist.

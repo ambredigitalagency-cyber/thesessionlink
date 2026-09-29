@@ -13,8 +13,8 @@ import { PreferenceToggles } from "@/components/preferences/preference-toggles";
  * The platform console.
  *
  * Deliberately not built like the coach dashboard. That one has a light
- * sidebar and the coach's own neutral palette; this has a rail that stays dark
- * in both themes and a steel accent that appears nowhere else in the product.
+ * sidebar and the coach's own neutral palette; this has a dark rail and a
+ * steel accent that appears nowhere else in the product.
  * Whoever lands here must know within a glance that they are not in a coach's
  * account — and, just as importantly, must not mistake a coach's data for
  * their own.

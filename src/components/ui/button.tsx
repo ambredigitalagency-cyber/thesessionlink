@@ -11,15 +11,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // `ink-hover`, not `night-soft`: the two are the same colour on paper,
-        // but at night ink is nearly white and night is not, so a button
-        // hovering towards night flipped from white to black.
+        // `ink-hover`: one step off ink.
         primary: "bg-ink text-ink-inverse hover:bg-ink-hover shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
-        // A per-theme hover step rather than brightness: on the near-black "ink"
+        // A per-preset hover step rather than brightness: on the near-black "ink"
         // accent a 6% lift is invisible.
-        // `accent-on` rather than a hard-coded white, because the one accent
-        // that has to flip in the dark theme is precisely the near-black one,
-        // and white on it would then be white on white.
+        // `accent-on` rather than a hard-coded white: each accent preset names
+        // the text that reads on it.
         accent:
           "bg-[var(--accent)] text-[var(--accent-on)] hover:bg-[var(--accent-hover)] shadow-[0_1px_2px_rgb(12_12_13/0.16)]",
         secondary:

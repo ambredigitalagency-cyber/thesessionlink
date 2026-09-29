@@ -5,30 +5,13 @@
    Warm paper + ink, one coral brand accent, editorial serif for display type.
    Public profiles can override --accent via the pro's theme preset.
 
-   TWO THEMES, ONE DECLARATION EACH
-   --------------------------------
-   Every colour that changes with the theme is written once, as
-   `light-dark(<paper value>, <night value>)`, and the switch is the
-   `color-scheme` set on :root further down:
-
-       no attribute / data-theme="system"  ->  color-scheme: light dark
-       data-theme="light"                  ->  color-scheme: light
-       data-theme="dark"                   ->  color-scheme: dark
-
-   The alternative — a `@media (prefers-color-scheme: dark)` block plus a
-   `[data-theme="dark"]` block — means writing the whole palette twice, and the
-   accent and event presets six and five times over. It also drifts: the day
-   someone edits one copy and not the other, one of the three modes is quietly
-   wrong. Here a colour has exactly one home.
-
-   It also makes the theme free of JavaScript. The server writes `data-theme`
-   on <html> from a cookie, the browser resolves `color-scheme` before the
-   first paint, and there is no inline script, no hydration step and no flash
-   of the wrong theme — in any of the three modes.
-
-   `color-scheme` additionally tells the browser to draw native things —
-   scrollbars, date and time pickers, autofill, form controls — in the matching
-   theme, which is half the work done for free.
+   ONE THEME
+   ---------
+   The product is light only. There used to be a dark theme, written as
+   `light-dark()` pairs; it was removed and every colour below is now its
+   paper value, written once. `color-scheme: light` on :root keeps native
+   controls — scrollbars, date pickers, autofill — on the same paper, even on
+   a device set to dark.
    ============================================================================= */
 
 @theme {
@@ -39,45 +22,31 @@
   /*
    * Surfaces.
    *
-   * In the dark theme `surface` sits *lighter* than `canvas`, the reverse of
-   * paper, because that is where depth comes from once shadows stop reading:
-   * a card is nearer, so it catches more light.
-   *
-   * `night` is the landing's dark band and the admin bar. It stays dark in
-   * both themes — but on a dark page a near-black band on a near-black canvas
-   * is not a band at all, so in the dark theme it lifts to an elevated panel
-   * instead of sinking.
+   * `night` is the landing's dark band and the admin bar: the one dark
+   * surface of a light product.
    */
-  --color-canvas: light-dark(#fbfaf9, #0d0d0f);
-  --color-surface: light-dark(#ffffff, #161619);
-  --color-night: light-dark(#0b0b0c, #1b1b1f);
-  --color-night-soft: light-dark(#17171a, #232327);
+  --color-canvas: #fbfaf9;
+  --color-surface: #ffffff;
+  --color-night: #0b0b0c;
+  --color-night-soft: #17171a;
 
   /* Ink */
-  --color-ink: light-dark(#0c0c0d, #f3f1ee);
-  --color-ink-muted: light-dark(#63636b, #a5a3a9);
-  --color-ink-subtle: light-dark(#93939c, #78767e);
-  --color-ink-inverse: light-dark(#f7f6f4, #0d0d0f);
-  /* One step off ink, for the primary button's hover. It cannot be `night`:
-     in the dark theme ink is nearly white and night is still nearly black, so
-     a button hovering towards `night` would flip from white to black. */
-  --color-ink-hover: light-dark(#17171a, #dedbd6);
+  --color-ink: #0c0c0d;
+  --color-ink-muted: #63636b;
+  --color-ink-subtle: #93939c;
+  --color-ink-inverse: #f7f6f4;
+  /* One step off ink, for the primary button's hover. */
+  --color-ink-hover: #17171a;
 
   /* Lines */
-  --color-line: light-dark(#ebe8e4, #27272c);
-  --color-line-strong: light-dark(#ddd8d2, #3a3a41);
-  --color-line-inverse: light-dark(#26262b, #34343a);
+  --color-line: #ebe8e4;
+  --color-line-strong: #ddd8d2;
+  --color-line-inverse: #26262b;
 
   /*
-   * Constants — the few colours that must NOT follow the theme.
+   * `on-night` is the text of the landing's dark band and the admin header.
    *
-   * `on-night` is the text of the landing's dark band and the admin header:
-   * those stay dark in both themes, so their text stays light in both. Using
-   * `ink-inverse` there was right while the product was light-only and wrong
-   * the moment ink itself could flip.
-   *
-   * `scrim` dims what is behind a modal or sits over a photo. A scrim always
-   * darkens — one made of `ink` would turn into a white wash in dark mode.
+   * `scrim` dims what is behind a modal or sits over a photo.
    */
   --color-on-night: #f7f6f4;
   --color-scrim: oklch(0% 0 0 / 0.45);
@@ -86,50 +55,41 @@
    * Brand and status.
    *
    * A "soft" is the tinted block a badge sits on and its matching "-ink" is
-   * the text on top. On paper that is a pale wash under a dark word; at night
-   * it is a dark wash under a pale one. The pair flips together, so the badge
-   * keeps its contrast instead of turning into a glowing white lozenge.
-   *
-   * The solid hues move too: #0f8a5f is a fine green on paper and nearly
-   * unreadable on a dark page, so the dark side of each pair is the lighter,
-   * less saturated cousin that carries on black.
+   * the text on top: a pale wash under a dark word.
    */
-  --color-brand: light-dark(#f2542d, #f2542d);
-  --color-brand-hover: light-dark(#e0451f, #ff6f4a);
-  --color-brand-soft: light-dark(#fff0ea, #2d1610);
-  --color-brand-ink: light-dark(#7d2a12, #ffb59c);
+  --color-brand: #f2542d;
+  --color-brand-hover: #e0451f;
+  --color-brand-soft: #fff0ea;
+  --color-brand-ink: #7d2a12;
 
   /* Status */
-  --color-success: light-dark(#0d7c55, #3dd598);
-  --color-success-soft: light-dark(#e7f6ef, #0f2a20);
-  --color-warning: light-dark(#a15f00, #e8a33f);
-  --color-warning-soft: light-dark(#fdf1df, #2c2113);
-  --color-danger: light-dark(#c4342a, #f2695d);
-  --color-danger-soft: light-dark(#fdeceb, #2f1614);
+  --color-success: #0d7c55;
+  --color-success-soft: #e7f6ef;
+  --color-warning: #a15f00;
+  --color-warning-soft: #fdf1df;
+  --color-danger: #c4342a;
+  --color-danger-soft: #fdeceb;
 
   /*
    * Chart series.
    *
-   * The light row was checked with the data-viz validator against the card
-   * surface (#ffffff). The dark row is the same five hues re-picked against
-   * the dark card (#161619): same order, same identity, lifted in lightness
-   * and dropped in chroma so they separate on black the way they do on white.
+   * Checked with the data-viz validator against the card surface (#ffffff).
    * Every share is still written next to its swatch, so colour never carries a
    * value on its own.
    */
-  --color-series-1: light-dark(#f2542d, #e8623a);
-  --color-series-2: light-dark(#2a78d6, #77bbff);
-  --color-series-3: light-dark(#1baf7a, #52d8a8);
-  --color-series-4: light-dark(#eda100, #ffc94d);
-  --color-series-5: light-dark(#4a3aa7, #7d63d9);
-  --color-series-other: light-dark(#93939c, #8b8993);
+  --color-series-1: #f2542d;
+  --color-series-2: #2a78d6;
+  --color-series-3: #1baf7a;
+  --color-series-4: #eda100;
+  --color-series-5: #4a3aa7;
+  --color-series-other: #93939c;
 
   /* The text that reads on top of --accent; see the preset block below. */
   --color-accent-on-default: #ffffff;
 
-  /* Decoration that has to invert: the dotted grid and the skeleton sweep. */
-  --color-grid-dot: light-dark(rgb(12 12 13 / 0.07), rgb(255 255 255 / 0.08));
-  --color-skeleton-highlight: light-dark(#f4f2ef, #26262b);
+  /* Decoration: the dotted grid and the skeleton sweep. */
+  --color-grid-dot: rgb(12 12 13 / 0.07);
+  --color-skeleton-highlight: #f4f2ef;
 
   /* Radii */
   --radius-xs: 8px;
@@ -144,20 +104,15 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /*
-   * Shadows.
-   *
-   * On paper a shadow is a soft grey smudge. On a dark page that reads as fog,
-   * so the dark theme deepens the alpha and drops the wide ambient halo: depth
-   * there comes mostly from `surface` sitting lighter than `canvas`, and the
-   * shadow only has to seat the element.
+   * Shadows: on paper, a soft grey smudge.
    */
   --shadow-card:
-    0 1px 2px light-dark(rgb(12 12 13 / 0.04), rgb(0 0 0 / 0.4)),
-    0 8px 24px -12px light-dark(rgb(12 12 13 / 0.12), rgb(0 0 0 / 0.55));
+    0 1px 2px rgb(12 12 13 / 0.04),
+    0 8px 24px -12px rgb(12 12 13 / 0.12);
   --shadow-float:
-    0 2px 6px light-dark(rgb(12 12 13 / 0.05), rgb(0 0 0 / 0.45)),
-    0 24px 60px -24px light-dark(rgb(12 12 13 / 0.22), rgb(0 0 0 / 0.7));
-  --shadow-pop: 0 30px 80px -30px light-dark(rgb(12 12 13 / 0.35), rgb(0 0 0 / 0.8));
+    0 2px 6px rgb(12 12 13 / 0.05),
+    0 24px 60px -24px rgb(12 12 13 / 0.22);
+  --shadow-pop: 0 30px 80px -30px rgb(12 12 13 / 0.35);
 
   --animate-marquee: marquee 38s linear infinite;
   --animate-shimmer: shimmer 2.2s linear infinite;
@@ -266,15 +221,8 @@
   }
 }
 
-/*
- * The theme switch.
- *
- * `data-theme` is written on <html> by the server from the `theme` cookie, so
- * it is already correct in the very first byte of HTML. Everything else is
- * `light-dark()` reading the `color-scheme` set here.
- */
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
   /* Overridden per public profile by the pro's accent preset. */
   --accent: var(--color-brand);
@@ -284,77 +232,58 @@
   --accent-on: var(--color-accent-on-default);
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-}
-
 /*
  * Accent presets a pro can pick for their public page.
  *
- * Four of the five slots hold their paper value at night as well. `--accent`
- * is almost always an opaque fill carrying `--accent-on` on top, and that pair
- * was already checked against each other; lifting the hue for the dark page
- * would have improved nothing and quietly broken the text sitting on it.
- *
- * What does flip is the badge pair — `--accent-soft` under `--accent-ink`.
- * A pale wash is a lamp on a dark page, so at night the wash goes dark and the
- * word on it goes pale.
- *
- * `ink` is the exception that proves the rule: an accent whose whole idea is
- * "the same near-black as the text" cannot stay near-black once the page is
- * near-black. It becomes the near-white end of the same axis, and `--accent-on`
- * turns dark with it. That token exists for exactly this preset — before it,
- * every fill hard-coded `text-white`, which is right five times out of six.
+ * `--accent` is almost always an opaque fill carrying `--accent-on` on top,
+ * and each pair was checked against each other. `--accent-soft` under
+ * `--accent-ink` is the badge pair.
  */
 [data-accent="coral"] {
   --accent: #f2542d;
-  --accent-hover: light-dark(#d9431f, #ff6f4a);
-  --accent-soft: light-dark(#fff0ea, #2d1610);
-  --accent-ink: light-dark(#7d2a12, #ffb59c);
+  --accent-hover: #d9431f;
+  --accent-soft: #fff0ea;
+  --accent-ink: #7d2a12;
   --accent-on: #ffffff;
 }
 
 [data-accent="ink"] {
-  --accent: light-dark(#0c0c0d, #f3f1ee);
-  --accent-hover: light-dark(#2a2a2e, #dedbd6);
-  --accent-soft: light-dark(#f1f0ee, #26262b);
-  --accent-ink: light-dark(#0c0c0d, #eceae6);
-  --accent-on: light-dark(#ffffff, #0d0d0f);
+  --accent: #0c0c0d;
+  --accent-hover: #2a2a2e;
+  --accent-soft: #f1f0ee;
+  --accent-ink: #0c0c0d;
+  --accent-on: #ffffff;
 }
 
 [data-accent="forest"] {
   --accent: #1f7a55;
-  --accent-hover: light-dark(#1a6647, #2a9e6e);
-  --accent-soft: light-dark(#e7f5ee, #0e2a1f);
-  --accent-ink: light-dark(#10553a, #7fd8ae);
+  --accent-hover: #1a6647;
+  --accent-soft: #e7f5ee;
+  --accent-ink: #10553a;
   --accent-on: #ffffff;
 }
 
 [data-accent="ocean"] {
   --accent: #2563eb;
-  --accent-hover: light-dark(#1d4ed8, #4a82f5);
-  --accent-soft: light-dark(#eaf1fe, #101f38);
-  --accent-ink: light-dark(#1a4699, #9dc2ff);
+  --accent-hover: #1d4ed8;
+  --accent-soft: #eaf1fe;
+  --accent-ink: #1a4699;
   --accent-on: #ffffff;
 }
 
 [data-accent="violet"] {
   --accent: #7c3aed;
-  --accent-hover: light-dark(#6d28d9, #9560f3);
-  --accent-soft: light-dark(#f3ecfe, #1e1733);
-  --accent-ink: light-dark(#4c1d95, #c4a9fb);
+  --accent-hover: #6d28d9;
+  --accent-soft: #f3ecfe;
+  --accent-ink: #4c1d95;
   --accent-on: #ffffff;
 }
 
 [data-accent="amber"] {
   --accent: #b45309;
-  --accent-hover: light-dark(#92400e, #d1701c);
-  --accent-soft: light-dark(#fdf3e2, #2a1e0d);
-  --accent-ink: light-dark(#78350f, #f0bd7a);
+  --accent-hover: #92400e;
+  --accent-soft: #fdf3e2;
+  --accent-ink: #78350f;
   --accent-on: #ffffff;
 }
 
@@ -371,24 +300,22 @@
  * hour, not an alarm. Red would shout on every screen and mean nothing by the
  * second one. Cold is enough to say "not your account" while staying calm.
  *
- * Scoped under [data-console] so none of it can leak into a coach's page, and
- * flipping with the theme like everything else.
+ * Scoped under [data-console] so none of it can leak into a coach's page.
  */
 [data-console] {
-  /* The rail, which stays dark in both themes — it is the chrome, not a page. */
+  /* The rail, which is dark — it is the chrome, not a page. */
   --console-rail: #16181d;
   --console-rail-soft: #1e2128;
   --console-rail-line: #2b2f38;
   --console-rail-ink: #e8eaee;
   --console-rail-muted: #9aa1ae;
-  /* The steel as it reads on the rail: the dark-theme value, in both themes,
-     because the rail itself never turns light. */
+  /* The steel as it reads on the dark rail. */
   --console-rail-accent: #7da3d9;
 
   /* The steel that marks this space. */
-  --console-accent: light-dark(#3f5f8f, #7da3d9);
-  --console-accent-soft: light-dark(#eaf0f9, #16202e);
-  --console-accent-ink: light-dark(#27405f, #a9c6ef);
+  --console-accent: #3f5f8f;
+  --console-accent-soft: #eaf0f9;
+  --console-accent-ink: #27405f;
 }
 
 /*
@@ -400,33 +327,33 @@
  * everything was the same kind of booking.
  */
 [data-action="calendar_booking"] {
-  --event: light-dark(#5566cc, #8b9aff);
-  --event-soft: light-dark(#eef0fb, #1a1d33);
-  --event-ink: light-dark(#38468f, #b9c3ff);
+  --event: #5566cc;
+  --event-soft: #eef0fb;
+  --event-ink: #38468f;
 }
 
 [data-action="direct_reservation"] {
-  --event: light-dark(#2f9182, #4fc4b0);
-  --event-soft: light-dark(#e8f4f1, #102a26);
-  --event-ink: light-dark(#1f6b5c, #8fded0);
+  --event: #2f9182;
+  --event-soft: #e8f4f1;
+  --event-ink: #1f6b5c;
 }
 
 [data-action="contact_request"] {
-  --event: light-dark(#a3843c, #d0ac5c);
-  --event-soft: light-dark(#f7f1e5, #2a2312);
-  --event-ink: light-dark(#6d5526, #e5cf99);
+  --event: #a3843c;
+  --event-soft: #f7f1e5;
+  --event-ink: #6d5526;
 }
 
 [data-action="quote_request"] {
-  --event: light-dark(#8c5a9c, #c08fd0);
-  --event-soft: light-dark(#f4eef6, #291b2d);
-  --event-ink: light-dark(#5f3a6b, #dcb8e6);
+  --event: #8c5a9c;
+  --event-soft: #f4eef6;
+  --event-ink: #5f3a6b;
 }
 
 [data-action="whatsapp_direct"] {
-  --event: light-dark(#4f8a6b, #76c197);
-  --event-soft: light-dark(#ebf3ee, #13261b);
-  --event-ink: light-dark(#356049, #a8dcbe);
+  --event: #4f8a6b;
+  --event-soft: #ebf3ee;
+  --event-ink: #356049;
 }
 
 * {
@@ -498,8 +425,7 @@ body {
     border-bottom: 1px solid var(--color-line);
   }
 
-  /* Subtle dotted grid used behind hero / section backgrounds. Ink dots on
-     paper, chalk dots at night — a fixed ink dot simply vanishes in the dark. */
+  /* Subtle dotted grid used behind hero / section backgrounds. */
   .bg-grid {
     background-image: radial-gradient(circle at 1px 1px, var(--color-grid-dot) 1px, transparent 0);
     background-size: 28px 28px;
@@ -606,36 +532,6 @@ body {
       animation: glyph-pulse 1.4s ease-in-out infinite;
       animation-delay: var(--pulse-delay);
     }
-  }
-}
-
-/*
- * The moment of the switch itself.
- *
- * Every colour in the product is a token, so flipping `color-scheme` repaints
- * the whole page in one frame — correct, but a hard cut from paper to night is
- * a slap. This class is put on <html> for the length of the swap and taken off
- * again, so the cross-fade costs nothing at any other time: a blanket
- * `transition: background-color` on every element would also slow down every
- * hover, every pressed chip and every focus ring for the rest of the session.
- *
- * Colour only, never geometry. And it is inside `no-preference`, so a reader
- * who asked for less animation gets the new theme immediately: the swap is
- * something they just asked for, so arriving at it at once is not a surprise.
- */
-@media (prefers-reduced-motion: no-preference) {
-  html.theme-switching,
-  html.theme-switching *,
-  html.theme-switching *::before,
-  html.theme-switching *::after {
-    transition:
-      background-color 200ms ease,
-      border-color 200ms ease,
-      color 200ms ease,
-      fill 200ms ease,
-      stroke 200ms ease,
-      box-shadow 200ms ease !important;
-    transition-delay: 0ms !important;
   }
 }
 

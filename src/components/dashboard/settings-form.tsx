@@ -11,7 +11,6 @@ import { Field, Input, NativeSelect } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
 import { ScaleSlider } from "@/components/ui/slider";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
-import { ThemeChoice } from "@/components/dashboard/theme-choice";
 import { notify } from "@/lib/notify";
 import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
@@ -210,19 +209,6 @@ export function SettingsForm({
             checked={notifyBookings}
             onCheckedChange={setNotifyBookings}
           />
-        </div>
-      </Card>
-
-      {/*
-       * Its own card, and no Save button, because it is the only setting on
-       * this page that does not belong to the account. It is stored per device
-       * and it takes effect on the tap; sitting it inside a card whose other
-       * fields wait for a submit would promise the opposite of what happens.
-       */}
-      <Card className="p-5 sm:p-7">
-        <CardHeader title={t("appearance.title")} description={t("appearance.hint")} />
-        <div className="mt-5">
-          <ThemeChoice />
         </div>
       </Card>
 

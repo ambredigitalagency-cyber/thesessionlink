@@ -124,9 +124,7 @@ export function Toggle({
         className,
       )}
     >
-      {/* The knob is `ink-inverse`, not white: the track it rides on is built
-          from ink, so in the dark theme a white knob would disappear into a
-          near-white "on" track. Inverting with the track keeps the pair. */}
+      {/* The knob is `ink-inverse`, the pair of the ink-built track. */}
       <Switch.Thumb className="bg-ink-inverse block size-5 translate-x-0.5 rounded-full shadow-sm transition-transform duration-200 ease-[var(--ease-out-expo)] will-change-transform data-[state=checked]:translate-x-[22px]" />
     </Switch.Root>
   );
