@@ -150,7 +150,16 @@ const localizedTextSchema = z.record(z.string(), z.string());
  * own, localized format and are converted into offer fields only when the pro
  * picks one — see fieldFromSuggestion() in ./fields.
  */
-export const CATEGORY_FIELD_TYPES = ["text", "textarea", "number", "select", "images"] as const;
+export const CATEGORY_FIELD_TYPES = [
+  "text",
+  "textarea",
+  "number",
+  "select",
+  "multiselect",
+  "boolean",
+  "time",
+  "images",
+] as const;
 
 export const categoryFieldSchema = z.object({
   key: z.string(),
@@ -159,15 +168,28 @@ export const categoryFieldSchema = z.object({
   placeholder: localizedTextSchema.optional(),
   unit: z.string().optional(),
   options: z.array(z.object({ value: z.string(), label: localizedTextSchema })).optional(),
+  /** For `time`: a time of day range (the default) or a duration. */
+  mode: z.enum(["range", "duration"]).optional(),
   /** Not suggested for these action types (e.g. duration is already in action_config). */
   skip_for_actions: z.array(actionTypeSchema).optional(),
 });
 
 export type CategoryField = z.infer<typeof categoryFieldSchema>;
 
+/** At most four: a template is a head start, not a form to wade through. */
+export const TEMPLATE_MAX_FIELDS = 4;
+
 export const categoryConfigSchema = z.object({
   default_action_type: actionTypeSchema.default("contact_request"),
   suggested_fields: z.array(categoryFieldSchema).default([]),
+  /**
+   * The details this activity usually shows for each action type — a fitness
+   * class you reserve a spot in is described differently from a one-to-one
+   * session you book on the calendar. Offered ticked when an offer is built.
+   */
+  templates: z
+    .partialRecord(actionTypeSchema, z.array(categoryFieldSchema).max(TEMPLATE_MAX_FIELDS))
+    .default({}),
 });
 
 export type CategoryConfig = z.infer<typeof categoryConfigSchema>;

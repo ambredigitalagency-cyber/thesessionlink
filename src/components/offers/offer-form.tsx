@@ -14,7 +14,14 @@ import { ToggleRow } from "@/components/ui/primitives";
 import { ScaleSlider } from "@/components/ui/slider";
 import { StepProgress } from "@/components/ui/step-progress";
 import { notify } from "@/lib/notify";
-import { offerFieldsSchema, type OfferField } from "@/lib/offers/fields";
+import {
+  FIELD_LIMITS,
+  fieldFromSuggestion,
+  isFieldFilled,
+  offerFieldsSchema,
+  suggestionLabel,
+  type OfferField,
+} from "@/lib/offers/fields";
 import {
   defaultActionConfig,
   parseActionConfig,
@@ -29,6 +36,7 @@ import { ActionConfigFields } from "./action-config-fields";
 import { ActionTypePicker } from "./action-type-picker";
 import { CustomFieldsEditor } from "./custom-fields-editor";
 import { OfferReview, type ReviewDraft } from "./offer-review";
+import { TemplateChecklist } from "./template-checklist";
 
 export type OfferInitialValues = {
   id: string;
@@ -103,6 +111,11 @@ type Props = {
    */
   layout: "wizard" | "sections";
   categoryFields: CategoryField[];
+  /**
+   * The activity's templates, one per action type, offered ticked on the
+   * details question of a new offer. Absent when editing.
+   */
+  template?: { category: string; fields: Partial<Record<ActionType, CategoryField[]>> };
   suggestedActionType?: ActionType | null;
   currency: string;
   locale: string;
@@ -139,6 +152,7 @@ export function OfferForm({
   mode,
   layout,
   categoryFields,
+  template,
   suggestedActionType,
   currency,
   locale,
@@ -154,6 +168,7 @@ export function OfferForm({
   photosEditable = true,
 }: Props) {
   const t = useTranslations("offers.form");
+  const tAction = useTranslations("offers.actions");
   const tError = useTranslations("errors");
 
   const startingActionType =
@@ -175,6 +190,15 @@ export function OfferForm({
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [actionType, setActionType] = useState<ActionType>(startingActionType);
   const [fields, setFields] = useState<OfferField[]>(initial?.custom_fields ?? []);
+  /**
+   * The template last laid into the offer: for which action, and which field
+   * each of its suggestions became. Tracked by id rather than by label so a
+   * coach renaming a ticked field does not untick it.
+   */
+  const [applied, setApplied] = useState<{
+    action: ActionType;
+    ids: Record<string, string>;
+  } | null>(null);
 
   // Keep per-type settings around so switching back and forth is not destructive.
   const [configs, setConfigs] = useState<Partial<Record<ActionType, AnyActionConfig>>>(() => ({
@@ -263,7 +287,74 @@ export function OfferForm({
     });
   }
 
+  const templateFields = template?.fields[actionType] ?? [];
+  const templateChecked = useMemo(() => {
+    const present = new Set(fields.map((field) => field.id));
+    return new Set(
+      Object.entries(applied?.action === actionType ? applied.ids : {})
+        .filter(([, id]) => present.has(id))
+        .map(([key]) => key),
+    );
+  }, [applied, actionType, fields]);
+
+  /**
+   * Lays the template of the chosen action into the offer, ticked, the first
+   * time the details question is reached for that action. Coming back with
+   * another action swaps it: what the previous template added and nobody
+   * filled in leaves with it; anything filled in, or added by hand, stays.
+   */
+  function applyTemplate() {
+    if (!template || layout !== "wizard" || applied?.action === actionType) return;
+    const stale = new Set(Object.values(applied?.ids ?? {}));
+    const kept = fields.filter((field) => !(stale.has(field.id) && !isFieldFilled(field)));
+    const byLabel = new Map(
+      kept.map((field) => [field.definition.label.trim().toLocaleLowerCase(), field.id]),
+    );
+    const ids: Record<string, string> = {};
+    const added: OfferField[] = [];
+    for (const suggestion of templateFields) {
+      const existing = byLabel.get(suggestionLabel(suggestion, locale));
+      if (existing) {
+        ids[suggestion.key] = existing;
+        continue;
+      }
+      if (kept.length + added.length >= FIELD_LIMITS.fields) break;
+      const field = fieldFromSuggestion(suggestion, locale);
+      ids[suggestion.key] = field.id;
+      added.push(field);
+    }
+    setFields([...kept, ...added]);
+    setApplied({ action: actionType, ids });
+  }
+
+  /** Ticking puts the field back where the template has it; unticking takes it out. */
+  function toggleTemplateField(suggestion: CategoryField) {
+    const id = applied?.ids[suggestion.key];
+    if (id && fields.some((field) => field.id === id)) {
+      changeFields(fields.filter((field) => field.id !== id));
+      return;
+    }
+    if (fields.length >= FIELD_LIMITS.fields) return;
+    const field = fieldFromSuggestion(suggestion, locale);
+    const order = templateFields.map((item) => item.key);
+    const after = new Set(order.slice(order.indexOf(suggestion.key) + 1));
+    const laterIds = new Set(
+      Object.entries(applied?.ids ?? {})
+        .filter(([key]) => after.has(key))
+        .map(([, fieldId]) => fieldId),
+    );
+    const at = fields.findIndex((item) => laterIds.has(item.id));
+    const next = [...fields];
+    next.splice(at === -1 ? fields.length : at, 0, field);
+    changeFields(next);
+    setApplied({
+      action: actionType,
+      ids: { ...(applied?.ids ?? {}), [suggestion.key]: field.id },
+    });
+  }
+
   function goTo(target: OfferPhase) {
+    if (target === "details") applyTemplate();
     setDirection(PHASES.indexOf(target) >= PHASES.indexOf(phase) ? 1 : -1);
     setPhase(target);
     // Move focus with the question, so keyboard and screen reader users follow.
@@ -281,7 +372,10 @@ export function OfferForm({
 
   /** Leaves an optional screen as it is. Details added and then abandoned are dropped. */
   function skip() {
-    if (phase === "details") setFields(initial?.custom_fields ?? []);
+    if (phase === "details") {
+      setFields(initial?.custom_fields ?? []);
+      setApplied(null);
+    }
     goTo(PHASES[PHASES.indexOf(phase) + 1]);
   }
 
@@ -439,11 +533,23 @@ export function OfferForm({
     />
   );
 
+  // The template's own suggestions are ticked or unticked above; offering
+  // them again among the ideas would list the same field twice.
+  const templateLabels = new Set(
+    templateFields.map((suggestion) => suggestionLabel(suggestion, locale)),
+  );
+
   const details = (
     <CustomFieldsEditor
       fields={fields}
       onChange={changeFields}
-      suggestions={categoryFields}
+      suggestions={
+        layout === "wizard" && template
+          ? categoryFields.filter(
+              (suggestion) => !templateLabels.has(suggestionLabel(suggestion, locale)),
+            )
+          : categoryFields
+      }
       actionType={actionType}
       locale={locale}
       errors={errors}
@@ -586,7 +692,20 @@ export function OfferForm({
         ) : null}
 
         {phase === "settings" ? <PhaseField>{settingsSection}</PhaseField> : null}
-        {phase === "details" ? details : null}
+        {phase === "details" ? (
+          <div className="space-y-6">
+            {template && templateFields.length > 0 ? (
+              <TemplateChecklist
+                eyebrow={`${template.category} · ${tAction(`${actionType}.label`)}`}
+                suggestions={templateFields}
+                checked={templateChecked}
+                locale={locale}
+                onToggle={toggleTemplateField}
+              />
+            ) : null}
+            {details}
+          </div>
+        ) : null}
         {phase === "photos" ? photosSection : null}
         {phase === "review" ? (
           <OfferReview draft={draft} currency={currency} locale={locale} onEdit={goTo} />

@@ -326,11 +326,40 @@ export function fieldFromSuggestion(suggestion: CategoryField, locale: string): 
         },
         value: null,
       };
+    case "multiselect":
+      return {
+        id,
+        type: "multiselect",
+        definition: {
+          label,
+          options: (suggestion.options ?? []).map((option) => ({
+            id: option.value,
+            label: localized(option.label, locale, option.value),
+          })),
+        },
+        value: [],
+      };
+    case "boolean":
+      return { id, type: "boolean", definition: { label }, value: null };
+    case "time":
+      return {
+        id,
+        type: "time",
+        definition: { label, mode: suggestion.mode ?? "range" },
+        value: null,
+      };
     case "images":
       return { id, type: "images", definition: { label }, value: [] };
     default:
       return { id, type: "text", definition: { label, multiline: false }, value: null };
   }
+}
+
+/** Same label, same field: how a suggestion recognises one already added. */
+export function suggestionLabel(suggestion: CategoryField, locale: string): string {
+  return localized(suggestion.label, locale, suggestion.key)
+    .slice(0, FIELD_LIMITS.label)
+    .toLocaleLowerCase();
 }
 
 /** Category suggestions relevant to this action type and not already added. */

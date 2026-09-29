@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
 import { requireOnboardedProfile } from "@/lib/auth";
 import { gatewayStates } from "@/lib/payments/accounts";
-import { parseCategoryConfig } from "@/lib/offers/schema";
+import { localized, parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function NewOfferPage() {
@@ -17,7 +17,7 @@ export default async function NewOfferPage() {
   const { data: category } = profile.category_id
     ? await supabase
         .from("activity_categories")
-        .select("config")
+        .select("name, config")
         .eq("id", profile.category_id)
         .maybeSingle()
     : { data: null };
@@ -41,6 +41,14 @@ export default async function NewOfferPage() {
         <DashboardOfferForm
           mode="create"
           categoryFields={config.suggested_fields}
+          template={
+            category
+              ? {
+                  category: localized(category.name, profile.locale, ""),
+                  fields: config.templates,
+                }
+              : undefined
+          }
           suggestedActionType={config.default_action_type}
           currency={profile.currency}
           locale={profile.locale}

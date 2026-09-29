@@ -1545,7 +1545,12 @@
       "unitHint": "Affichée après le nombre.",
       "unitPlaceholder": "m², pers., km…",
       "value": "Valeur affichée",
-      "valueHint": "Laissée vide, le champ n'apparaît pas sur votre page."
+      "valueHint": "Laissée vide, le champ n'apparaît pas sur votre page.",
+      "template": {
+        "title": "Détails suggérés",
+        "hint": "Cochés d’office. Décochez ce qui ne vous concerne pas, puis remplissez le reste juste en dessous.",
+        "kept": "{count, plural, =0 {Aucun retenu} one {# retenu} other {# retenus}} sur {total}"
+      }
     },
     "form": {
       "actionType": "Ce qui se passe quand un client clique",

@@ -1545,7 +1545,12 @@
       "unitHint": "Shown after the number.",
       "unitPlaceholder": "m², people, km…",
       "value": "Value shown",
-      "valueHint": "Left empty, the field does not appear on your page."
+      "valueHint": "Left empty, the field does not appear on your page.",
+      "template": {
+        "title": "Suggested details",
+        "hint": "Ticked for you. Untick what doesn’t apply, then fill in the rest just below.",
+        "kept": "{count} of {total} kept"
+      }
     },
     "form": {
       "actionType": "What happens when a client clicks",
