@@ -8,6 +8,7 @@ import { adminUpdateOffer } from "@/actions/admin";
 import { AdminOfferEditor } from "@/components/admin/admin-offer-editor";
 import { adminDb, requireAdmin } from "@/lib/admin/access";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
+import { parseAddons } from "@/lib/offers/addons";
 import { parseOfferFields } from "@/lib/offers/fields";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 
@@ -101,6 +102,7 @@ export default async function AdminOfferPage({
               action_type: offer.action_type,
               action_config: offer.action_config,
               custom_fields: parseOfferFields(offer.custom_fields),
+              addons: parseAddons(offer.addons),
               is_active: offer.is_active,
             }}
           />

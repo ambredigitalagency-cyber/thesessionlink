@@ -38,6 +38,10 @@ export type OnlinePayment = z.infer<typeof onlinePaymentSchema>;
 
 export const calendarBookingConfigSchema = z.object({
   duration_minutes: z.number().int().min(5).max(600).default(60),
+  /** Seats per slot: 1 for a one-to-one session, more for a group class. */
+  capacity: z.number().int().min(1).max(100).default(1),
+  /** Lets a client book a weekly, fortnightly or monthly series in one go. */
+  allow_recurring: z.boolean().default(false),
   buffer_minutes: z.number().int().min(0).max(240).default(0),
   /** Step between two slot starts. Defaults to the duration. */
   slot_interval_minutes: z.number().int().min(5).max(240).nullable().default(null),

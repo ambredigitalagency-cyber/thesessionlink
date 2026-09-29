@@ -41,6 +41,9 @@ export const CAPACITY_STOPS: (number | null)[] = [
 ];
 
 /** direct_reservation.max_quantity_per_booking — 1 to 50. */
+/** action_config.capacity of a calendar offer: seats per slot, 1 = one-to-one. */
+export const SEAT_STOPS = [...steps(1, 20, 1), 25, 30, 40, 50, 75, 100];
+
 export const QUANTITY_STOPS = [...steps(1, 20, 1), 25, 30, 40, 50];
 
 /** profiles.reminder_hours_before — 1 to 168. */

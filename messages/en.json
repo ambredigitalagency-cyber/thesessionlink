@@ -415,7 +415,8 @@
         "client": "Client",
         "email": "Email",
         "message": "Their message",
-        "phone": "Phone"
+        "phone": "Phone",
+        "addons": "Add-ons"
       },
       "internalNotes": "Private notes",
       "internalNotesHint": "Only you can see this. Saved when you click outside.",
@@ -727,7 +728,7 @@
       "paymentsSoon": "Bookings never depend on a payment: clients book, you get paid the way you already do. Online payments will plug in later without changing your offers.",
       "paymentsTitle": "Payments",
       "phone": "Phone",
-      "preferencesHint": "Language, currency, timezone and reminders.",
+      "preferencesHint": "Language, currency, time zone and notifications.",
       "preferencesTitle": "Preferences",
       "reminder": "Send reminders",
       "reminderHint": "Only for offers booked on a time slot.",
@@ -743,7 +744,28 @@
       "timezone": "Timezone",
       "timezoneHint": "All your slots and bookings are computed in this timezone.",
       "title": "Settings",
-      "whatsapp": "WhatsApp number"
+      "whatsapp": "WhatsApp number",
+      "remindersTitle": "Reminders",
+      "remindersHint": "The email your clients get before a session booked on a time slot.",
+      "reminderMessage": "Your message",
+      "reminderMessageHint": "What to bring, where to park, the door code… Shown in every reminder.",
+      "reminderMessagePlaceholder": "Hi {client}, remember to bring a towel and a bottle of water. See you {time}!",
+      "reminderInsert": "Insert",
+      "reminderTokens": {
+        "client": "Client’s first name",
+        "offer": "Offer",
+        "time": "Date and time"
+      },
+      "reminderPreview": "Email preview",
+      "reminderPreviewSent": "Sent {delay} the session",
+      "reminderPreviewEmpty": "Without a message, the reminder only holds the booking details.",
+      "reminderSample": {
+        "client": "Julie",
+        "offer": "One-to-one session",
+        "time": "Tuesday 14 October at 6:00 PM"
+      },
+      "reminderCount": "{count} / {max}",
+      "reminderFrom": "A word from {pro}"
     },
     "stats": {
       "emptyBody": "Your statistics show up with your first booking. Share your link to get things going.",
@@ -889,7 +911,9 @@
       "quantity": "Quantity",
       "requestedDate": "Requested date",
       "time": "Time",
-      "when": "When"
+      "when": "When",
+      "addons": "Add-ons",
+      "series": "{count, plural, one {One session} other {Series of # sessions}}"
     },
     "magicLink": {
       "body": "Click the button below to sign in. The link expires in one hour and works only once.",
@@ -916,7 +940,8 @@
       "heading": "See you soon",
       "intro": "A quick reminder about your session with {pro}.",
       "note": "If you cannot make it, cancelling early frees the slot for someone else.",
-      "subject": "Reminder: {offer}"
+      "subject": "Reminder: {offer}",
+      "messageLabel": "A word from {pro}"
     },
     "statusUpdate": {
       "cancelled": {
@@ -935,6 +960,15 @@
         "preview": "{pro} confirmed your booking",
         "subject": "Confirmed: {offer}"
       }
+    },
+    "waitlist": {
+      "subject": "A place has opened up: {offer}",
+      "preview": "The slot you were waiting for with {pro} is free.",
+      "heading": "A place has opened up",
+      "intro": "You were on {pro}’s waitlist: the slot is yours if you want it.",
+      "cta": "Book this place",
+      "note": "It is held for you until {until}. After that, it goes to the next person.",
+      "footer": "Sent on behalf of {pro} via TheSessionLink"
     }
   },
   "errorPage": {
@@ -993,7 +1027,15 @@
     "invalid_password": "Wrong password.",
     "impersonation_needs_account": "Sign in with an admin account to look into a coach account.",
     "already_subscribed": "You are already subscribed.",
-    "billing_unavailable": "Online subscription is not available right now."
+    "billing_unavailable": "Online subscription is not available right now.",
+    "addon_label_required": "Give the add-on a name.",
+    "recurring_unavailable": "This offer cannot be booked as a series.",
+    "recurring_pay_on_site": "A series is settled with the professional directly: choose to pay on site.",
+    "waitlist_gone": "This place is no longer available: it went to someone else or the time ran out.",
+    "waitlist_expired": "The time to book this place has run out; it was offered to the next person.",
+    "waitlist_claimed": "You have already booked this place.",
+    "waitlist_pay_on_page": "This session is paid online: book it directly on the professional’s page.",
+    "slot_is_free": "This slot is free: book it directly."
   },
   "landing": {
     "demo": {
@@ -1509,7 +1551,14 @@
         "paymentOn": "online payment",
         "whatsappOwn": "number {number}",
         "whatsappProfile": "profile number ({number})"
-      }
+      },
+      "seats": "Seats per slot",
+      "seatsHint": "1 for a one-to-one session. Above that, each slot becomes a group class that fills up booking after booking.",
+      "seatsSolo": "One-to-one",
+      "seatsGroup": "{count} seats",
+      "allowRecurring": "Recurring sessions",
+      "allowRecurringHint": "Clients can book weekly, every other week or monthly, up to 12 sessions at once. Every date is checked.",
+      "allowRecurringPaid": "Not available with online payment: a series is settled with you directly."
     },
     "fields": {
       "add": "Add a field",
@@ -1693,7 +1742,20 @@
       "noFields": "No custom fields",
       "noPhotos": "No photos",
       "photos": "{count, plural, one {# photo} other {# photos}}",
-      "preview": "Client preview"
+      "preview": "Client preview",
+      "addons": "Add-ons"
+    },
+    "addons": {
+      "title": "Add-ons",
+      "hint": "Extras the client can tick when booking — they add to the price.",
+      "labelPlaceholder": "E.g. Towel and shower access",
+      "label": "Add-on {number} name",
+      "price": "Add-on {number} price",
+      "remove": "Remove {label}",
+      "untitled": "this add-on",
+      "addFirst": "Offer an add-on",
+      "add": "Add an add-on",
+      "limit": "Up to {max} add-ons."
     }
   },
   "onboarding": {
@@ -1804,7 +1866,38 @@
       "successConfirmedBody": "{name} has been notified and your confirmation email is on its way.",
       "successPending": "Request sent",
       "successPendingBody": "{name} will come back to you shortly. A copy is in your inbox.",
-      "timezoneNote": "Times shown in your timezone ({timezone})."
+      "timezoneNote": "Times shown in your timezone ({timezone}).",
+      "addons": {
+        "title": "Add-ons",
+        "total": "Total"
+      },
+      "seatsLeft": "{count, plural, =0 {no seats left} one {# seat left} other {# seats left}}",
+      "full": "Full",
+      "seats": "Number of seats",
+      "recurrence": {
+        "title": "Repeat this session",
+        "frequency": {
+          "once": "Just once",
+          "weekly": "Every week",
+          "biweekly": "Every 2 weeks",
+          "monthly": "Every month"
+        },
+        "count": "Number of sessions",
+        "fewer": "One session fewer",
+        "more": "One more session",
+        "available": "free",
+        "unavailable": "already taken",
+        "allFree": "{count, plural, one {# session is free} other {All # sessions are free}} — they will all be booked.",
+        "someTaken": "{free} of {total} sessions are free: only those will be booked.",
+        "booked": "{count, plural, one {# session booked} other {# sessions booked}} — each has its own link to cancel."
+      },
+      "waitlistSlot": "{time}, taken — join the waitlist",
+      "waitlistShort": "waitlist",
+      "legendWaitlist": "Taken: waitlist open",
+      "waitlistExplain": "This slot is taken. Leave your name: if a place opens up, {name} will offer it to you first, by email.",
+      "submitWaitlist": "Tell me if a place opens up",
+      "waitlistJoined": "You’re on the waitlist",
+      "waitlistJoinedBody": "If a place opens up, you’ll get an email and it will be held for you for a while. Nothing to do until then."
     },
     "closedDefault": "I am not taking new bookings at the moment. Feel free to reach out and I'll let you know when I reopen.",
     "closedTitle": "Bookings are paused",
@@ -1867,5 +1960,15 @@
     "qrTitle": "Your QR code",
     "share": "Share",
     "shareText": "Book with {name}:"
+  },
+  "waitlist": {
+    "title": "A place has opened up",
+    "heldUntil": "Held for you until {time}",
+    "claim": "Book this place",
+    "claimHint": "One click and it’s yours. Otherwise it goes to the next person.",
+    "bookedConfirmed": "You’re booked!",
+    "bookedPending": "Request sent: the professional will confirm.",
+    "seeBooking": "See my booking",
+    "backToPage": "See other slots"
   }
 }

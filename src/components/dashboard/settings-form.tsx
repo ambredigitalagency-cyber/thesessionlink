@@ -9,12 +9,11 @@ import { deleteAccount, updateSettings } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect } from "@/components/ui/field";
 import { Modal } from "@/components/ui/overlays";
-import { ScaleSlider } from "@/components/ui/slider";
 import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
+import { ReminderSettings } from "@/components/dashboard/reminder-settings";
 import { notify } from "@/lib/notify";
 import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
-import { REMINDER_STOPS } from "@/lib/scales";
 import type { Tables } from "@/lib/supabase/database.types";
 
 const CURRENCIES = ["EUR", "USD", "GBP", "CHF", "CAD", "AUD", "MAD", "XOF"];
@@ -56,6 +55,7 @@ export function SettingsForm({
   const [timezone, setTimezone] = useState(profile.timezone);
   const [currency, setCurrency] = useState(profile.currency);
   const [reminderHours, setReminderHours] = useState(profile.reminder_hours_before);
+  const [reminderMessage, setReminderMessage] = useState(profile.reminder_message ?? "");
   const [notifyBookings, setNotifyBookings] = useState(profile.notify_new_bookings);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -76,6 +76,7 @@ export function SettingsForm({
         timezone,
         currency,
         reminder_hours_before: reminderHours,
+        reminder_message: reminderMessage.trim() || null,
         notify_new_bookings: notifyBookings,
       });
 
@@ -186,20 +187,6 @@ export function SettingsForm({
               ))}
             </NativeSelect>
           </Field>
-
-          <Field label={t("reminder")} hint={t("reminderHint")}>
-            <ScaleSlider
-              label={t("reminder")}
-              stops={REMINDER_STOPS}
-              value={reminderHours}
-              onChange={setReminderHours}
-              format={(hours) =>
-                hours >= 48 && hours % 24 === 0
-                  ? t("reminderOptionDays", { count: hours / 24 })
-                  : t("reminderOption", { count: hours })
-              }
-            />
-          </Field>
         </div>
 
         <div className="divide-line border-line mt-4 divide-y border-t">
@@ -208,6 +195,20 @@ export function SettingsForm({
             description={t("notifyHint")}
             checked={notifyBookings}
             onCheckedChange={setNotifyBookings}
+          />
+        </div>
+      </Card>
+
+      <Card className="p-5 sm:p-7">
+        <CardHeader title={t("remindersTitle")} description={t("remindersHint")} />
+        <div className="mt-5">
+          <ReminderSettings
+            hours={reminderHours}
+            onHours={setReminderHours}
+            message={reminderMessage}
+            onMessage={setReminderMessage}
+            proName={profile.display_name}
+            error={errorFor("reminder_message")}
           />
         </div>
       </Card>

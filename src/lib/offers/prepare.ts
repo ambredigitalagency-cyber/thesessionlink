@@ -1,3 +1,4 @@
+import { acceptsAddons } from "@/lib/offers/addons";
 import { parseActionConfig } from "@/lib/offers/schema";
 import { offerIsPayable } from "@/lib/payments/amount";
 import { fieldErrorsFrom, offerInputSchema } from "@/lib/validation";
@@ -18,7 +19,7 @@ export function prepareOffer(input: unknown) {
     };
   }
 
-  const { action_config, price, price_type, photos, ...rest } = parsed.data;
+  const { action_config, price, price_type, photos, addons, ...rest } = parsed.data;
 
   // "free" and "on_request" never carry an amount.
   const amount = price_type === "free" || price_type === "on_request" ? null : price;
@@ -44,6 +45,8 @@ export function prepareOffer(input: unknown) {
       price_type,
       price: amount,
       action_config: config,
+      // Extras only mean something where there is a price to add them to.
+      addons: acceptsAddons(parsed.data.action_type) ? addons : [],
     },
   };
 }

@@ -2,7 +2,7 @@
 
 import { cva, type VariantProps } from "class-variance-authority";
 import { Avatar, Switch, Tabs } from "radix-ui";
-import type { ComponentProps, ReactNode } from "react";
+import { useId, type ComponentProps, type ReactNode } from "react";
 
 import { cn, initials } from "@/lib/utils";
 
@@ -105,12 +105,17 @@ export function Toggle({
   onCheckedChange,
   disabled,
   label,
+  labelledBy,
+  describedBy,
   className,
 }: {
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   disabled?: boolean;
   label?: string;
+  /** Ids of visible text naming the switch, when there is some. */
+  labelledBy?: string;
+  describedBy?: string;
   className?: string;
 }) {
   return (
@@ -119,6 +124,8 @@ export function Toggle({
       onCheckedChange={onCheckedChange}
       disabled={disabled}
       aria-label={label}
+      aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
       className={cn(
         "bg-ink/20 data-[state=checked]:bg-ink relative h-6 w-11 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50",
         className,
@@ -135,15 +142,26 @@ export function ToggleRow({
   description,
   ...toggle
 }: ComponentProps<typeof Toggle> & { title: ReactNode; description?: ReactNode }) {
+  // The switch is named by the title next to it and described by the line
+  // under it; without these it was announced as a bare, nameless "switch".
+  const id = useId();
   return (
     <div className="flex items-start justify-between gap-6 py-4">
       <div className="space-y-1">
-        <p className="text-ink text-[15px] font-medium">{title}</p>
+        <p id={`${id}-title`} className="text-ink text-[15px] font-medium">
+          {title}
+        </p>
         {description ? (
-          <p className="text-ink-muted text-[13px] leading-relaxed">{description}</p>
+          <p id={`${id}-hint`} className="text-ink-muted text-[13px] leading-relaxed">
+            {description}
+          </p>
         ) : null}
       </div>
-      <Toggle {...toggle} />
+      <Toggle
+        labelledBy={toggle.label ? undefined : `${id}-title`}
+        describedBy={description ? `${id}-hint` : undefined}
+        {...toggle}
+      />
     </div>
   );
 }

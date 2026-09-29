@@ -7,6 +7,7 @@ import {
   Mail,
   MessageSquare,
   Phone,
+  Sparkles,
   Trash2,
   UserRound,
   UserRoundX,
@@ -41,7 +42,8 @@ import { Modal, Sheet } from "@/components/ui/overlays";
 import { Badge, EmptyState } from "@/components/ui/primitives";
 import { Field, Textarea } from "@/components/ui/field";
 import { ACTION_ICONS, BOOKING_STATUS_TONE } from "@/lib/offers/meta";
-import { formatAmount } from "@/lib/payments/amount";
+import { parseTakenAddons } from "@/lib/offers/addons";
+import { formatAmount, toMinorUnits } from "@/lib/payments/amount";
 import type { ActionType } from "@/lib/offers/schema";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +68,8 @@ export type BookingRow = {
   payment_currency: string | null;
   internal_notes: string | null;
   details: unknown;
+  /** Extras taken, as priced at booking time. */
+  addons: unknown;
   created_at: string;
 };
 
@@ -73,11 +77,13 @@ export function BookingsView({
   bookings,
   timezone,
   locale,
+  currency,
   now,
 }: {
   bookings: BookingRow[];
   timezone: string;
   locale: string;
+  currency: string;
   /** Rendering reference time, taken on the server so SSR and hydration agree. */
   now: number;
 }) {
@@ -175,6 +181,7 @@ export function BookingsView({
         booking={open}
         timezone={timezone}
         locale={locale}
+        currency={currency}
         now={now}
         onClose={() => setOpenId(null)}
       />
@@ -304,12 +311,14 @@ function BookingSheet({
   booking,
   timezone,
   locale,
+  currency,
   now,
   onClose,
 }: {
   booking: BookingRow | null;
   timezone: string;
   locale: string;
+  currency: string;
   now: number;
   onClose: () => void;
 }) {
@@ -335,6 +344,8 @@ function BookingSheet({
 
   const when = formatWhen(booking, timezone, locale);
   const budget = (booking.details as { budget?: string } | null)?.budget;
+  const addons = parseTakenAddons(booking.addons);
+  const unit = booking.payment_currency ?? currency;
 
   // Nobody is absent from a session that has not happened yet.
   const isPast = Boolean(booking.starts_at && new Date(booking.starts_at).getTime() < now);
@@ -448,6 +459,21 @@ function BookingSheet({
           {budget ? (
             <DetailRow icon={<MessageSquare className="size-3.5" />} label={t("fields.budget")}>
               {budget}
+            </DetailRow>
+          ) : null}
+
+          {addons.length > 0 ? (
+            <DetailRow icon={<Sparkles className="size-3.5" />} label={t("fields.addons")}>
+              <span className="flex flex-wrap gap-1.5">
+                {addons.map((addon) => (
+                  <span
+                    key={addon.id}
+                    className="bg-ink/[0.05] rounded-full px-2 py-0.5 text-[12.5px]"
+                  >
+                    {addon.label} · +{formatAmount(toMinorUnits(addon.price, unit), unit, locale)}
+                  </span>
+                ))}
+              </span>
             </DetailRow>
           ) : null}
 

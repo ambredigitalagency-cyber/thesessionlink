@@ -10,6 +10,7 @@ import { clampWindow, getBookingContext, slotInputFrom } from "@/lib/public/book
 import { isSlotBookable, withoutMinimumNotice } from "@/lib/scheduling/slots";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/validation";
+import { offerFreedSlot } from "@/lib/waitlist";
 
 const notesSchema = z.string().trim().max(10000).nullish();
 
@@ -43,6 +44,8 @@ export async function updateBookingStatus(
   if (status !== "pending") {
     after(async () => {
       await sendBookingStatusUpdate({ booking, profile });
+      // A cancelled session is a place for whoever waits for it.
+      if (status === "cancelled") await offerFreedSlot(booking);
     });
   }
 
@@ -150,6 +153,9 @@ export async function rescheduleBooking(id: string, startsAt: string): Promise<A
     return { ok: false, error: "unexpected" };
   }
 
+  // The slot it left is free now.
+  after(() => offerFreedSlot(booking));
+
   revalidatePath("/dashboard", "layout");
   revalidatePath(`/${profile.slug}`);
   return { ok: true };
@@ -178,13 +184,16 @@ export async function deleteBooking(id: string): Promise<ActionResult> {
   const profile = await requireProfileForAction();
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase
+  const { data: removed, error } = await supabase
     .from("bookings")
     .delete()
     .eq("id", id)
-    .eq("profile_id", profile.id);
+    .eq("profile_id", profile.id)
+    .select("offer_id, starts_at, action_type, status")
+    .maybeSingle();
 
   if (error) return { ok: false, error: "unexpected" };
+  if (removed && removed.status !== "cancelled") after(() => offerFreedSlot(removed));
 
   revalidatePath("/dashboard", "layout");
   return { ok: true };

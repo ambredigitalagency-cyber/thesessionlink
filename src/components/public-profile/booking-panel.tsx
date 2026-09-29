@@ -1,20 +1,24 @@
 "use client";
 
-import { CalendarPlus, Check, Minus, Plus } from "lucide-react";
+import { BellRing, CalendarPlus, Check, Minus, Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
 import { createPublicBooking } from "@/actions/public-booking";
+import { joinWaitlist } from "@/actions/waitlist";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/field";
 import { onlinePaymentFor, parseActionConfig, type AskPhone } from "@/lib/offers/schema";
+import { addonsTotal, pickAddons } from "@/lib/offers/addons";
 import { chargeableAmount } from "@/lib/payments/amount";
 import { googleCalendarUrl } from "@/lib/scheduling/ics";
 import { toLocale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
+import { AddonsPicker } from "./addons-picker";
 import { PaymentChoice, type PaymentOption } from "./payment-choice";
+import { RecurrencePicker, type Recurrence } from "./recurrence-picker";
 import { SlotPicker } from "./slot-picker";
 import type { PublicOffer, PublicProfile } from "./types";
 
@@ -23,6 +27,7 @@ type Success = {
   status: "pending" | "confirmed" | "cancelled";
   startsAt: string | null;
   endsAt: string | null;
+  seriesCount?: number;
 };
 
 export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: PublicProfile }) {
@@ -31,6 +36,7 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
   const locale = toLocale(useLocale());
 
   const [slot, setSlot] = useState<string | null>(null);
+  const [slotSeats, setSlotSeats] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -39,6 +45,11 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
   const [date, setDate] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [paymentChoice, setPaymentChoice] = useState<PaymentOption | null>(null);
+  const [addonIds, setAddonIds] = useState<string[]>([]);
+  const [recurrence, setRecurrence] = useState<Recurrence>(null);
+  /** A taken slot the client asked to wait for, instead of booking one. */
+  const [waitingFor, setWaitingFor] = useState<string | null>(null);
+  const [waitlisted, setWaitlisted] = useState(false);
   const [company, setCompany] = useState(""); // honeypot
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -57,6 +68,7 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
     ? parseActionConfig("direct_reservation", offer.action_config)
     : null;
   const quoteConfig = isQuote ? parseActionConfig("quote_request", offer.action_config) : null;
+  const isGroup = (calendarConfig?.capacity ?? 1) > 1;
   const contactConfig = isContact
     ? parseActionConfig("contact_request", offer.action_config)
     : null;
@@ -77,13 +89,24 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
   // onlinePaymentFor() answers "off" whatever it is handed.
   const payableConfig = calendarConfig ?? reservationConfig;
   const paymentMode = payableConfig ? onlinePaymentFor(offer.action_type, payableConfig) : "off";
-  const amountCents = chargeableAmount(offer, profile.currency, isReservation ? quantity : 1);
+  // Tickets and seats both multiply the price.
+  const units = isReservation || isGroup ? quantity : 1;
+  const baseCents = chargeableAmount(offer, profile.currency, units);
+  // The same sum the server makes; it recomputes it from the offer anyway.
+  const amountCents =
+    baseCents === null
+      ? null
+      : baseCents + addonsTotal(pickAddons(offer.addons, addonIds), profile.currency);
 
   // Every condition has to hold: the offer asks for it, the amount is real, and
   // the coach has somewhere for the money to land.
   const showPayment =
     paymentMode !== "off" && amountCents !== null && profile.paymentProviders.length > 0;
   const paymentRequired = showPayment && paymentMode === "required";
+  // A series is settled with the coach, so it only exists where nothing is
+  // paid online.
+  const canRepeat =
+    Boolean(calendarConfig?.allow_recurring) && paymentMode === "off" && Boolean(slot);
 
   function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -94,14 +117,37 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) nextErrors.client_email = "invalid_email";
     if (askPhone === "required" && phone.trim().length < 6) nextErrors.client_phone = "required";
     if (messageRequired && message.trim().length < 5) nextErrors.message = "too_short";
-    if (isCalendar && !slot) nextErrors.slot = "slot_required";
+    if (isCalendar && !slot && !waitingFor) nextErrors.slot = "slot_required";
     if (isReservation && reservationConfig?.date_mode === "required" && !date) {
       nextErrors.requested_date = "required";
     }
-    if (showPayment && !paymentChoice) nextErrors.payment_choice = "payment_choice_required";
+    if (showPayment && !paymentChoice && !waitingFor) {
+      nextErrors.payment_choice = "payment_choice_required";
+    }
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
+
+    if (waitingFor) {
+      startTransition(async () => {
+        const result = await joinWaitlist({
+          offer_id: offer.id,
+          start: waitingFor,
+          seats: units,
+          client_name: name.trim(),
+          client_email: email.trim(),
+          client_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          locale,
+          company,
+        });
+        if (result.ok) setWaitlisted(true);
+        else {
+          setErrors(result.fieldErrors ?? {});
+          setFormError(result.error);
+        }
+      });
+      return;
+    }
 
     startTransition(async () => {
       const result = await createPublicBooking({
@@ -112,11 +158,13 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
         message: message.trim() || null,
         start: isCalendar ? slot : null,
         requested_date: (isReservation || isQuote) && date ? date : null,
-        quantity: isReservation ? quantity : 1,
+        quantity: units,
         budget: isQuote && quoteConfig?.ask_budget ? budget.trim() || null : null,
         client_timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         locale,
         payment_choice: showPayment ? paymentChoice : null,
+        addons: addonIds,
+        recurrence: canRepeat ? recurrence : null,
         company,
       });
 
@@ -137,6 +185,10 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
     return <SuccessState success={success} offer={offer} profile={profile} />;
   }
 
+  if (waitlisted && waitingFor) {
+    return <WaitlistState start={waitingFor} name={profile.display_name} />;
+  }
+
   const errorFor = (key: string) => (errors[key] ? tError(errors[key] as "unexpected") : null);
 
   return (
@@ -144,11 +196,48 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
       {isCalendar ? (
         <div className="space-y-2">
           <p className="text-ink text-[13px] font-medium">{t("pickSlot")}</p>
-          <SlotPicker offerId={offer.id} locale={locale} selected={slot} onSelect={setSlot} />
+          <SlotPicker
+            offerId={offer.id}
+            locale={locale}
+            selected={slot}
+            waitingFor={waitingFor}
+            onWaitlist={(start) => {
+              setWaitingFor(start);
+              if (start) setSlot(null);
+            }}
+            onSelect={(start, seatsLeft) => {
+              setWaitingFor(null);
+              setSlot(start);
+              setSlotSeats(seatsLeft ?? null);
+              // Never ask for more seats than the new slot has left.
+              if (seatsLeft !== undefined) setQuantity((value) => Math.min(value, seatsLeft));
+            }}
+          />
           {errors.slot ? (
             <p className="text-danger text-[13px]">{tError("slot_required")}</p>
           ) : null}
         </div>
+      ) : null}
+
+      {waitingFor ? (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-ink/[0.04] text-ink-muted rounded-[var(--radius-sm)] px-3.5 py-3 text-[13px] leading-relaxed"
+        >
+          {t("waitlistExplain", { name: profile.display_name })}
+        </motion.p>
+      ) : null}
+
+      {canRepeat && slot ? (
+        <RecurrencePicker
+          offerId={offer.id}
+          start={slot}
+          seats={units}
+          value={recurrence}
+          onChange={setRecurrence}
+          locale={locale}
+        />
       ) : null}
 
       {isReservation && reservationConfig?.date_mode !== "none" ? (
@@ -166,8 +255,9 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
         </Field>
       ) : null}
 
-      {isReservation && (reservationConfig?.max_quantity_per_booking ?? 1) > 1 ? (
-        <Field label={reservationConfig?.quantity_label || t("quantity")}>
+      {(isReservation && (reservationConfig?.max_quantity_per_booking ?? 1) > 1) ||
+      (isGroup && slot && (slotSeats ?? 0) > 1) ? (
+        <Field label={isGroup ? t("seats") : reservationConfig?.quantity_label || t("quantity")}>
           <div className="flex items-center gap-3">
             <Button
               type="button"
@@ -187,7 +277,10 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
               size="icon-sm"
               onClick={() =>
                 setQuantity((value) =>
-                  Math.min(reservationConfig?.max_quantity_per_booking ?? 1, value + 1),
+                  Math.min(
+                    isGroup ? (slotSeats ?? 1) : (reservationConfig?.max_quantity_per_booking ?? 1),
+                    value + 1,
+                  ),
                 )
               }
               aria-label={t("increase")}
@@ -207,6 +300,22 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
             onChange={(event) => setDate(event.target.value)}
           />
         </Field>
+      ) : null}
+
+      {offer.addons.length > 0 && !waitingFor ? (
+        <AddonsPicker
+          addons={offer.addons}
+          selected={addonIds}
+          onToggle={(id) =>
+            setAddonIds((current) =>
+              current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+            )
+          }
+          basePrice={offer.price_type === "fixed" ? offer.price : null}
+          quantity={units}
+          currency={profile.currency}
+          locale={locale}
+        />
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -284,7 +393,7 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
         </label>
       </div>
 
-      {showPayment ? (
+      {showPayment && !waitingFor ? (
         <PaymentChoice
           amountCents={amountCents}
           currency={profile.currency}
@@ -313,15 +422,17 @@ export function BookingPanel({ offer, profile }: { offer: PublicOffer; profile: 
       ) : null}
 
       <Button type="submit" variant="accent" size="lg" block loading={pending}>
-        {showPayment && paymentChoice && paymentChoice !== "on_site"
-          ? t("submitPay")
-          : isCalendar
-            ? t("submitBooking")
-            : isReservation
-              ? t("submitReservation")
-              : isQuote
-                ? t("submitQuote")
-                : t("submitMessage")}
+        {waitingFor
+          ? t("submitWaitlist")
+          : showPayment && paymentChoice && paymentChoice !== "on_site"
+            ? t("submitPay")
+            : isCalendar
+              ? t("submitBooking")
+              : isReservation
+                ? t("submitReservation")
+                : isQuote
+                  ? t("submitQuote")
+                  : t("submitMessage")}
       </Button>
 
       <p className="text-ink-subtle text-center text-[12px]">{t("confirmationNote")}</p>
@@ -386,6 +497,12 @@ function SuccessState({
         </p>
       ) : null}
 
+      {(success.seriesCount ?? 1) > 1 ? (
+        <p className="mt-2 text-[13.5px] font-medium text-[var(--accent-ink)]">
+          {t("recurrence.booked", { count: success.seriesCount ?? 1 })}
+        </p>
+      ) : null}
+
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         {success.startsAt && success.endsAt ? (
           <Button asChild variant="secondary" size="sm">
@@ -410,6 +527,42 @@ function SuccessState({
           <a href={`/booking/${success.manageToken}`}>{t("manageBooking")}</a>
         </Button>
       </div>
+    </motion.div>
+  );
+}
+
+function WaitlistState({ start, name }: { start: string; name: string }) {
+  const t = useTranslations("publicProfile.booking");
+  const locale = useLocale();
+  const when = new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(new Date(start));
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-col items-center py-6 text-center"
+    >
+      <motion.span
+        initial={{ scale: 0.6, opacity: 0, rotate: -12 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ delay: 0.05, type: "spring", stiffness: 380, damping: 14 }}
+        className="bg-ink/5 text-ink flex size-14 items-center justify-center rounded-full"
+      >
+        <BellRing className="size-6" />
+      </motion.span>
+      <h3 className="text-ink mt-4 text-[20px] font-semibold tracking-[-0.02em]">
+        {t("waitlistJoined")}
+      </h3>
+      <p className="text-ink-muted mt-1.5 max-w-sm text-[14.5px] leading-relaxed">
+        {t("waitlistJoinedBody", { name })}
+      </p>
+      <p className="bg-ink/[0.04] text-ink mt-4 rounded-[var(--radius-sm)] px-4 py-2.5 text-[14px] font-medium">
+        {when}
+      </p>
     </motion.div>
   );
 }

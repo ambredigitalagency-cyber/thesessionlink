@@ -1,17 +1,26 @@
 "use client";
 
-import { CalendarX2, ChevronRight, Loader2 } from "lucide-react";
+import { BellRing, CalendarX2, ChevronRight, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-type Slot = { start: string; end: string; status: "available" | "unavailable" };
+type Slot = {
+  start: string;
+  end: string;
+  status: "available" | "unavailable";
+  /** Group sessions only. */
+  seatsLeft?: number;
+  /** Taken by bookings: a client may queue for it. */
+  waitlist?: boolean;
+};
 
 type SlotResponse = {
   timezone: string;
   durationMinutes: number;
+  capacity?: number;
   slots: Slot[];
 };
 
@@ -60,11 +69,17 @@ export function SlotPicker({
   locale,
   selected,
   onSelect,
+  waitingFor = null,
+  onWaitlist,
 }: {
   offerId: string;
   locale: string;
   selected: string | null;
-  onSelect: (start: string | null) => void;
+  /** The slot's free seats come along for group sessions. */
+  onSelect: (start: string | null, seatsLeft?: number) => void;
+  /** The taken slot the client chose to wait for, if any. */
+  waitingFor?: string | null;
+  onWaitlist?: (start: string | null) => void;
 }) {
   const t = useTranslations("publicProfile.booking");
   const tag = locale === "fr" ? "fr-FR" : "en-US";
@@ -109,6 +124,7 @@ export function SlotPicker({
   );
 
   const openings = days.reduce((total, day) => total + day.open, 0);
+  const capacity = data?.capacity ?? 1;
 
   const lookFurther =
     weeks < 12 ? (
@@ -213,6 +229,31 @@ export function SlotPicker({
           const taken = slot.status === "unavailable";
           const active = selected === slot.start;
 
+          if (taken && slot.waitlist && onWaitlist) {
+            const waiting = waitingFor === slot.start;
+            return (
+              <button
+                key={slot.start}
+                type="button"
+                onClick={() => onWaitlist(waiting ? null : slot.start)}
+                aria-pressed={waiting}
+                aria-label={t("waitlistSlot", { time })}
+                className={cn(
+                  "rounded-[var(--radius-xs)] border px-2 py-2 text-center text-[13.5px] font-medium tabular-nums transition-colors duration-200",
+                  waiting
+                    ? "border-ink bg-ink text-ink-inverse"
+                    : "border-line-strong text-ink-subtle hover:border-ink/40 hover:text-ink border-dashed",
+                )}
+              >
+                <span className={cn(!waiting && "line-through decoration-1")}>{time}</span>
+                <span className="flex items-center justify-center gap-1 text-[10.5px] font-normal">
+                  <BellRing className="size-2.5" aria-hidden />
+                  {t("waitlistShort")}
+                </span>
+              </button>
+            );
+          }
+
           if (taken) {
             return (
               <span
@@ -222,15 +263,21 @@ export function SlotPicker({
                 className="bg-ink/[0.03] border-line text-ink-subtle cursor-not-allowed rounded-[var(--radius-xs)] border px-2 py-2.5 text-center text-[13.5px] font-medium tabular-nums line-through decoration-1"
               >
                 {time}
+                {slot.seatsLeft === 0 ? (
+                  <span className="block text-[10.5px] font-normal no-underline">{t("full")}</span>
+                ) : null}
               </span>
             );
           }
+
+          const seats = slot.seatsLeft;
+          const filled = seats !== undefined ? 1 - seats / capacity : 0;
 
           return (
             <motion.button
               key={slot.start}
               type="button"
-              onClick={() => onSelect(active ? null : slot.start)}
+              onClick={() => onSelect(active ? null : slot.start, seats)}
               aria-pressed={active}
               // Transforms are dropped under prefers-reduced-motion by
               // MotionProvider; the colour change carries the state on its own.
@@ -238,13 +285,29 @@ export function SlotPicker({
               whileTap={{ scale: 0.97 }}
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
               className={cn(
-                "rounded-[var(--radius-xs)] border px-2 py-2.5 text-[13.5px] font-medium tabular-nums transition-colors duration-200",
+                "relative overflow-hidden rounded-[var(--radius-xs)] border px-2 py-2.5 text-[13.5px] font-medium tabular-nums transition-colors duration-200",
                 active
                   ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-on)] shadow-[var(--shadow-card)]"
                   : "border-[color-mix(in_oklab,var(--accent)_35%,transparent)] bg-[var(--accent-soft)] text-[var(--accent-ink)] hover:border-[var(--accent)]",
               )}
             >
               {time}
+              {seats !== undefined ? (
+                <>
+                  <span className="block text-[10.5px] font-normal opacity-80">
+                    {t("seatsLeft", { count: seats })}
+                  </span>
+                  {/* How full the class already is, as a bar along the bottom. */}
+                  <span aria-hidden className="absolute inset-x-0 bottom-0 h-0.5 bg-current/15">
+                    <motion.span
+                      className="block h-full origin-left bg-current/60"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: filled }}
+                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </span>
+                </>
+              ) : null}
             </motion.button>
           );
         })}
@@ -266,6 +329,12 @@ export function SlotPicker({
           <span className="border-line bg-ink/[0.03] size-2.5 rounded-full border" />
           {t("legendUnavailable")}
         </span>
+        {onWaitlist && current.slots.some((slot) => slot.waitlist) ? (
+          <span className="flex items-center gap-1.5">
+            <BellRing className="size-2.5" aria-hidden />
+            {t("legendWaitlist")}
+          </span>
+        ) : null}
         <span>{t("timezoneNote", { timezone: timezone.replace(/_/g, " ") })}</span>
       </div>
     </div>

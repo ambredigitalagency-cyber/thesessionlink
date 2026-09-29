@@ -7,6 +7,7 @@ import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
 import { OfferAvailability } from "@/components/dashboard/offer-availability";
 import { requireOnboardedProfile } from "@/lib/auth";
 import { gatewayStates } from "@/lib/payments/accounts";
+import { parseAddons } from "@/lib/offers/addons";
 import { parseOfferFields } from "@/lib/offers/fields";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -74,6 +75,7 @@ export default async function EditOfferPage({ params }: PageProps<"/dashboard/of
             action_type: offer.action_type,
             action_config: offer.action_config,
             custom_fields: parseOfferFields(offer.custom_fields),
+            addons: parseAddons(offer.addons),
             is_active: offer.is_active,
           }}
         />

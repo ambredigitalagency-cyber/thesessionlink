@@ -202,6 +202,7 @@ export type Database = {
       bookings: {
         Row: {
           action_type: Database["public"]["Enums"]["action_type"];
+          addons: Json;
           cancelled_at: string | null;
           cancelled_by: string | null;
           client_email: string;
@@ -213,6 +214,7 @@ export type Database = {
           created_at: string;
           details: Json;
           ends_at: string | null;
+          group_key: string | null;
           id: string;
           internal_notes: string | null;
           locale: string;
@@ -229,12 +231,14 @@ export type Database = {
           quantity: number;
           reminder_sent_at: string | null;
           requested_date: string | null;
+          series_id: string | null;
           starts_at: string | null;
           status: Database["public"]["Enums"]["booking_status"];
           updated_at: string;
         };
         Insert: {
           action_type: Database["public"]["Enums"]["action_type"];
+          addons?: Json;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
           client_email: string;
@@ -246,6 +250,7 @@ export type Database = {
           created_at?: string;
           details?: Json;
           ends_at?: string | null;
+          group_key?: string | null;
           id?: string;
           internal_notes?: string | null;
           locale?: string;
@@ -262,12 +267,14 @@ export type Database = {
           quantity?: number;
           reminder_sent_at?: string | null;
           requested_date?: string | null;
+          series_id?: string | null;
           starts_at?: string | null;
           status?: Database["public"]["Enums"]["booking_status"];
           updated_at?: string;
         };
         Update: {
           action_type?: Database["public"]["Enums"]["action_type"];
+          addons?: Json;
           cancelled_at?: string | null;
           cancelled_by?: string | null;
           client_email?: string;
@@ -279,6 +286,7 @@ export type Database = {
           created_at?: string;
           details?: Json;
           ends_at?: string | null;
+          group_key?: string | null;
           id?: string;
           internal_notes?: string | null;
           locale?: string;
@@ -295,6 +303,7 @@ export type Database = {
           quantity?: number;
           reminder_sent_at?: string | null;
           requested_date?: string | null;
+          series_id?: string | null;
           starts_at?: string | null;
           status?: Database["public"]["Enums"]["booking_status"];
           updated_at?: string;
@@ -445,6 +454,7 @@ export type Database = {
         Row: {
           action_config: Json;
           action_type: Database["public"]["Enums"]["action_type"];
+          addons: Json;
           created_at: string;
           custom_fields: Json;
           description: string | null;
@@ -462,6 +472,7 @@ export type Database = {
         Insert: {
           action_config?: Json;
           action_type: Database["public"]["Enums"]["action_type"];
+          addons?: Json;
           created_at?: string;
           custom_fields?: Json;
           description?: string | null;
@@ -479,6 +490,7 @@ export type Database = {
         Update: {
           action_config?: Json;
           action_type?: Database["public"]["Enums"]["action_type"];
+          addons?: Json;
           created_at?: string;
           custom_fields?: Json;
           description?: string | null;
@@ -764,6 +776,7 @@ export type Database = {
           payment_method: string | null;
           phone_number: string | null;
           reminder_hours_before: number;
+          reminder_message: string | null;
           slug: string;
           social_links: Json;
           subscription_active: boolean;
@@ -805,6 +818,7 @@ export type Database = {
           payment_method?: string | null;
           phone_number?: string | null;
           reminder_hours_before?: number;
+          reminder_message?: string | null;
           slug: string;
           social_links?: Json;
           subscription_active?: boolean;
@@ -846,6 +860,7 @@ export type Database = {
           payment_method?: string | null;
           phone_number?: string | null;
           reminder_hours_before?: number;
+          reminder_message?: string | null;
           slug?: string;
           social_links?: Json;
           subscription_active?: boolean;
@@ -938,6 +953,96 @@ export type Database = {
           },
           {
             foreignKeyName: "time_off_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      waitlist_entries: {
+        Row: {
+          booking_id: string | null;
+          client_email: string;
+          client_name: string;
+          client_timezone: string | null;
+          created_at: string;
+          expires_at: string | null;
+          id: string;
+          locale: string;
+          notified_at: string | null;
+          offer_id: string;
+          profile_id: string;
+          seats: number;
+          slot_start: string;
+          status: string;
+          token: string;
+        };
+        Insert: {
+          booking_id?: string | null;
+          client_email: string;
+          client_name: string;
+          client_timezone?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          locale?: string;
+          notified_at?: string | null;
+          offer_id: string;
+          profile_id: string;
+          seats?: number;
+          slot_start: string;
+          status?: string;
+          token?: string;
+        };
+        Update: {
+          booking_id?: string | null;
+          client_email?: string;
+          client_name?: string;
+          client_timezone?: string | null;
+          created_at?: string;
+          expires_at?: string | null;
+          id?: string;
+          locale?: string;
+          notified_at?: string | null;
+          offer_id?: string;
+          profile_id?: string;
+          seats?: number;
+          slot_start?: string;
+          status?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "waitlist_entries_offer_id_fkey";
+            columns: ["offer_id"];
+            isOneToOne: false;
+            referencedRelation: "offers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "waitlist_entries_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "waitlist_entries_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "waitlist_entries_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
@@ -1175,6 +1280,7 @@ export type Database = {
           payment_method: string | null;
           phone_number: string | null;
           reminder_hours_before: number;
+          reminder_message: string | null;
           slug: string;
           social_links: Json;
           subscription_active: boolean;
@@ -1202,6 +1308,7 @@ export type Database = {
         Args: { p_limit?: number };
         Returns: {
           action_type: Database["public"]["Enums"]["action_type"];
+          addons: Json;
           cancelled_at: string | null;
           cancelled_by: string | null;
           client_email: string;
@@ -1213,6 +1320,7 @@ export type Database = {
           created_at: string;
           details: Json;
           ends_at: string | null;
+          group_key: string | null;
           id: string;
           internal_notes: string | null;
           locale: string;
@@ -1229,6 +1337,7 @@ export type Database = {
           quantity: number;
           reminder_sent_at: string | null;
           requested_date: string | null;
+          series_id: string | null;
           starts_at: string | null;
           status: Database["public"]["Enums"]["booking_status"];
           updated_at: string;

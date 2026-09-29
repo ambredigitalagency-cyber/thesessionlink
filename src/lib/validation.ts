@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { addonsSchema } from "@/lib/offers/addons";
+import { RECURRENCE_FREQUENCIES, SERIES_LIMITS } from "@/lib/scheduling/series";
 import { offerFieldsSchema } from "@/lib/offers/fields";
 import { actionTypeSchema } from "@/lib/offers/schema";
 
@@ -53,6 +55,7 @@ export const RESERVED_SLUGS = new Set([
   "email",
   "team",
   "thesessionlink",
+  "waitlist",
 ]);
 
 export const slugSchema = z
@@ -232,6 +235,7 @@ export const settingsSchema = z.object({
   timezone: z.string().min(1).max(60),
   currency: z.string().regex(/^[A-Z]{3}$/, "invalid_currency"),
   reminder_hours_before: z.number().int().min(1).max(168),
+  reminder_message: optionalText(500),
   notify_new_bookings: z.boolean(),
 });
 
@@ -259,6 +263,7 @@ export const offerInputSchema = z.object({
   action_type: actionTypeSchema,
   action_config: z.unknown().default({}),
   custom_fields: offerFieldsSchema.default([]),
+  addons: addonsSchema,
   is_active: z.boolean().default(true),
 });
 
@@ -344,6 +349,15 @@ export const publicBookingSchema = z.object({
    * the payment step and chose to settle with the coach in person.
    */
   payment_choice: z.enum(["stripe", "paypal", "on_site"]).nullish(),
+  /** A recurring series, on calendar offers that allow it. */
+  recurrence: z
+    .object({
+      frequency: z.enum(RECURRENCE_FREQUENCIES),
+      count: z.number().int().min(SERIES_LIMITS.min).max(SERIES_LIMITS.max),
+    })
+    .nullish(),
+  /** Ids of the offer's add-ons the client ticked; resolved on the server. */
+  addons: z.array(z.string().max(40)).max(6).default([]),
   /** Honeypot: humans never see this field, so anything in it is a bot. */
   company: z.string().max(200).optional(),
 });

@@ -33,10 +33,13 @@ export async function GET(request: NextRequest) {
     {
       timezone: result.timezone,
       durationMinutes: result.config.duration_minutes,
+      capacity: result.config.capacity,
       slots: result.slots.map((slot) => ({
         start: slot.start.toISOString(),
         end: slot.end.toISOString(),
         status: slot.status,
+        ...(slot.seatsLeft !== undefined ? { seatsLeft: slot.seatsLeft } : {}),
+        ...(slot.waitlist ? { waitlist: true } : {}),
       })),
     },
     { headers: { "Cache-Control": "no-store" } },

@@ -1,8 +1,10 @@
 import "server-only";
 
 import { parseActionConfig, type CalendarBookingConfig } from "@/lib/offers/schema";
+import { occurrences, type RecurrenceFrequency } from "@/lib/scheduling/series";
 import {
   generateSlotGrid,
+  isSlotBookable,
   type AvailabilityRule,
   type BusyRange,
   type GradedSlot,
@@ -70,7 +72,7 @@ export async function getBookingContext(
       .gte("ends_on", window.from.toISOString().slice(0, 10)),
     supabase
       .from("bookings")
-      .select("starts_at, ends_at")
+      .select("starts_at, ends_at, offer_id, quantity")
       .eq("profile_id", profile.id)
       .neq("status", "cancelled")
       .not("starts_at", "is", null)
@@ -88,6 +90,8 @@ export async function getBookingContext(
       .map((booking) => ({
         start: new Date(booking.starts_at as string),
         end: new Date(booking.ends_at as string),
+        offerId: booking.offer_id,
+        quantity: booking.quantity,
       })),
   };
 }
@@ -103,6 +107,7 @@ export function slotInputFrom(context: BookingContext, window: { from: Date; to:
     timeOff: context.timeOff,
     busy: context.busy,
     durationMinutes: config.duration_minutes,
+    capacity: config.capacity,
     bufferMinutes: config.buffer_minutes,
     slotIntervalMinutes: config.slot_interval_minutes,
     minNoticeHours: config.min_notice_hours,
@@ -146,4 +151,40 @@ export async function getPublicSlots(
     config: parseActionConfig("calendar_booking", context.offer.action_config),
     timezone: context.profile.timezone,
   };
+}
+
+/**
+ * Each session of a recurring request, and whether it can be booked — the
+ * same answer the booking will get, since both come from the slot engine.
+ *
+ * The window runs to the last session, past the public picker's 120 days: a
+ * monthly series reaches a year out. The coach's own horizon (max_days_ahead)
+ * still applies inside the engine, so sessions beyond it come back unavailable.
+ */
+export async function seriesAvailability(
+  offerId: string,
+  first: Date,
+  frequency: RecurrenceFrequency,
+  count: number,
+  seats = 1,
+): Promise<{ start: Date; end: Date | null; available: boolean }[] | null> {
+  const starts = occurrences(first, "UTC", frequency, count);
+  const context = await getBookingContext(offerId, {
+    from: new Date(),
+    to: new Date(starts.at(-1)!.getTime() + 24 * 3600_000),
+  });
+  if (!context || context.offer.action_type !== "calendar_booking") return null;
+
+  // Rebuilt on the coach's wall clock now that their timezone is known.
+  const local = occurrences(first, context.profile.timezone, frequency, count);
+  const input = slotInputFrom(context, {
+    from: new Date(),
+    to: new Date(local.at(-1)!.getTime() + 24 * 3600_000),
+  });
+
+  return local.map((start) => {
+    const slot = isSlotBookable(input, start);
+    const fits = slot !== null && (slot.seatsLeft === undefined || slot.seatsLeft >= seats);
+    return { start, end: slot?.end ?? null, available: fits };
+  });
 }

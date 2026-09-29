@@ -15,6 +15,7 @@ import {
 } from "@/lib/admin/impersonation";
 import type { Json } from "@/lib/supabase/database.types";
 import type { ActionResult } from "@/lib/validation";
+import { offerFreedSlot } from "@/lib/waitlist";
 
 /**
  * Everything the platform console can do to a coach's account.
@@ -482,6 +483,7 @@ export async function adminUpdateBooking(input: {
       .single();
     if (profile) after(async () => sendBookingStatusUpdate({ booking: updated, profile }));
   }
+  if (change === "cancel") after(() => offerFreedSlot(updated));
 
   await audit(admin, "edit_booking", booking.profile_id, {
     booking_id: bookingId,

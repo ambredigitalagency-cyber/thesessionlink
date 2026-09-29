@@ -9,17 +9,31 @@ import {
   sendBookingNotificationToPro,
   sendClientCancellationToPro,
 } from "@/lib/emails/send";
+import {
+  acceptsAddons,
+  addonsTotal,
+  parseAddons,
+  pickAddons,
+  type TakenAddon,
+} from "@/lib/offers/addons";
 import { onlinePaymentFor, parseActionConfig } from "@/lib/offers/schema";
 import { chargeableAmount, offerIsPayable } from "@/lib/payments/amount";
 import { payableProvidersAsAdmin } from "@/lib/payments/accounts";
 import { startCheckout } from "@/lib/payments/checkout";
 import { decideCheckout } from "@/lib/payments/decide";
 import { CHECKOUT_HOLD_MINUTES, type PaymentProvider } from "@/lib/payments/config";
-import { clampWindow, getBookingContext, slotInputFrom } from "@/lib/public/booking-context";
+import {
+  clampWindow,
+  getBookingContext,
+  seriesAvailability,
+  slotInputFrom,
+} from "@/lib/public/booking-context";
+import { RECURRENCE_FREQUENCIES, SERIES_LIMITS } from "@/lib/scheduling/series";
 import { isSlotBookable } from "@/lib/scheduling/slots";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import type { Tables, TablesInsert } from "@/lib/supabase/database.types";
 import { fieldErrorsFrom, publicBookingSchema, type ActionResult } from "@/lib/validation";
+import { offerFreedSlot } from "@/lib/waitlist";
 
 type BookingSuccess = {
   manageToken: string;
@@ -28,6 +42,8 @@ type BookingSuccess = {
   endsAt: string | null;
   /** Set when the client must be sent to a gateway to finish paying. */
   redirectUrl?: string;
+  /** Sessions booked by this request: more than one for a recurring series. */
+  seriesCount?: number;
 };
 
 async function rateLimit(bucket: string, limit: number, window: string) {
@@ -82,6 +98,9 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
     return { ok: false, error: "too_many_requests" };
   }
 
+  /** The sessions of a recurring request, first one included; empty otherwise. */
+  let series: { start: Date; end: Date | null }[] = [];
+
   const booking: TablesInsert<"bookings"> = {
     profile_id: profile.id,
     offer_id: offer.id,
@@ -105,9 +124,34 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
     if (!slot) return { ok: false, error: "slot_unavailable" };
 
     const config = parseActionConfig("calendar_booking", offer.action_config);
+    if (config.capacity > 1) {
+      // Seats in a group session: never more than are left. The seat trigger
+      // counts again under a lock, for the client who got there first.
+      if (values.quantity > (slot.seatsLeft ?? config.capacity)) {
+        return { ok: false, error: "quantity_too_high" };
+      }
+      booking.quantity = values.quantity;
+    }
     booking.starts_at = slot.start.toISOString();
     booking.ends_at = slot.end.toISOString();
     booking.status = config.requires_confirmation ? "pending" : "confirmed";
+
+    if (values.recurrence) {
+      if (!config.allow_recurring) return { ok: false, error: "recurring_unavailable" };
+      // Every session checked again, as it would be one by one. The ones that
+      // are free are booked; the others were shown as taken before sending.
+      const sessions = await seriesAvailability(
+        offer.id,
+        slot.start,
+        values.recurrence.frequency,
+        values.recurrence.count,
+        booking.quantity ?? 1,
+      );
+      series = (sessions ?? []).filter((session) => session.available && session.end);
+      if (series.length === 0 || series[0].start.getTime() !== slot.start.getTime()) {
+        return { ok: false, error: "slot_unavailable" };
+      }
+    }
   }
 
   if (offer.action_type === "direct_reservation") {
@@ -131,8 +175,23 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
     booking.details = values.budget ? { budget: values.budget } : {};
   }
 
-  const checkout = await resolveCheckout(offer, profile, values);
+  // Extras: only the ones this offer really offers, priced as they are today.
+  booking.addons = acceptsAddons(offer.action_type)
+    ? pickAddons(parseAddons(offer.addons), values.addons)
+    : [];
+
+  // Priced on the quantity this action accepted, never on the one requested:
+  // a one-to-one slot is one seat whatever the form says.
+  const checkout = await resolveCheckout(
+    offer,
+    profile,
+    { ...values, quantity: booking.quantity ?? 1 },
+    booking.addons as TakenAddon[],
+  );
   if ("error" in checkout) return { ok: false, error: checkout.error };
+  // A series is settled with the coach: one checkout cannot pay for sessions
+  // that may be cancelled one by one.
+  if (checkout.provider && series.length > 1) return { ok: false, error: "recurring_pay_on_site" };
 
   if (checkout.provider) {
     // Insert the booking *before* sending the client to the gateway: it holds
@@ -149,11 +208,21 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
   }
 
   const supabase = createSupabaseAdminClient();
-  const { data: created, error } = await supabase
-    .from("bookings")
-    .insert(booking)
-    .select("*")
-    .single();
+  const seriesId = series.length > 1 ? crypto.randomUUID() : null;
+  const rows: TablesInsert<"bookings">[] = seriesId
+    ? series.map((session) => ({
+        ...booking,
+        starts_at: session.start.toISOString(),
+        ends_at: session.end!.toISOString(),
+        series_id: seriesId,
+      }))
+    : [booking];
+  // One insert for the whole series: either every session is taken, or none.
+  const { data: inserted, error } = await supabase.from("bookings").insert(rows).select("*");
+  const created = inserted?.sort((a, b) => (a.starts_at ?? "").localeCompare(b.starts_at ?? ""))[0];
+  const seriesStarts = seriesId
+    ? (inserted ?? []).map((row) => row.starts_at as string).sort()
+    : undefined;
 
   if (error || !created) {
     if (error?.code === "23P01") return { ok: false, error: "slot_unavailable" };
@@ -210,12 +279,17 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
   }
 
   after(async () => {
-    await sendBookingConfirmationToClient({ booking: created, profile });
+    await sendBookingConfirmationToClient({ booking: created, profile, series: seriesStarts });
 
     if (profile.notify_new_bookings) {
       const proEmail = await resolveProEmail(profile);
       if (proEmail) {
-        await sendBookingNotificationToPro({ booking: created, profile, to: proEmail });
+        await sendBookingNotificationToPro({
+          booking: created,
+          profile,
+          to: proEmail,
+          series: seriesStarts,
+        });
       }
     }
   });
@@ -230,6 +304,7 @@ export async function createPublicBooking(input: unknown): Promise<ActionResult<
       status: created.status,
       startsAt: created.starts_at,
       endsAt: created.ends_at,
+      seriesCount: seriesStarts?.length ?? 1,
     },
   };
 }
@@ -245,6 +320,7 @@ async function resolveCheckout(
   offer: Tables<"offers">,
   profile: Tables<"profiles">,
   values: { payment_choice?: "stripe" | "paypal" | "on_site" | null; quantity: number },
+  addons: TakenAddon[] = [],
 ): Promise<
   { provider: PaymentProvider | null; amountCents: number; currency: string } | { error: string }
 > {
@@ -255,7 +331,9 @@ async function resolveCheckout(
 
   if (mode === "off") return nothing;
 
-  const amountCents = chargeableAmount(offer, currency, values.quantity);
+  const base = chargeableAmount(offer, currency, values.quantity);
+  // Extras add to a firm price; they never make an unpriced offer payable.
+  const amountCents = base === null ? null : base + addonsTotal(addons, currency);
   const decision = decideCheckout({
     mode,
     payable: offerIsPayable(offer) && amountCents !== null && amountCents > 0,
@@ -318,6 +396,7 @@ export async function cancelBookingByToken(token: string): Promise<ActionResult>
       if (proEmail) {
         await sendClientCancellationToPro({ booking: updated, profile, to: proEmail });
       }
+      await offerFreedSlot(updated);
     });
 
     revalidatePath(`/${profile.slug}`);
@@ -325,4 +404,45 @@ export async function cancelBookingByToken(token: string): Promise<ActionResult>
 
   revalidatePath("/dashboard", "layout");
   return { ok: true };
+}
+
+/**
+ * The dates of a recurring request and which of them are free, before the
+ * client sends it. Read-only; the booking checks every session again.
+ */
+export async function previewBookingSeries(input: {
+  offer_id: string;
+  start: string;
+  frequency: string;
+  count: number;
+  seats?: number;
+}): Promise<ActionResult<{ start: string; available: boolean }[]>> {
+  const frequency = RECURRENCE_FREQUENCIES.find((item) => item === input.frequency);
+  const count = Math.floor(Number(input.count));
+  const start = new Date(input.start);
+  if (
+    !frequency ||
+    !/^[0-9a-f-]{36}$/i.test(input.offer_id) ||
+    Number.isNaN(start.getTime()) ||
+    !(count >= SERIES_LIMITS.min && count <= SERIES_LIMITS.max)
+  ) {
+    return { ok: false, error: "invalid_input" };
+  }
+
+  const sessions = await seriesAvailability(
+    input.offer_id,
+    start,
+    frequency,
+    count,
+    Math.max(1, Math.floor(Number(input.seats) || 1)),
+  );
+  if (!sessions) return { ok: false, error: "offer_unavailable" };
+
+  return {
+    ok: true,
+    data: sessions.map((session) => ({
+      start: session.start.toISOString(),
+      available: session.available,
+    })),
+  };
 }

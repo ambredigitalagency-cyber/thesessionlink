@@ -14,6 +14,7 @@ import {
   BUFFER_STOPS,
   CAPACITY_STOPS,
   DURATION_STOPS,
+  SEAT_STOPS,
   HORIZON_STOPS,
   INTERVAL_STOPS,
   NOTICE_STOPS,
@@ -249,6 +250,19 @@ function CalendarFields({
         />
       </Field>
 
+      {/* One seat is a one-to-one session; more turn every slot into a group
+          class that fills up, booking after booking. */}
+      <Field label={t("seats")} hint={t("seatsHint")}>
+        <ScaleSlider
+          label={t("seats")}
+          stops={SEAT_STOPS}
+          value={config.capacity}
+          onChange={(capacity) => patch({ capacity })}
+          format={(seats) => (seats === 1 ? t("seatsSolo") : t("seatsGroup", { count: seats }))}
+          edges={[t("seatsSolo"), t("seatsGroup", { count: SEAT_STOPS.at(-1)! })]}
+        />
+      </Field>
+
       <Advanced summary={summary}>
         <Field label={t("buffer")} hint={t("bufferHint")}>
           <ScaleSlider
@@ -300,6 +314,17 @@ function CalendarFields({
             description={t("requiresConfirmationHint")}
             checked={config.requires_confirmation}
             onCheckedChange={(requires_confirmation) => patch({ requires_confirmation })}
+          />
+          {/* A series is settled with the coach, so it cannot sit on an offer
+              that takes payment online; the switch says so rather than hiding. */}
+          <ToggleRow
+            title={t("allowRecurring")}
+            description={
+              config.online_payment === "off" ? t("allowRecurringHint") : t("allowRecurringPaid")
+            }
+            checked={config.allow_recurring && config.online_payment === "off"}
+            disabled={config.online_payment !== "off"}
+            onCheckedChange={(allow_recurring) => patch({ allow_recurring })}
           />
         </div>
 

@@ -48,6 +48,7 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
       timezone: parsed.data.timezone,
       currency: parsed.data.currency,
       reminder_hours_before: parsed.data.reminder_hours_before,
+      reminder_message: parsed.data.reminder_message,
       notify_new_bookings: parsed.data.notify_new_bookings,
     })
     .eq("id", profile.id);

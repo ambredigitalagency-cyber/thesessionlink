@@ -9,6 +9,7 @@ import { ProfileUnavailable } from "@/components/public-profile/unavailable";
 import type { PublicOffer, PublicProfile } from "@/components/public-profile/types";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
+import { acceptsAddons, parseAddons } from "@/lib/offers/addons";
 import { parseOfferFields } from "@/lib/offers/fields";
 import { payableProviders } from "@/lib/payments/accounts";
 import { localized } from "@/lib/offers/schema";
@@ -30,7 +31,7 @@ async function loadProfile(slug: string) {
     supabase
       .from("offers")
       .select(
-        "id, title, description, price, price_type, main_photo_url, photos, action_type, action_config, custom_fields",
+        "id, title, description, price, price_type, main_photo_url, photos, action_type, action_config, custom_fields, addons",
       )
       .eq("profile_id", profile.id)
       .eq("is_active", true)
@@ -162,6 +163,7 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     action_type: offer.action_type,
     action_config: offer.action_config,
     custom_fields: parseOfferFields(offer.custom_fields),
+    addons: acceptsAddons(offer.action_type) ? parseAddons(offer.addons) : [],
   }));
 
   const requestedOffer = typeof query.offer === "string" ? query.offer : undefined;

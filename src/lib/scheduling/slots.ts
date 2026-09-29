@@ -26,6 +26,9 @@ export type AvailabilityRule = {
 export type BusyRange = {
   start: Date;
   end: Date;
+  /** The offer booked, and how many seats: what lets a group session fill up. */
+  offerId?: string | null;
+  quantity?: number;
 };
 
 export type Slot = {
@@ -40,7 +43,13 @@ export type Slot = {
  */
 export type SlotStatus = "available" | "unavailable";
 
-export type GradedSlot = Slot & { status: SlotStatus };
+export type GradedSlot = Slot & {
+  status: SlotStatus;
+  /** Group sessions only: seats still free in this slot. */
+  seatsLeft?: number;
+  /** Unavailable only because bookings hold it: a client may wait for it. */
+  waitlist?: boolean;
+};
 
 export type SlotEngineInput = {
   timezone: string;
@@ -49,6 +58,12 @@ export type SlotEngineInput = {
   timeOff?: TimeOffRange[];
   busy?: BusyRange[];
   durationMinutes: number;
+  /**
+   * Seats per slot. 1 is a one-to-one session; above that, bookings of this
+   * same offer at this same start share the slot until it is full, while
+   * anything else overlapping it still blocks it.
+   */
+  capacity?: number;
   bufferMinutes?: number;
   slotIntervalMinutes?: number | null;
   minNoticeHours?: number;
@@ -125,6 +140,7 @@ function collectSlots(input: SlotEngineInput, includeUnavailable: boolean): Grad
     timezone,
     offerId,
     durationMinutes,
+    capacity = 1,
     bufferMinutes = 0,
     slotIntervalMinutes,
     minNoticeHours = 0,
@@ -181,17 +197,40 @@ function collectSlots(input: SlotEngineInput, includeUnavailable: boolean): Grad
           if (start < earliest || start >= latest) continue;
           if (end <= start) continue;
 
-          const blocked =
-            overlapsBlocked(offset, offset + durationMinutes, blockedToday) ||
-            busy.some(
-              (range) =>
-                start.getTime() < range.end.getTime() + bufferMinutes * MINUTE &&
-                end.getTime() + bufferMinutes * MINUTE > range.start.getTime(),
-            );
-          const bookable = !blocked && start >= bookableFrom;
+          // A seat in this very session is not a clash, it is a seat taken.
+          const sameSession = (range: BusyRange) =>
+            capacity > 1 && range.offerId === offerId && range.start.getTime() === start.getTime();
+          const timeOff = overlapsBlocked(offset, offset + durationMinutes, blockedToday);
+          const taken = busy.some(
+            (range) =>
+              !sameSession(range) &&
+              start.getTime() < range.end.getTime() + bufferMinutes * MINUTE &&
+              end.getTime() + bufferMinutes * MINUTE > range.start.getTime(),
+          );
+          const blocked = timeOff || taken;
+          const seatsLeft =
+            capacity > 1
+              ? Math.max(
+                  0,
+                  capacity -
+                    busy.filter(sameSession).reduce((sum, range) => sum + (range.quantity ?? 1), 0),
+                )
+              : undefined;
+          const bookable = !blocked && seatsLeft !== 0 && start >= bookableFrom;
           if (!bookable && !includeUnavailable) continue;
 
-          slots.push({ start, end, status: bookable ? "available" : "unavailable" });
+          // Held by bookings and nothing else: a cancellation would free it,
+          // so it is worth waiting for. Time off and the notice never are.
+          const waitlist =
+            !bookable && !timeOff && (taken || seatsLeft === 0) && start >= bookableFrom;
+
+          slots.push({
+            start,
+            end,
+            status: bookable ? "available" : "unavailable",
+            ...(seatsLeft !== undefined ? { seatsLeft } : {}),
+            ...(waitlist ? { waitlist } : {}),
+          });
         }
       }
     }
@@ -214,8 +253,10 @@ function collectSlots(input: SlotEngineInput, includeUnavailable: boolean): Grad
 }
 
 /** Bookable slots only — what the booking actions re-check against. */
-export function generateSlots(input: SlotEngineInput): Slot[] {
-  return collectSlots(input, false).map(({ start, end }) => ({ start, end }));
+export function generateSlots(input: SlotEngineInput): (Slot & { seatsLeft?: number })[] {
+  return collectSlots(input, false).map(({ start, end, seatsLeft }) =>
+    seatsLeft !== undefined ? { start, end, seatsLeft } : { start, end },
+  );
 }
 
 /** Every slot of the window, bookable or not — what the public picker renders. */
@@ -236,7 +277,10 @@ export function withoutMinimumNotice(input: SlotEngineInput): SlotEngineInput {
 }
 
 /** Re-validates one slot before inserting a booking. */
-export function isSlotBookable(input: SlotEngineInput, start: Date): Slot | null {
+export function isSlotBookable(
+  input: SlotEngineInput,
+  start: Date,
+): (Slot & { seatsLeft?: number }) | null {
   const slots = generateSlots({
     ...input,
     from: new Date(start.getTime() - MINUTE),

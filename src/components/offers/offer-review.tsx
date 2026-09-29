@@ -118,6 +118,26 @@ export function OfferReview({
           ) : null}
 
           <OfferDetails fields={draft.custom_fields} />
+
+          {draft.addons.length > 0 ? (
+            <div className="space-y-1.5">
+              <p className="text-ink text-[13px] font-medium">{t("addons")}</p>
+              <ul className="flex flex-wrap gap-1.5">
+                {draft.addons.map((addon) => (
+                  <li
+                    key={addon.id}
+                    className="rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[12.5px] text-[var(--accent-ink)]"
+                  >
+                    {addon.label} ·{" "}
+                    {new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-US", {
+                      style: "currency",
+                      currency,
+                    }).format(addon.price)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

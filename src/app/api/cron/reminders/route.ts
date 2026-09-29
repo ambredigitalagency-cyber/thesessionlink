@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { sendBookingReminder } from "@/lib/emails/send";
 import { serverEnv } from "@/lib/env";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { expireWaitlistOffers } from "@/lib/waitlist";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -53,5 +54,8 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ claimed: bookings?.length ?? 0, sent, failed });
+  // Same heartbeat: waitlist offers nobody took pass to the next person.
+  const waitlistExpired = await expireWaitlistOffers();
+
+  return NextResponse.json({ claimed: bookings?.length ?? 0, sent, failed, waitlistExpired });
 }

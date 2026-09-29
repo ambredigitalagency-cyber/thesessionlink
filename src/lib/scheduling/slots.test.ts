@@ -99,6 +99,26 @@ describe("generateSlots", () => {
     expect(generateSlots(baseInput({ busy, bufferMinutes: 15 }))).toHaveLength(0);
   });
 
+  it("seats a group session until it is full, and counts what is left", () => {
+    const seat = (quantity: number, offerId = OFFER) => ({
+      start: new Date("2026-10-01T08:00:00Z"),
+      end: new Date("2026-10-01T09:00:00Z"),
+      offerId,
+      quantity,
+    });
+    const at10 = (busy: ReturnType<typeof seat>[], capacity: number) =>
+      generateSlotGrid(baseInput({ busy, capacity })).find(
+        (slot) => slot.start.toISOString() === "2026-10-01T08:00:00.000Z",
+      );
+
+    expect(at10([seat(2)], 5)).toMatchObject({ status: "available", seatsLeft: 3 });
+    expect(at10([seat(2), seat(3)], 5)).toMatchObject({ status: "unavailable", seatsLeft: 0 });
+    // A booking of another offer at the same time is a clash, not a seat.
+    expect(at10([seat(1, "offer-2")], 5)).toMatchObject({ status: "unavailable" });
+    // A one-to-one offer carries no seat count at all.
+    expect(at10([], 1)).not.toHaveProperty("seatsLeft");
+  });
+
   it("skips days off", () => {
     const timeOff = [{ starts_on: "2026-10-01", ends_on: "2026-10-03" }];
     expect(generateSlots(baseInput({ timeOff }))).toHaveLength(0);

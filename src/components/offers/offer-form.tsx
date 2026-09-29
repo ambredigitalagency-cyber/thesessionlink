@@ -14,6 +14,7 @@ import { ToggleRow } from "@/components/ui/primitives";
 import { ScaleSlider } from "@/components/ui/slider";
 import { StepProgress } from "@/components/ui/step-progress";
 import { notify } from "@/lib/notify";
+import { acceptsAddons, type Addon } from "@/lib/offers/addons";
 import {
   FIELD_LIMITS,
   fieldFromSuggestion,
@@ -33,6 +34,7 @@ import { PRICE_STOPS } from "@/lib/scales";
 import { fieldErrorsFrom, type ActionResult } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
+import { AddonsEditor } from "./addons-editor";
 import { ActionTypePicker } from "./action-type-picker";
 import { CustomFieldsEditor } from "./custom-fields-editor";
 import { OfferReview, type ReviewDraft } from "./offer-review";
@@ -48,6 +50,7 @@ export type OfferInitialValues = {
   action_type: ActionType;
   action_config: unknown;
   custom_fields: OfferField[];
+  addons: Addon[];
   is_active: boolean;
 };
 
@@ -93,7 +96,7 @@ type PriceType = (typeof PRICE_TYPES)[number];
 function phaseForError(key: string): OfferPhase {
   if (key.startsWith("custom_fields")) return "details";
   if (key.startsWith("photos")) return "photos";
-  if (key.startsWith("action_config")) return "settings";
+  if (key.startsWith("action_config") || key.startsWith("addons")) return "settings";
   return "basics";
 }
 
@@ -190,6 +193,7 @@ export function OfferForm({
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [actionType, setActionType] = useState<ActionType>(startingActionType);
   const [fields, setFields] = useState<OfferField[]>(initial?.custom_fields ?? []);
+  const [addons, setAddons] = useState<Addon[]>(initial?.addons ?? []);
   /**
    * The template last laid into the offer: for which action, and which field
    * each of its suggestions became. Tracked by id rather than by label so a
@@ -402,6 +406,8 @@ export function OfferForm({
       action_type: actionType,
       action_config: config,
       custom_fields: fields,
+      // Kept in the form while switching action types, sent only where they apply.
+      addons: acceptsAddons(actionType) ? addons.filter((addon) => addon.label.trim()) : [],
       is_active: isActive,
     };
 
@@ -533,6 +539,10 @@ export function OfferForm({
     />
   );
 
+  const addonsSection = acceptsAddons(actionType) ? (
+    <AddonsEditor addons={addons} onChange={setAddons} currency={currency} errors={errors} />
+  ) : null;
+
   // The template's own suggestions are ticked or unticked above; offering
   // them again among the ideas would list the same field twice.
   const templateLabels = new Set(
@@ -590,6 +600,7 @@ export function OfferForm({
               </div>
               {settingsSection}
             </section>
+            {addonsSection}
           </div>
         </FormSection>
 
@@ -642,6 +653,7 @@ export function OfferForm({
     action_type: actionType,
     action_config: config,
     custom_fields: fields,
+    addons: acceptsAddons(actionType) ? addons.filter((addon) => addon.label.trim()) : [],
   };
 
   const step = PHASE_STEP[phase];
@@ -691,7 +703,12 @@ export function OfferForm({
           </div>
         ) : null}
 
-        {phase === "settings" ? <PhaseField>{settingsSection}</PhaseField> : null}
+        {phase === "settings" ? (
+          <div className="space-y-8">
+            <PhaseField>{settingsSection}</PhaseField>
+            {addonsSection ? <PhaseField index={1}>{addonsSection}</PhaseField> : null}
+          </div>
+        ) : null}
         {phase === "details" ? (
           <div className="space-y-6">
             {template && templateFields.length > 0 ? (

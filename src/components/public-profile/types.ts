@@ -1,3 +1,4 @@
+import type { Addon } from "@/lib/offers/addons";
 import type { OfferField } from "@/lib/offers/fields";
 import type { ActionType } from "@/lib/offers/schema";
 import type { CardStyle, ProfileLayout, SocialKey, ThemeAccent } from "@/lib/validation";
@@ -14,6 +15,8 @@ export type PublicOffer = {
   action_type: ActionType;
   action_config: unknown;
   custom_fields: OfferField[];
+  /** Extras the client can tick; empty where the action type has no price. */
+  addons: Addon[];
 };
 
 export type PublicProfile = {
