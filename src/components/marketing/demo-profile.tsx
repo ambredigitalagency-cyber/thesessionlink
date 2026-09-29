@@ -2,8 +2,11 @@
 
 import { ArrowLeft, ArrowUpRight, Check, MapPin } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+
+import { NICHE_PHOTOS } from "@/assets/landing";
 
 import { cn } from "@/lib/utils";
 
@@ -83,8 +86,19 @@ export function DemoProfile() {
                 transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="flex flex-col items-center text-center">
+                  {/* The cover photo of the niche, then the monogram over its edge. */}
+                  <div className="relative -mx-1 h-24 w-[calc(100%+0.5rem)] overflow-hidden rounded-[var(--radius-md)]">
+                    <Image
+                      src={NICHE_PHOTOS[niche]}
+                      alt=""
+                      fill
+                      sizes="22rem"
+                      placeholder="blur"
+                      className="object-cover"
+                    />
+                  </div>
                   <div
-                    className="flex size-16 items-center justify-center rounded-full text-[20px] font-semibold text-white"
+                    className="border-canvas -mt-8 flex size-16 items-center justify-center rounded-full border-4 text-[20px] font-semibold text-white"
                     style={{ background: "var(--accent)" }}
                   >
                     {t(`profiles.${niche}.initials` as "profiles.coach.initials")}

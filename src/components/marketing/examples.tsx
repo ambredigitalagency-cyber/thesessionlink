@@ -2,7 +2,10 @@
 
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "motion/react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
+
+import { NICHE_PHOTOS } from "@/assets/landing";
 
 import { useSpotlight } from "./interactive";
 import { EASE, SectionHeading } from "./section";
@@ -52,15 +55,28 @@ export function Examples() {
               onPointerMove={spotlight}
               className="spotlight group surface-card flex h-full flex-col overflow-hidden p-0 transition-[box-shadow,transform] duration-300 hover:shadow-[var(--shadow-float)] motion-safe:hover:-translate-y-1"
             >
-              {/* A band of the page's own accent, standing in for the header
-                  photo a real profile would have. */}
-              <div
-                className="relative h-16"
-                style={{
-                  background:
-                    "linear-gradient(135deg, var(--accent), color-mix(in oklab, var(--accent) 55%, transparent))",
-                }}
-              >
+              {/* The header photo a real profile would have — a trade, never a
+                  face — washed at the bottom with the page's own accent, so the
+                  four cards still read as four identities. */}
+              <div className="relative h-28">
+                <div className="absolute inset-0 overflow-hidden">
+                  <Image
+                    src={NICHE_PHOTOS[example.key]}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 18rem, (min-width: 640px) 50vw, 100vw"
+                    placeholder="blur"
+                    className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-[var(--ease-out-expo)] motion-safe:group-hover:scale-[1.04]"
+                  />
+                  <span
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "linear-gradient(to top, color-mix(in oklab, var(--accent) 55%, transparent), transparent 70%)",
+                    }}
+                  />
+                </div>
                 <span className="border-surface bg-surface absolute -bottom-6 left-5 flex size-12 items-center justify-center rounded-full border-4 text-[14px] font-semibold text-[var(--accent-ink)]">
                   {t(`items.${example.key}.initials` as "items.coach.initials")}
                 </span>
