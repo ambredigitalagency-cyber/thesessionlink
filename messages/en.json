@@ -111,7 +111,7 @@
       "noData": "No data",
       "otherCategories": "Other activities",
       "revenue": "Theoretical monthly revenue",
-      "revenueHint": "Subscribers × €{price} — declarative, no payment is tracked",
+      "revenueHint": "Every account marked subscribed × €{price} — Paddle trials and manual activations included.",
       "signups": "Signups per month",
       "signupsHint": "The last twelve months.",
       "statuses": "Breakdown: {list}",
@@ -119,7 +119,14 @@
       "subtitle": "Who signs up, who stays, what it adds up to.",
       "thisMonth": "this month",
       "title": "Platform overview",
-      "trialCount": "{count} on trial"
+      "trialCount": "{count} on trial",
+      "mrr": "Real MRR (Paddle)",
+      "mrrHint": "Active Paddle subscriptions × €{price}. Trials and unpaid ones are not counted.",
+      "billingActive": "active",
+      "billingTrialing": "trialing",
+      "billingPastDue": "past due",
+      "annual": "Projected annual revenue",
+      "annualHint": "MRR × 12, at today’s rate."
     },
     "status": {
       "deleted": "Deletion requested",

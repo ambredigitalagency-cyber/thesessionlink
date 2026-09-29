@@ -85,10 +85,42 @@ describe("platformTotals", () => {
     ]);
   });
 
+  it("prices only what Paddle reports as active, and counts trials and unpaid apart", () => {
+    const withStatus = (subscription_status: string | null, extra = {}) => ({
+      ...account({ subscription_active: subscription_status !== null, ...extra }),
+      category_name: null,
+      subscription_status,
+    });
+    const totals = platformTotals(
+      [
+        withStatus("active"),
+        withStatus("active", { suspended_at: inDays(-1) }),
+        withStatus("trialing"),
+        withStatus("past_due"),
+        withStatus("canceled", { subscription_active: false }),
+        // Switched on by hand: subscribed for the console, not billed by Paddle.
+        { ...account({ subscription_active: true }), category_name: null },
+      ],
+      options,
+    );
+
+    expect(totals.billing).toEqual({
+      active: 2,
+      trialing: 1,
+      pastDue: 1,
+      mrr: 18,
+      annualRunRate: 216,
+    });
+    // The theoretical figure still counts every account marked subscribed.
+    // (the suspended one aside: suspension wins over the subscription).
+    expect(totals.monthlyRevenue).toBe(4 * 9);
+  });
+
   it("has no revenue and no categories without accounts", () => {
     const totals = platformTotals([], options);
     expect(totals.coaches).toBe(0);
     expect(totals.monthlyRevenue).toBe(0);
+    expect(totals.billing.mrr).toBe(0);
     expect(totals.categories).toEqual([]);
   });
 });

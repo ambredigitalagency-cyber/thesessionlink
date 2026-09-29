@@ -32,6 +32,12 @@ export function PlatformSummary({
 }) {
   const t = useTranslations("admin");
   const locale = useLocale();
+  const euros = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    }).format(value);
 
   const monthLabel = new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" });
   const points = signups.map((bucket) => ({
@@ -67,7 +73,7 @@ export function PlatformSummary({
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <ConsoleKpi
           index={0}
           label={t("stats.coaches")}
@@ -78,7 +84,6 @@ export function PlatformSummary({
           index={1}
           label={t("stats.subscribed")}
           value={String(totals.byStatus.subscribed)}
-          tone="accent"
           parts={[
             { value: String(totals.byStatus.trial), label: t("status.trial") },
             { value: String(totals.byStatus.expired), label: t("status.expired") },
@@ -86,12 +91,6 @@ export function PlatformSummary({
         />
         <ConsoleKpi
           index={2}
-          label={t("stats.revenue")}
-          value={`${totals.monthlyRevenue} €`}
-          footnote={t("stats.revenueHint", { price: monthlyPrice })}
-        />
-        <ConsoleKpi
-          index={3}
           label={t("stats.inactive")}
           value={String(inactive)}
           tone={inactive > 0 ? "neutral" : "quiet"}
@@ -100,10 +99,38 @@ export function PlatformSummary({
             { value: String(totals.byStatus.deleted), label: t("status.deleted") },
           ]}
         />
+
+        {/* Money, second row: the real figure first, the projection, then the
+            theoretical one it must not be confused with. */}
+        <ConsoleKpi
+          index={3}
+          label={t("stats.mrr")}
+          value={euros(totals.billing.mrr)}
+          tone="accent"
+          parts={[
+            { value: String(totals.billing.active), label: t("stats.billingActive") },
+            { value: String(totals.billing.trialing), label: t("stats.billingTrialing") },
+            { value: String(totals.billing.pastDue), label: t("stats.billingPastDue") },
+          ]}
+          footnote={t("stats.mrrHint", { price: monthlyPrice })}
+        />
+        <ConsoleKpi
+          index={4}
+          label={t("stats.annual")}
+          value={euros(totals.billing.annualRunRate)}
+          footnote={t("stats.annualHint")}
+        />
+        <ConsoleKpi
+          index={5}
+          label={t("stats.revenue")}
+          value={euros(totals.monthlyRevenue)}
+          tone="quiet"
+          footnote={t("stats.revenueHint", { price: monthlyPrice })}
+        />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-        <ConsolePanel index={4} title={t("stats.signups")} hint={t("stats.signupsHint")}>
+        <ConsolePanel index={6} title={t("stats.signups")} hint={t("stats.signupsHint")}>
           <ColumnChart
             points={points}
             format={(value) => String(value)}
@@ -113,7 +140,7 @@ export function PlatformSummary({
           />
         </ConsolePanel>
 
-        <ConsolePanel index={5} title={t("stats.categories")} hint={t("stats.categoriesHint")}>
+        <ConsolePanel index={7} title={t("stats.categories")} hint={t("stats.categoriesHint")}>
           {slices.length === 0 ? (
             <p className="text-ink-subtle text-[13px]">{t("stats.noData")}</p>
           ) : (

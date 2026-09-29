@@ -40,13 +40,33 @@ export function trialDaysLeft(account: AccountFields, now = new Date()): number 
 export type PlatformTotals = {
   coaches: number;
   byStatus: Record<AccountStatus, number>;
-  /** Subscribers × the monthly price. Declarative: no payment is tracked. */
+  /**
+   * Every account marked subscribed × the monthly price: Paddle trials and
+   * accounts switched on by hand included. Theoretical, and labelled so.
+   */
   monthlyRevenue: number;
+  /**
+   * What Paddle actually bills: subscriptions it reports as `active`, and
+   * nothing else. Trials and failed payments are counted, never priced.
+   */
+  billing: {
+    active: number;
+    trialing: number;
+    pastDue: number;
+    /** Monthly recurring revenue: active × the monthly price. */
+    mrr: number;
+    /** The MRR over a year, at today's rate: mrr × 12. */
+    annualRunRate: number;
+  };
   categories: { label: string; count: number }[];
 };
 
 export function platformTotals(
-  accounts: (AccountFields & { category_name: unknown; locale?: string | null })[],
+  accounts: (AccountFields & {
+    category_name: unknown;
+    locale?: string | null;
+    subscription_status?: string | null;
+  })[],
   options: { monthlyPrice: number; locale: string; now?: Date; unknownLabel: string },
 ): PlatformTotals {
   const { monthlyPrice, locale, now = new Date(), unknownLabel } = options;
@@ -59,10 +79,17 @@ export function platformTotals(
     expired: 0,
   };
   const perCategory = new Map<string, number>();
+  const billing = { active: 0, trialing: 0, pastDue: 0 };
 
   for (const account of accounts) {
     const status = accountStatus(account, now);
     byStatus[status] += 1;
+
+    // Paddle's word, whatever the console's own status says: an active
+    // subscription on a suspended account is still being billed.
+    if (account.subscription_status === "active") billing.active += 1;
+    else if (account.subscription_status === "trialing") billing.trialing += 1;
+    else if (account.subscription_status === "past_due") billing.pastDue += 1;
 
     // An account waiting to be purged is not part of the active mix.
     if (status === "deleted") continue;
@@ -75,6 +102,11 @@ export function platformTotals(
     coaches: accounts.length,
     byStatus,
     monthlyRevenue: byStatus.subscribed * monthlyPrice,
+    billing: {
+      ...billing,
+      mrr: billing.active * monthlyPrice,
+      annualRunRate: billing.active * monthlyPrice * 12,
+    },
     categories: [...perCategory.entries()]
       .map(([label, count]) => ({ label, count }))
       .sort((a, b) => b.count - a.count),

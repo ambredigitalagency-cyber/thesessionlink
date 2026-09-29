@@ -963,6 +963,7 @@ export type Database = {
           onboarding_completed_at: string | null;
           slug: string | null;
           subscription_active: boolean | null;
+          subscription_status: string | null;
           suspended_at: string | null;
           suspension_reason: string | null;
           trial_ends_at: string | null;

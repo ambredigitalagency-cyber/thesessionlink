@@ -46,6 +46,7 @@ export default async function AdminHomePage() {
     offers_count: row.offers_count ?? 0,
     bookings_count: row.bookings_count ?? 0,
     category_name: row.category_name,
+    subscription_status: row.subscription_status,
   }));
 
   const totals = platformTotals(coaches, {

@@ -111,7 +111,7 @@
       "noData": "Aucune donnée",
       "otherCategories": "Autres activités",
       "revenue": "Revenu mensuel théorique",
-      "revenueHint": "Abonnés × {price} € — déclaratif, aucun paiement n'est suivi",
+      "revenueHint": "Tous les comptes marqués abonnés × {price} € — essais Paddle et activations manuelles compris.",
       "signups": "Inscriptions par mois",
       "signupsHint": "Les douze derniers mois.",
       "statuses": "Répartition : {list}",
@@ -119,7 +119,14 @@
       "subtitle": "Qui s'inscrit, qui reste, ce que ça représente.",
       "thisMonth": "ce mois-ci",
       "title": "Pilotage de la plateforme",
-      "trialCount": "{count} en essai"
+      "trialCount": "{count} en essai",
+      "mrr": "MRR réel (Paddle)",
+      "mrrHint": "Abonnements Paddle actifs × {price} €. Les essais et les impayés ne sont pas comptés.",
+      "billingActive": "actifs",
+      "billingTrialing": "en essai",
+      "billingPastDue": "impayés",
+      "annual": "Revenu annuel projeté",
+      "annualHint": "MRR × 12, au rythme d’aujourd’hui."
     },
     "status": {
       "deleted": "Suppression demandée",
