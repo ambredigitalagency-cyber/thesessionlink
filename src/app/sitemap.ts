@@ -1,13 +1,20 @@
 import { createClient } from "@supabase/supabase-js";
 import type { MetadataRoute } from "next";
 
+import { LEGAL_DOCUMENTS, LEGAL_PATHS } from "@/content/legal";
 import { siteUrl, supabasePublishableKey, supabaseUrl } from "@/lib/env";
 
 export const revalidate = 3600;
 
-/** Landing plus every published profile — the pages we want indexed. */
+/** Landing, legal pages and every published profile — the pages we want indexed. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [{ url: siteUrl, changeFrequency: "weekly", priority: 1 }];
+
+  for (const doc of LEGAL_DOCUMENTS) {
+    for (const path of Object.values(LEGAL_PATHS[doc])) {
+      entries.push({ url: `${siteUrl}${path}`, changeFrequency: "yearly", priority: 0.2 });
+    }
+  }
 
   if (!supabaseUrl || !supabasePublishableKey) return entries;
 

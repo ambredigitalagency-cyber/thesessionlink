@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 
 import { Logo } from "@/components/brand/logo";
+import { LEGAL_DOCUMENTS, LEGAL_PATHS } from "@/content/legal";
+import { toLocale, type Locale } from "@/lib/i18n/config";
 
-export async function MarketingFooter() {
-  const t = await getTranslations("landing.footer");
+/**
+ * `locale` is for the legal pages, whose language comes from their URL rather
+ * than the cookie; everywhere else the footer follows the visitor's locale.
+ */
+export async function MarketingFooter({ locale: forced }: { locale?: Locale } = {}) {
+  const locale = forced ?? toLocale(await getLocale());
+  const t = await getTranslations({ locale, namespace: "landing.footer" });
 
   return (
     <footer className="border-line bg-canvas border-t py-10">
@@ -21,14 +28,26 @@ export async function MarketingFooter() {
           <Link href="/login?intent=signup" className="hover:text-ink transition-colors">
             {t("signup")}
           </Link>
-          <a href="#pricing" className="hover:text-ink transition-colors">
+          {/* Absolute, so it also works from the legal pages. */}
+          <Link href="/#pricing" className="hover:text-ink transition-colors">
             {t("pricing")}
-          </a>
+          </Link>
         </div>
       </div>
 
-      <div className="text-ink-subtle mx-auto mt-8 max-w-6xl px-4 text-[12px] sm:px-6">
-        © {new Date().getFullYear()} TheSessionLink
+      <div className="text-ink-subtle mx-auto mt-8 flex max-w-6xl flex-col gap-3 px-4 text-[12px] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <span>© {new Date().getFullYear()} TheSessionLink</span>
+        <nav aria-label={t("legalLabel")} className="flex flex-wrap gap-x-4 gap-y-1.5">
+          {LEGAL_DOCUMENTS.map((doc) => (
+            <Link
+              key={doc}
+              href={LEGAL_PATHS[doc][locale]}
+              className="hover:text-ink transition-colors"
+            >
+              {t(`legal.${doc}`)}
+            </Link>
+          ))}
+        </nav>
       </div>
     </footer>
   );

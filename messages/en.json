@@ -1266,7 +1266,13 @@
       "login": "Log in",
       "pricing": "Pricing",
       "signup": "Get started",
-      "tagline": "The booking page for independent professionals."
+      "tagline": "The booking page for independent professionals.",
+      "legalLabel": "Legal information",
+      "legal": {
+        "notice": "Legal notice",
+        "terms": "Terms",
+        "privacy": "Privacy"
+      }
     },
     "hero": {
       "annotations": {
@@ -1970,5 +1976,9 @@
     "bookedPending": "Request sent: the professional will confirm.",
     "seeBooking": "See my booking",
     "backToPage": "See other slots"
+  },
+  "legal": {
+    "home": "Back to home",
+    "updated": "Last updated:"
   }
 }

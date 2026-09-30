@@ -1266,7 +1266,13 @@
       "login": "Se connecter",
       "pricing": "Tarif",
       "signup": "Commencer",
-      "tagline": "La page de réservation des indépendants."
+      "tagline": "La page de réservation des indépendants.",
+      "legalLabel": "Informations légales",
+      "legal": {
+        "notice": "Mentions légales",
+        "terms": "CGU",
+        "privacy": "Confidentialité"
+      }
     },
     "hero": {
       "annotations": {
@@ -1970,5 +1976,9 @@
     "bookedPending": "Demande envoyée : le professionnel va confirmer.",
     "seeBooking": "Voir ma réservation",
     "backToPage": "Voir les autres créneaux"
+  },
+  "legal": {
+    "home": "Retour à l'accueil",
+    "updated": "Dernière mise à jour :"
   }
 }
