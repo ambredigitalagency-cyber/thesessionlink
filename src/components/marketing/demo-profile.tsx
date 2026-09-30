@@ -86,7 +86,10 @@ export function DemoProfile() {
                 transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
               >
                 <div className="flex flex-col items-center text-center">
-                  {/* The cover photo of the niche, then the monogram over its edge. */}
+                  {/* The cover photo of the niche, then the monogram over its edge.
+                      The cover is positioned (for `fill`), so the monogram must be
+                      too: a static block is painted under a positioned sibling
+                      whatever the DOM order, and would slide beneath the photo. */}
                   <div className="relative -mx-1 h-24 w-[calc(100%+0.5rem)] overflow-hidden rounded-[var(--radius-md)]">
                     <Image
                       src={NICHE_PHOTOS[niche]}
@@ -98,7 +101,7 @@ export function DemoProfile() {
                     />
                   </div>
                   <div
-                    className="border-canvas -mt-8 flex size-16 items-center justify-center rounded-full border-4 text-[20px] font-semibold text-white"
+                    className="border-canvas relative -mt-8 flex size-16 items-center justify-center rounded-full border-4 text-[20px] font-semibold text-white"
                     style={{ background: "var(--accent)" }}
                   >
                     {t(`profiles.${niche}.initials` as "profiles.coach.initials")}
