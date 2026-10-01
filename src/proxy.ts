@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { legalPathLocale } from "@/content/legal/types";
 import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
+import { URL_LOCALE_HEADER } from "@/lib/i18n/config";
 
 /**
  * Keeps the Supabase session fresh and guards the private areas.
@@ -9,8 +11,19 @@ import { supabasePublishableKey, supabaseUrl } from "@/lib/env";
  *
  * Authorization is *always* re-checked inside server actions and loaders:
  * this is a fast path, not the security boundary.
+ *
+ * It also runs on the legal pages, only to pass on the language their URL
+ * fixes: the root layout cannot read the path, and would otherwise take the
+ * cookie's language for `<html lang>`.
  */
 export async function proxy(request: NextRequest) {
+  const urlLocale = legalPathLocale(request.nextUrl.pathname);
+  if (urlLocale) {
+    const headers = new Headers(request.headers);
+    headers.set(URL_LOCALE_HEADER, urlLocale);
+    return NextResponse.next({ request: { headers } });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
@@ -53,5 +66,16 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/onboarding/:path*", "/login"],
+  matcher: [
+    "/dashboard/:path*",
+    "/onboarding/:path*",
+    "/login",
+    // Must match LEGAL_PATHS: a matcher has to be a literal.
+    "/mentions-legales",
+    "/legal",
+    "/cgu",
+    "/terms",
+    "/confidentialite",
+    "/privacy",
+  ],
 };

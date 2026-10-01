@@ -15,6 +15,16 @@ export const LEGAL_PATHS: Record<LegalDocumentKey, Record<Locale, string>> = {
   privacy: { fr: "/confidentialite", en: "/privacy" },
 };
 
+/** The language a legal page's URL fixes, or null for any other path. */
+export function legalPathLocale(pathname: string): Locale | null {
+  for (const paths of Object.values(LEGAL_PATHS)) {
+    for (const [locale, path] of Object.entries(paths) as [Locale, string][]) {
+      if (pathname === path) return locale;
+    }
+  }
+  return null;
+}
+
 /**
  * A paragraph, or a bulleted list. Anything in [SQUARE BRACKETS] is a
  * placeholder the owner still has to fill in: the page highlights it, so a
