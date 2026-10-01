@@ -127,6 +127,12 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
 
   const theme = parseTheme(profile.theme);
 
+  // A page still being set up — link reserved, no offer published — shows no
+  // way to reach the coach, who has not yet decided how they want to be
+  // reached. Dropped here rather than hidden in the view, so the details never
+  // reach the page's payload either.
+  const reachable = offers.length > 0;
+
   const viewProfile: PublicProfile = {
     id: profile.id as string,
     slug: profile.slug as string,
@@ -137,9 +143,9 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     location: profile.location,
     categoryName: category ? localized(category, locale, "") || null : null,
     social_links: (profile.social_links ?? {}) as PublicProfile["social_links"],
-    whatsapp_number: profile.whatsapp_number,
-    contact_email: profile.contact_email,
-    phone_number: profile.phone_number,
+    whatsapp_number: reachable ? profile.whatsapp_number : null,
+    contact_email: reachable ? profile.contact_email : null,
+    phone_number: reachable ? profile.phone_number : null,
     calendar_visible: profile.calendar_visible ?? true,
     custom_closed_message: profile.custom_closed_message,
     timezone: profile.timezone ?? "UTC",

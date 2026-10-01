@@ -261,7 +261,7 @@ export function PublicProfileView({
             ))}
           </section>
         ) : (
-          <SetupInProgress name={profile.display_name} canContact={contacts.length > 0} />
+          <SetupInProgress name={profile.display_name} />
         )}
 
         <footer className="mt-14 text-center">
@@ -282,13 +282,14 @@ export function PublicProfileView({
 /**
  * What a visitor sees before the first offer is published.
  *
- * Onboarding ends with the profile, so a page can be public with nothing to
- * book on it yet. An empty list reads as abandoned; this says the page is
- * being prepared, by whom, and — when the coach left a way to reach them —
- * that the buttons above already work. The two outlined cards stand in for the
- * offers to come; their shimmer only runs for readers who allow motion.
+ * A link answers from the moment it is reserved, before its first offer is
+ * published. An empty list reads as abandoned; this says the page is being
+ * prepared, and by whom. It offers no way to reach the coach — the contact
+ * buttons only appear with the first offer (see the page) — so the card is
+ * the whole message. The two outlined cards stand in for the offers to come;
+ * their shimmer only runs for readers who allow motion.
  */
-function SetupInProgress({ name, canContact }: { name: string; canContact: boolean }) {
+function SetupInProgress({ name }: { name: string }) {
   const t = useTranslations("publicProfile.setup");
 
   return (
@@ -303,7 +304,7 @@ function SetupInProgress({ name, canContact }: { name: string; canContact: boole
         {t("title")}
       </h2>
       <p className="text-ink-muted mx-auto mt-1.5 max-w-sm text-[14.5px] leading-relaxed">
-        {canContact ? t("bodyContact", { name }) : t("body", { name })}
+        {t("body", { name })}
       </p>
 
       <div aria-hidden className="mt-6 space-y-2.5">

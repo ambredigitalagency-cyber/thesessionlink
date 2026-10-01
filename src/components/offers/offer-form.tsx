@@ -4,7 +4,9 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 
+import { saveWeeklySchedule } from "@/actions/availability";
 import { createOffer, updateOffer } from "@/actions/offers";
+import { WeekHoursEditor } from "@/components/availability/week-hours";
 import { OfferPhotosUpload } from "@/components/media/offer-photos-upload";
 import { Button } from "@/components/ui/button";
 import { ChoiceChips } from "@/components/ui/choice-cards";
@@ -30,7 +32,17 @@ import {
   type AnyActionConfig,
   type CategoryField,
 } from "@/lib/offers/schema";
+import { OFFER_PHASES, offerPhasesFor, type OfferPhase } from "@/lib/offers/wizard";
 import { PRICE_STOPS } from "@/lib/scales";
+import {
+  DEFAULT_WEEK,
+  sameWeek,
+  toWeekHours,
+  toWeeklyRules,
+  weekProblem,
+  type WeekHours,
+  type WeeklyRule,
+} from "@/lib/scheduling/weekly";
 import { fieldErrorsFrom, type ActionResult } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
@@ -62,26 +74,16 @@ export type OfferInitialValues = {
 const STEPS = ["essentials", "details", "photos", "review"] as const;
 export type OfferStep = (typeof STEPS)[number];
 
-/**
- * The questions the builder actually asks, in order.
- *
- * "Essentials" used to be one screen carrying the title, the description, the
- * price, the choice between five action types and every setting belonging to
- * whichever one was picked — thirty-odd controls, most of them irrelevant
- * until the action type was decided. It is now three questions: what happens
- * when someone clicks, what you are selling, and how that action behaves. The
- * first one comes first because it decides what the other two even mean.
- *
- * The progress bar keeps naming four stages — six labels do not fit a phone
- * and the journey really is four — and moves a third of a stage per answer
- * instead of standing still for three screens. Same bar, same component, finer
- * resolution.
+/*
+ * The questions themselves, and which of them an offer gets, live in
+ * lib/offers/wizard.ts. The progress bar keeps naming four stages — six labels
+ * do not fit a phone and the journey really is four — and moves a fraction of
+ * a stage per answer instead of standing still for several screens.
  */
-const PHASES = ["action", "basics", "settings", "details", "photos", "review"] as const;
-export type OfferPhase = (typeof PHASES)[number];
 
 const PHASE_STEP: Record<OfferPhase, OfferStep> = {
   action: "essentials",
+  hours: "essentials",
   basics: "essentials",
   settings: "essentials",
   details: "details",
@@ -102,7 +104,7 @@ function phaseForError(key: string): OfferPhase {
 
 /** The first question of a stage, for the jumps the progress bar allows. */
 function firstPhaseOf(step: OfferStep): OfferPhase {
-  return PHASES.find((phase) => PHASE_STEP[phase] === step) ?? "action";
+  return OFFER_PHASES.find((phase) => PHASE_STEP[phase] === step) ?? "action";
 }
 
 type Props = {
@@ -149,6 +151,13 @@ type Props = {
    * signed-in user's storage folder, which is only right for the coach.
    */
   photosEditable?: boolean;
+  /**
+   * Asks for the weekly hours right after the action, when that action is a
+   * calendar booking. Given by onboarding, where the first offer is also the
+   * moment the coach first says when they work; `saved` is the schedule
+   * already in the database (null: the Monday–Friday default).
+   */
+  hours?: { saved: WeeklyRule[] | null };
 };
 
 export function OfferForm({
@@ -169,6 +178,7 @@ export function OfferForm({
   onCancel,
   save,
   photosEditable = true,
+  hours,
 }: Props) {
   const t = useTranslations("offers.form");
   const tAction = useTranslations("offers.actions");
@@ -219,6 +229,14 @@ export function OfferForm({
     () => configs[actionType] ?? defaultActionConfig(actionType),
     [configs, actionType],
   );
+
+  // The weekly hours, when this wizard asks for them (see `hours` in Props).
+  // Saved on leaving their question, and only if they changed.
+  const [savedWeek, setSavedWeek] = useState<WeekHours>(() =>
+    hours?.saved ? toWeekHours(hours.saved) : DEFAULT_WEEK,
+  );
+  const [week, setWeek] = useState<WeekHours>(savedWeek);
+  const phases = offerPhasesFor(Boolean(hours), actionType);
 
   function changeActionType(next: ActionType) {
     setActionType(next);
@@ -359,7 +377,7 @@ export function OfferForm({
 
   function goTo(target: OfferPhase) {
     if (target === "details") applyTemplate();
-    setDirection(PHASES.indexOf(target) >= PHASES.indexOf(phase) ? 1 : -1);
+    setDirection(phases.indexOf(target) >= phases.indexOf(phase) ? 1 : -1);
     setPhase(target);
     // Move focus with the question, so keyboard and screen reader users follow.
     requestAnimationFrame(() => {
@@ -369,9 +387,36 @@ export function OfferForm({
   }
 
   function next() {
+    if (phase === "hours") {
+      saveHours();
+      return;
+    }
     if (phase === "basics" && Object.keys(validate("essentials")).length > 0) return;
     if (phase === "details" && Object.keys(validate("details")).length > 0) return;
-    goTo(PHASES[PHASES.indexOf(phase) + 1]);
+    goTo(phases[phases.indexOf(phase) + 1]);
+  }
+
+  /** Writes the week if it changed, then moves on; a refused week stays on screen. */
+  function saveHours() {
+    const after = phases[phases.indexOf("hours") + 1];
+    if (sameWeek(week, savedWeek)) {
+      goTo(after);
+      return;
+    }
+    const problem = weekProblem(week);
+    if (problem) {
+      notify.error(tError(problem === "overlap" ? "overlapping_rules" : "end_before_start"));
+      return;
+    }
+    startTransition(async () => {
+      const result = await saveWeeklySchedule({ offer_id: null, rules: toWeeklyRules(week) });
+      if (result.ok) {
+        setSavedWeek(week);
+        goTo(after);
+      } else {
+        notify.error(tError(result.error as "unexpected"));
+      }
+    });
   }
 
   /** Leaves an optional screen as it is. Details added and then abandoned are dropped. */
@@ -380,7 +425,9 @@ export function OfferForm({
       setFields(initial?.custom_fields ?? []);
       setApplied(null);
     }
-    goTo(PHASES[PHASES.indexOf(phase) + 1]);
+    // Skipping the hours keeps what is saved (the default, for a new profile).
+    if (phase === "hours") setWeek(savedWeek);
+    goTo(phases[phases.indexOf(phase) + 1]);
   }
 
   /** From the settings straight to the review: details and photos stay empty. */
@@ -658,13 +705,14 @@ export function OfferForm({
 
   const step = PHASE_STEP[phase];
   const stepIndex = STEPS.indexOf(step);
-  const siblings = PHASES.filter((item) => PHASE_STEP[item] === step);
-  const index = PHASES.indexOf(phase);
+  const siblings = phases.filter((item) => PHASE_STEP[item] === step);
+  const index = phases.indexOf(phase);
 
   return (
     <div className="space-y-7">
       {progress ? (
-        progress((index + 1) / PHASES.length)
+        // The count follows the action: a calendar offer has one more question.
+        progress((index + 1) / phases.length)
       ) : (
         <StepProgress
           label={t("progress")}
@@ -693,6 +741,10 @@ export function OfferForm({
             suggested={suggestedActionType}
             size="question"
           />
+        ) : null}
+
+        {phase === "hours" ? (
+          <WeekHoursEditor week={week} onChange={setWeek} locale={locale} />
         ) : null}
 
         {phase === "basics" ? (
@@ -729,18 +781,31 @@ export function OfferForm({
         ) : null}
       </PhaseSwitch>
 
-      <div className="border-line flex items-center justify-between gap-3 border-t pt-5">
+      {/* On a phone the doors stack at full width, forward on top and back
+          last, as in the profile questions: a long label never pushes a
+          button off the screen. */}
+      <div className="border-line flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
         {index > 0 ? (
-          <Button type="button" variant="ghost" onClick={() => goTo(PHASES[index - 1])}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => goTo(phases[index - 1])}
+            className="self-start sm:self-auto"
+          >
             <ArrowLeft className="size-4" />
             {t("back")}
           </Button>
         ) : onCancel ? (
-          <Button type="button" variant="ghost" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            className="self-start sm:self-auto"
+          >
             {t("cancel")}
           </Button>
         ) : (
-          <span />
+          <span className="hidden sm:block" />
         )}
 
         {phase === "review" ? (
@@ -749,7 +814,7 @@ export function OfferForm({
             {submitLabel ?? t("create")}
           </Button>
         ) : (
-          <div className="flex flex-wrap items-center justify-end gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
             {/* Details and photos are optional. After the settings, the way
                 past both is one tap; on each of them, skipping is as visible
                 as going on — never a small grey link. */}
@@ -757,13 +822,13 @@ export function OfferForm({
               <Button type="button" size="lg" variant="secondary" onClick={skipToReview}>
                 {t("skipToReview")}
               </Button>
-            ) : phase === "details" || phase === "photos" ? (
-              <Button type="button" size="lg" variant="secondary" onClick={skip}>
+            ) : phase === "details" || phase === "photos" || phase === "hours" ? (
+              <Button type="button" size="lg" variant="secondary" onClick={skip} disabled={pending}>
                 {t("skip")}
               </Button>
             ) : null}
-            <Button type="button" size="lg" onClick={next}>
-              {t("continue")}
+            <Button type="button" size="lg" onClick={next} loading={phase === "hours" && pending}>
+              {phase === "hours" ? t("phases.hours.submit") : t("continue")}
               <ArrowRight className="size-4" />
             </Button>
           </div>

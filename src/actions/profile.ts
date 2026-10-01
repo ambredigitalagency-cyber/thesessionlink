@@ -154,15 +154,14 @@ export async function updateProfile(input: unknown): Promise<ActionResult<{ slug
  *     at the end — throws away four screens of typing if someone closes the
  *     tab on the fifth.
  *
- * It refuses once onboarding is finished, so it cannot become a second, weaker
- * way of editing a live profile: that is what the dashboard is for.
+ * It no longer refuses a finished onboarding: those screens are now the
+ * finishing touches, walked after the first offer has already stamped
+ * onboarding_completed_at. That is safe for the reason above — it writes only
+ * the keys a screen sent, through the same field rules as the dashboard — so
+ * it cannot clobber anything the coach has set elsewhere.
  */
 export async function updateOnboardingProfile(input: unknown): Promise<ActionResult> {
   const profile = await requireProfileForAction();
-
-  if (profile.onboarding_completed_at) {
-    return { ok: false, error: "unexpected" };
-  }
 
   const parsed = onboardingProfileSchema.safeParse(input);
   if (!parsed.success) {
@@ -205,36 +204,13 @@ export async function updateOnboardingProfile(input: unknown): Promise<ActionRes
   return { ok: true };
 }
 
-/**
- * Ends onboarding once the profile screens are behind the coach.
- *
- * Onboarding used to end with the first offer — a database trigger stamped
- * onboarding_completed_at on that insert. The offer now comes later, from the
- * dashboard, so the profile's last screen stamps it instead. The trigger stays:
- * it only ever fills a null, so it is a no-op for anyone who came through here.
- *
- * From this moment the page is public. With no offer yet it shows a "being set
- * up" state rather than an empty list (see PublicProfileView).
+/*
+ * Onboarding ends with the first offer again: the offers_complete_onboarding
+ * trigger stamps onboarding_completed_at on that insert, which is the moment
+ * the page has something to sell. (For a while the offer waited for the
+ * dashboard and the last profile screen stamped it instead; that action is
+ * gone with that order.)
  */
-export async function completeOnboarding(): Promise<ActionResult> {
-  const profile = await requireProfileForAction();
-  if (profile.onboarding_completed_at) return { ok: true };
-
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase
-    .from("profiles")
-    .update({ onboarding_completed_at: new Date().toISOString() })
-    .eq("id", profile.id)
-    .is("onboarding_completed_at", null);
-
-  if (error) {
-    console.error("[profile] completing onboarding failed", error.code, error.message);
-    return { ok: false, error: "unexpected" };
-  }
-
-  revalidateProfile(profile.slug);
-  return { ok: true };
-}
 
 /** The "temporarily invisible calendar" switch. */
 export async function setCalendarVisibility(

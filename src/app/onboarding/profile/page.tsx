@@ -6,51 +6,31 @@ import { siteUrl } from "@/lib/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 /**
- * The step is walked question by question, so the progress bar and the heading
- * belong to the form: both change on every phase, and neither can be rendered
- * here without shipping the phase state back up to the server component.
+ * Part 1 of onboarding: activity, name, link. The profile row is written at
+ * the link, so this page only ever serves someone without one; a reserved
+ * link moves on to the first offer, a finished onboarding to the dashboard.
  *
- * The profile row is written halfway through, at the link. Someone who comes
- * back after that is not sent away — the screens that follow the link are the
- * ones enriching a profile that already exists, and that is where they resume.
- * Only a finished onboarding is turned around.
+ * The step is walked question by question, so the progress bar and the heading
+ * belong to the form: both change on every phase.
  */
 export default async function OnboardingProfilePage() {
   await requireUser();
   const profile = await getCurrentProfile();
   if (profile?.onboarding_completed_at) redirect("/dashboard");
+  if (profile) redirect("/onboarding/offer");
 
   const supabase = await createSupabaseServerClient();
-  const [{ data: categories }, { data: rules }] = await Promise.all([
-    supabase
-      .from("activity_categories")
-      .select("id, slug, name, icon, config")
-      .eq("is_active", true)
-      .order("position"),
-    // Someone resuming sees the hours already saved, not the default.
-    profile
-      ? supabase
-          .from("availabilities")
-          .select("weekday, start_time, end_time")
-          .eq("profile_id", profile.id)
-          .is("offer_id", null)
-      : Promise.resolve({ data: null }),
-  ]);
+  const { data: categories } = await supabase
+    .from("activity_categories")
+    .select("id, slug, name, icon, config")
+    .eq("is_active", true)
+    .order("position");
 
   return (
     <ProfileSetupForm
+      part="identity"
       categories={categories ?? []}
       linkBase={siteUrl.replace(/^https?:\/\//, "")}
-      savedHours={rules}
-      existing={
-        profile
-          ? {
-              categoryId: profile.category_id,
-              displayName: profile.display_name,
-              slug: profile.slug,
-            }
-          : null
-      }
     />
   );
 }

@@ -4,18 +4,20 @@ import { useTranslations } from "next-intl";
 
 import { StepProgress } from "@/components/ui/step-progress";
 
-const STEPS = [1, 2, 3] as const;
+const STEPS = [1, 2, 3, 4] as const;
 
 /**
- * Account, profile, then the dashboard. The first offer is no longer a step:
- * the dashboard invites to it, it does not gate on it.
+ * Account, the link (activity, name, address), the first offer, then the page
+ * itself — the finishing touches and the share screen. The offer sits right
+ * after the link because it is what makes the page worth visiting; the
+ * cosmetic profile comes once the page is live.
  */
 export function OnboardingSteps({
   current,
   advance,
   className,
 }: {
-  current: 1 | 2 | 3;
+  current: 1 | 2 | 3 | 4;
   /** Progress inside the current step, for steps walked in several phases. */
   advance?: number;
   className?: string;

@@ -1693,6 +1693,12 @@
           "title": "Voici votre offre",
           "hint": "Vérifiez-la comme vos clients la verront.",
           "short": "Récapitulatif"
+        },
+        "hours": {
+          "title": "Quand peut-on vous réserver ?",
+          "hint": "Pour recevoir des réservations, dites-nous quand vous êtes disponible. Touchez un jour pour l’ouvrir ou le fermer, glissez pour régler les heures.",
+          "submit": "Continuer avec ces horaires",
+          "short": "Horaires"
         }
       },
       "photos": "Photos",
@@ -1818,11 +1824,6 @@
         "details": {
           "title": "Qu'est-ce que vos clients veulent savoir ?",
           "hint": "Expérience, langues, zone couverte… Touchez une idée pour l'ajouter. Seuls les champs remplis s'affichent sur votre page."
-        },
-        "hours": {
-          "title": "Quand peut-on vous réserver ?",
-          "hint": "Pour vos offres « {action} » : vos clients ne verront que ces horaires. Touchez un jour pour l’ouvrir ou le fermer, glissez pour régler les heures.",
-          "submit": "Continuer avec ces horaires"
         }
       },
       "previewBody": "Selon votre activité, nous proposerons des champs comme {fields} — gardez ce qui colle, ignorez le reste.",
@@ -1833,13 +1834,40 @@
       "submit": "Créer mon profil",
       "subtitle": "Cela façonne votre page publique et pré-remplit votre première offre. Tout reste modifiable ensuite.",
       "title": "Quelle est votre activité, et sous quel nom ?",
-      "finish": "Ouvrir mon espace"
+      "finish": "Terminer"
     },
     "steps": {
       "1": "Compte",
-      "2": "Profil",
-      "3": "Votre espace",
+      "2": "Votre lien",
+      "3": "Première offre",
+      "4": "Votre page",
       "aria": "Progression de la configuration"
+    },
+    "finish": {
+      "badge": "Votre page est en ligne",
+      "viewPage": "Voir ma page",
+      "intro": "Maintenant que votre page est en ligne, personnalisez-la. Chaque écran est facultatif."
+    },
+    "share": {
+      "badge": "Votre page est en ligne",
+      "places": {
+        "instagram": {
+          "body": "Remplacez le lien de votre bio — celui sur lequel on clique déjà.",
+          "title": "Bio Instagram"
+        },
+        "messages": {
+          "body": "Répondez « comment je réserve ? » avec un lien, pas dix messages.",
+          "title": "DM et WhatsApp"
+        },
+        "signature": {
+          "body": "Chaque e-mail envoyé devient une occasion de réservation.",
+          "title": "Signature e-mail"
+        }
+      },
+      "subtitle": "Partagez-le une fois : vos clients réservent, demandent ou vous écrivent — sans échanges interminables.",
+      "title": "Un lien. <accent>Tout ce que vous vendez.</accent>",
+      "toDashboard": "Aller à mon tableau de bord",
+      "viewPage": "Voir ma page publique"
     }
   },
   "publicProfile": {
@@ -1958,8 +1986,7 @@
     "whatsappUnavailable": "Ce moyen de contact est temporairement indisponible.",
     "setup": {
       "title": "Page en cours de configuration",
-      "body": "{name} prépare ses prestations. Revenez très bientôt.",
-      "bodyContact": "{name} prépare ses prestations. En attendant, vous pouvez déjà prendre contact avec les boutons ci-dessus."
+      "body": "{name} prépare ses prestations. Revenez très bientôt."
     },
     "detailsTitle": "Infos pratiques"
   },

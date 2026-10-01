@@ -1693,6 +1693,12 @@
           "title": "Here is your offer",
           "hint": "Check it the way your clients will see it.",
           "short": "Review"
+        },
+        "hours": {
+          "title": "When can clients book you?",
+          "hint": "To receive bookings, tell us when you’re available. Tap a day to open or close it, drag to set the hours.",
+          "submit": "Continue with these hours",
+          "short": "Hours"
         }
       },
       "photos": "Photos",
@@ -1818,11 +1824,6 @@
         "details": {
           "title": "What do your clients want to know?",
           "hint": "Experience, languages, area covered… Tap an idea to add it. Only filled-in fields appear on your page."
-        },
-        "hours": {
-          "title": "When can clients book you?",
-          "hint": "For your “{action}” offers: clients only see these hours. Tap a day to open or close it, drag to set the hours.",
-          "submit": "Continue with these hours"
         }
       },
       "previewBody": "Based on your activity, we'll suggest fields like {fields} — keep what fits, ignore the rest.",
@@ -1833,13 +1834,40 @@
       "submit": "Create my profile",
       "subtitle": "This shapes your public page and pre-fills your first offer. You can change all of it later.",
       "title": "What do you do, and under which name?",
-      "finish": "Open my dashboard"
+      "finish": "Finish"
     },
     "steps": {
       "1": "Account",
-      "2": "Profile",
-      "3": "Your space",
+      "2": "Your link",
+      "3": "First offer",
+      "4": "Your page",
       "aria": "Setup progress"
+    },
+    "finish": {
+      "badge": "Your page is live",
+      "viewPage": "See my page",
+      "intro": "Now that your page is live, make it yours. Every screen is optional."
+    },
+    "share": {
+      "badge": "Your page is live",
+      "places": {
+        "instagram": {
+          "body": "Replace the link in your bio — the one people already tap.",
+          "title": "Instagram bio"
+        },
+        "messages": {
+          "body": "Answer \"how do I book?\" with one link instead of ten messages.",
+          "title": "DMs and WhatsApp"
+        },
+        "signature": {
+          "body": "Every email you send becomes a booking opportunity.",
+          "title": "Email signature"
+        }
+      },
+      "subtitle": "Share it once and let clients book, reserve or reach out — without a single back-and-forth message.",
+      "title": "One link. <accent>Everything you sell.</accent>",
+      "toDashboard": "Go to my dashboard",
+      "viewPage": "See my public page"
     }
   },
   "publicProfile": {
@@ -1958,8 +1986,7 @@
     "whatsappUnavailable": "This contact option is temporarily unavailable.",
     "setup": {
       "title": "Page being set up",
-      "body": "{name} is getting their services ready. Check back very soon.",
-      "bodyContact": "{name} is getting their services ready. In the meantime, you can already reach out with the buttons above."
+      "body": "{name} is getting their services ready. Check back very soon."
     },
     "detailsTitle": "Good to know"
   },

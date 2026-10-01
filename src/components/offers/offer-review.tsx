@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/primitives";
 import { isFieldFilled } from "@/lib/offers/fields";
 import { ACTION_ICONS } from "@/lib/offers/meta";
 
-import type { OfferPhase } from "./offer-form";
+import type { OfferPhase } from "@/lib/offers/wizard";
 
 export type ReviewDraft = Omit<PublicOffer, "id" | "main_photo_url">;
 
