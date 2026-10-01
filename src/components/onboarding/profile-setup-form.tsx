@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { saveWeeklySchedule } from "@/actions/availability";
 import {
   checkSlugAvailability,
   completeOnboarding,
   createProfile,
   updateOnboardingProfile,
 } from "@/actions/profile";
+import { WeekHoursEditor } from "@/components/availability/week-hours";
 import { SocialIcon } from "@/components/brand/social-icons";
 import { CategoryIcon } from "@/components/categories/category-icon";
 import { AvatarUpload } from "@/components/media/image-upload";
@@ -24,8 +26,17 @@ import { notify } from "@/lib/notify";
 import type { OfferField } from "@/lib/offers/fields";
 import { localized, parseCategoryConfig } from "@/lib/offers/schema";
 import { PROFILE_FIELD_SUGGESTIONS, PROFILE_FIELD_TYPES } from "@/lib/profile/details";
+import {
+  DEFAULT_WEEK,
+  sameWeek,
+  toWeekHours,
+  toWeeklyRules,
+  weekProblem,
+  type WeekHours,
+  type WeeklyRule,
+} from "@/lib/scheduling/weekly";
 import { slugify } from "@/lib/utils";
-import type { SocialKey } from "@/lib/validation";
+import type { ActionResult, SocialKey } from "@/lib/validation";
 
 export type CategoryOption = {
   id: string;
@@ -43,7 +54,7 @@ export type CategoryOption = {
  * obviously first, and the two text fields — which is where the person has to
  * actually decide something — competing with a wall of options above them.
  *
- * Now it is eight screens, and the order is the point. The three that make a
+ * Now it is nine screens, and the order is the point. The three that make a
  * profile come first — what you do, under what name, at what address — and the
  * profile row is written the moment the link is settled, so nobody can take it
  * while the rest is being filled in. Everything after that enriches a profile
@@ -54,12 +65,15 @@ export type CategoryOption = {
  *
  * The offer is not part of it any more. It came first when the product was
  * "a booking link", then last, behind a bridge screen; now it waits for the
- * dashboard, which invites to it without insisting. The last screen — details
- * about the coach, in the same editor as Dashboard › Profile — ends
- * onboarding, and until an offer exists the public page says it is being set
- * up rather than showing an empty list.
+ * dashboard, which invites to it without insisting. Details about the coach
+ * come in the same editor as Dashboard › Profile; the last screen — opening
+ * hours, the week editor of Dashboard › Availability — ends onboarding. Those
+ * hours are what "Book a time slot" offers will sell, so they are set before
+ * the first one exists; skipping keeps the Monday–Friday 9–17 the database
+ * gave the profile. Until an offer exists the public page says it is being
+ * set up rather than showing an empty list.
  *
- * The bar at the top moves an eighth of a step per answer, so progress never
+ * The bar at the top moves a ninth of a step per answer, so progress never
  * stalls.
  */
 
@@ -72,6 +86,7 @@ const PHASES = [
   "contact",
   "socials",
   "details",
+  "hours",
 ] as const;
 type Phase = (typeof PHASES)[number];
 
@@ -86,14 +101,18 @@ export function ProfileSetupForm({
   linkBase,
   defaultName,
   existing,
+  savedHours,
 }: {
   categories: CategoryOption[];
   linkBase: string;
   defaultName?: string;
   /** Set when the profile row already exists and only the extras are left. */
   existing?: { categoryId: string | null; displayName: string; slug: string } | null;
+  /** The weekly hours already saved; null before the profile row exists. */
+  savedHours?: WeeklyRule[] | null;
 }) {
   const t = useTranslations("onboarding.profile");
+  const tActions = useTranslations("offers.actions");
   const tCommon = useTranslations("common");
   const tError = useTranslations("errors");
   const locale = useLocale();
@@ -118,6 +137,14 @@ export function ProfileSetupForm({
   const [location, setLocation] = useState("");
   const [socials, setSocials] = useState<Partial<Record<SocialKey, string>>>({});
   const [details, setDetails] = useState<OfferField[]>([]);
+
+  /* --- and the hours its calendar offers will sell --- */
+  // A new profile gets Monday–Friday 9–17 from the database the moment its row
+  // is written, so that is what is on screen until something else is saved.
+  const [initialHours] = useState<WeekHours>(() =>
+    savedHours ? toWeekHours(savedHours) : DEFAULT_WEEK,
+  );
+  const [hours, setHours] = useState<WeekHours>(initialHours);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
@@ -194,17 +221,17 @@ export function ProfileSetupForm({
   }
 
   /**
-   * Saves one screen and moves on. `null` patch = nothing to save; no target =
+   * Saves one screen and moves on. `null` save = nothing to write; no target =
    * this was the last screen, so onboarding ends and the dashboard opens.
    */
-  function saveAndGo(patch: Record<string, unknown> | null, target: Phase | undefined) {
-    if (!patch && target) {
+  function saveAndGo(save: (() => Promise<ActionResult>) | null, target: Phase | undefined) {
+    if (!save && target) {
       goTo(target);
       return;
     }
 
     startTransition(async () => {
-      const result = patch ? await updateOnboardingProfile(patch) : { ok: true as const };
+      const result = save ? await save() : { ok: true as const };
       if (result.ok && !target) {
         const done = await completeOnboarding();
         if (done.ok) router.push("/dashboard");
@@ -219,7 +246,23 @@ export function ProfileSetupForm({
     });
   }
 
-  /** What the current screen has to write, or null when it has nothing. */
+  /** How the current screen writes what it holds, or null when it has nothing. */
+  function saverFor(current: Phase): (() => Promise<ActionResult>) | null {
+    if (current === "hours") {
+      if (sameWeek(hours, initialHours)) return null;
+      const problem = weekProblem(hours);
+      if (problem) {
+        const error = problem === "overlap" ? "overlapping_rules" : "end_before_start";
+        return async () => ({ ok: false, error });
+      }
+      return () => saveWeeklySchedule({ offer_id: null, rules: toWeeklyRules(hours) });
+    }
+
+    const patch = patchFor(current);
+    return patch ? () => updateOnboardingProfile(patch) : null;
+  }
+
+  /** What a profile screen has to write, or null when it has nothing. */
   function patchFor(current: Phase): Record<string, unknown> | null {
     switch (current) {
       case "photo":
@@ -542,23 +585,40 @@ export function ProfileSetupForm({
             </PhaseField>
           </div>
         ) : null}
+
+        {phase === "hours" ? (
+          <div className="space-y-6">
+            <PhaseQuestion
+              ref={headingRef}
+              level={1}
+              eyebrow={name.trim() || undefined}
+              title={t("phases.hours.title")}
+              hint={t("phases.hours.hint", { action: tActions("calendar_booking.label") })}
+            />
+            <WeekHoursEditor week={hours} onChange={setHours} locale={locale} />
+          </div>
+        ) : null}
       </PhaseSwitch>
 
       {/* ---------------------------------------------------------------- */}
 
-      <div className="flex items-center justify-between gap-3 pt-1">
+      {/* On a phone the doors stack at full width, the way forward on top and
+          "back" last: a long label ("Continue with these hours") never pushes
+          a button off the screen, and both doors are the same size for real. */}
+      <div className="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between">
         {index > 0 && !(existing && index === PHASES.indexOf("photo")) ? (
           <Button
             type="button"
             variant="ghost"
             disabled={pending}
             onClick={() => goTo(PHASES[index - 1])}
+            className="self-start sm:self-auto"
           >
             <ArrowLeft className="size-4" />
             {tCommon("back")}
           </Button>
         ) : (
-          <span />
+          <span className="hidden sm:block" />
         )}
 
         {phase === "category" ? (
@@ -587,7 +647,7 @@ export function ProfileSetupForm({
           // Everything after the link is optional, so every one of those
           // screens offers both doors, at the same size: skipping is a full
           // answer, not a small print escape. The last one opens the dashboard.
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center">
             <Button
               type="button"
               size="lg"
@@ -601,9 +661,13 @@ export function ProfileSetupForm({
               type="button"
               size="lg"
               loading={pending}
-              onClick={() => saveAndGo(patchFor(phase), next)}
+              onClick={() => saveAndGo(saverFor(phase), next)}
             >
-              {next ? tCommon("continue") : t("finish")}
+              {phase === "hours"
+                ? t("phases.hours.submit")
+                : next
+                  ? tCommon("continue")
+                  : t("finish")}
               <ArrowRight className="size-4" />
             </Button>
           </div>

@@ -21,16 +21,27 @@ export default async function OnboardingProfilePage() {
   if (profile?.onboarding_completed_at) redirect("/dashboard");
 
   const supabase = await createSupabaseServerClient();
-  const { data: categories } = await supabase
-    .from("activity_categories")
-    .select("id, slug, name, icon, config")
-    .eq("is_active", true)
-    .order("position");
+  const [{ data: categories }, { data: rules }] = await Promise.all([
+    supabase
+      .from("activity_categories")
+      .select("id, slug, name, icon, config")
+      .eq("is_active", true)
+      .order("position"),
+    // Someone resuming sees the hours already saved, not the default.
+    profile
+      ? supabase
+          .from("availabilities")
+          .select("weekday, start_time, end_time")
+          .eq("profile_id", profile.id)
+          .is("offer_id", null)
+      : Promise.resolve({ data: null }),
+  ]);
 
   return (
     <ProfileSetupForm
       categories={categories ?? []}
       linkBase={siteUrl.replace(/^https?:\/\//, "")}
+      savedHours={rules}
       existing={
         profile
           ? {

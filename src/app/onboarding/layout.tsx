@@ -15,6 +15,8 @@ export default async function OnboardingLayout({ children }: LayoutProps<"/onboa
     ...BASE_NAMESPACES,
     "onboarding",
     "offers",
+    // The hours screen is the dashboard's week editor.
+    "dashboard.availability",
     "publicProfile.gallery",
     "media",
     "share",

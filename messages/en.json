@@ -358,8 +358,6 @@
       "addRange": "Add a range",
       "addTimeOff": "Add time off",
       "backToDefault": "Back to your weekly hours",
-      "copied": "Copied to every day",
-      "copyToAll": "Copy to every day",
       "overlap": "Two ranges overlap on the same day.",
       "weeklyTotal": "{hours} h open per week",
       "customSchedule": "Custom hours for this offer",
@@ -376,12 +374,16 @@
       "timeOffLabelPlaceholder": "Holidays",
       "timeOffTitle": "Time off",
       "to": "To",
-      "unavailable": "Unavailable",
       "weeklyHint": "Used by every offer booked on a time slot. Times are in {timezone}.",
       "weeklyTitle": "Weekly hours",
       "wholeDay": "All day",
       "wholeDayHint": "Turn off to block only some hours of each day.",
-      "blockedHours": "Blocked hours"
+      "blockedHours": "Blocked hours",
+      "daysLabel": "Opening days",
+      "closed": "Closed",
+      "copyToOpen": "Apply these hours to the other open days",
+      "copiedToOpen": "Hours applied to the open days",
+      "noDays": "No open day yet: tap a day to open it."
     },
     "bookings": {
       "actionTypeFilter": "Action type",
@@ -1816,6 +1818,11 @@
         "details": {
           "title": "What do your clients want to know?",
           "hint": "Experience, languages, area covered… Tap an idea to add it. Only filled-in fields appear on your page."
+        },
+        "hours": {
+          "title": "When can clients book you?",
+          "hint": "For your “{action}” offers: clients only see these hours. Tap a day to open or close it, drag to set the hours.",
+          "submit": "Continue with these hours"
         }
       },
       "previewBody": "Based on your activity, we'll suggest fields like {fields} — keep what fits, ignore the rest.",

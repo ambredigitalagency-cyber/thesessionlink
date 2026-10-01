@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
@@ -22,6 +22,9 @@ import { cn } from "@/lib/utils";
  *     title and usually a line of explanation.
  *   * ChoiceChips — a setting inside a longer form, where a row of pills is
  *     the honest size. Same semantics, a tenth of the space.
+ *
+ * (ChoiceToggleGroup, further down, is ChoiceGroup for questions with several
+ * answers; what follows about radios applies to the two above.)
  *
  * Both are radio groups. Arrow keys move focus without selecting: selecting
  * here has consequences — it can reveal different settings, or advance the
@@ -81,11 +84,92 @@ const COLUMNS = {
   2: "grid-cols-1 sm:grid-cols-2",
   3: "grid-cols-2 sm:grid-cols-3",
   4: "grid-cols-2 sm:grid-cols-4",
+  // The days of a week: a row of seven where there is room, four then three.
+  7: "grid-cols-4 sm:grid-cols-7",
 } as const;
+
+type CardLayout = "tile" | "row";
+type CardVisual = "bubble" | "bare";
 
 /** Cards come in one after another, capped so a long list is not a queue. */
 function riseDelay(index: number): CSSProperties {
   return { "--rise-delay": `${Math.min(index, 12) * 0.035}s` } as CSSProperties;
+}
+
+/** The card itself, shared by the single-answer and the several-answer groups. */
+function cardClass(selected: boolean, layout: CardLayout, compact: boolean) {
+  return cn(
+    "rise-in group relative rounded-[var(--radius-md)] border transition-[border-color,background-color,box-shadow,transform] duration-200 ease-[var(--ease-out-expo)] active:scale-[0.975] disabled:pointer-events-none disabled:opacity-45",
+    layout === "tile"
+      ? cn(
+          "flex flex-col items-center text-center",
+          // The extra top keeps the tick off the drawing, as on the big tiles.
+          compact ? "gap-1.5 px-1.5 pt-5 pb-3" : "gap-2.5 p-4",
+        )
+      : "flex items-start gap-3 p-3.5 text-left",
+    selected
+      ? "border-ink bg-ink/[0.035] shadow-[0_0_0_1px_var(--color-ink)]"
+      : "border-line-strong hover:border-ink/30 hover:bg-canvas",
+  );
+}
+
+/** Visual, title, description — everything in a card but the tick. */
+function CardBody<T extends string>({
+  option,
+  selected,
+  layout,
+  visual,
+}: {
+  option: Choice<T>;
+  selected: boolean;
+  layout: CardLayout;
+  visual: CardVisual;
+}) {
+  return (
+    <>
+      {option.visual ? (
+        <span
+          className={cn(
+            "flex shrink-0 items-center justify-center transition-colors duration-200",
+            visual === "bubble"
+              ? cn(
+                  "rounded-full",
+                  layout === "tile" ? "size-11" : "mt-0.5 size-9",
+                  selected ? "bg-ink text-ink-inverse" : "bg-ink/5 text-ink-muted",
+                )
+              : layout === "tile"
+                ? "w-full max-w-[148px]"
+                : "mt-0.5 w-16 shrink-0",
+          )}
+        >
+          {option.visual}
+        </span>
+      ) : null}
+
+      <span className={cn("min-w-0", layout === "tile" ? "w-full" : "flex-1")}>
+        <span className={cn("flex items-center gap-2", layout === "tile" && "justify-center")}>
+          <span className="text-ink text-[14px] leading-tight font-medium">{option.title}</span>
+          {option.badge}
+        </span>
+        {option.description ? (
+          <span className="text-ink-muted mt-1 block text-[12.5px] leading-snug">
+            {option.description}
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
+}
+
+function tickClass(layout: CardLayout, compact = false) {
+  return cn(
+    "bg-ink text-ink-inverse flex size-4.5 shrink-0 items-center justify-center rounded-full",
+    layout === "tile"
+      ? compact
+        ? "absolute top-1.5 right-1.5"
+        : "absolute top-2.5 right-2.5"
+      : "mt-1",
+  );
 }
 
 export function ChoiceGroup<T extends string>({
@@ -106,10 +190,10 @@ export function ChoiceGroup<T extends string>({
   /** Unique per group: the travelling tick is a shared layout animation. */
   name: string;
   /** "tile" stacks the visual over the text, "row" sets it beside. */
-  layout?: "tile" | "row";
+  layout?: CardLayout;
   columns?: keyof typeof COLUMNS;
   /** "bubble" frames the visual in a disc; "bare" lets a drawing breathe. */
-  visual?: "bubble" | "bare";
+  visual?: CardVisual;
   className?: string;
 }) {
   const { listRef, onKeyDown } = useRovingFocus();
@@ -140,62 +224,98 @@ export function ChoiceGroup<T extends string>({
             disabled={option.disabled}
             onClick={() => onChange(option.value)}
             style={riseDelay(index)}
-            className={cn(
-              "rise-in group relative rounded-[var(--radius-md)] border transition-[border-color,background-color,box-shadow,transform] duration-200 ease-[var(--ease-out-expo)] active:scale-[0.975] disabled:pointer-events-none disabled:opacity-45",
-              layout === "tile"
-                ? "flex flex-col items-center gap-2.5 p-4 text-center"
-                : "flex items-start gap-3 p-3.5 text-left",
-              selected
-                ? "border-ink bg-ink/[0.035] shadow-[0_0_0_1px_var(--color-ink)]"
-                : "border-line-strong hover:border-ink/30 hover:bg-canvas",
-            )}
+            className={cardClass(selected, layout, false)}
           >
-            {option.visual ? (
-              <span
-                className={cn(
-                  "flex shrink-0 items-center justify-center transition-colors duration-200",
-                  visual === "bubble"
-                    ? cn(
-                        "rounded-full",
-                        layout === "tile" ? "size-11" : "mt-0.5 size-9",
-                        selected ? "bg-ink text-ink-inverse" : "bg-ink/5 text-ink-muted",
-                      )
-                    : layout === "tile"
-                      ? "w-full max-w-[148px]"
-                      : "mt-0.5 w-16 shrink-0",
-                )}
-              >
-                {option.visual}
-              </span>
-            ) : null}
-
-            <span className={cn("min-w-0", layout === "tile" ? "w-full" : "flex-1")}>
-              <span
-                className={cn("flex items-center gap-2", layout === "tile" && "justify-center")}
-              >
-                <span className="text-ink text-[14px] leading-tight font-medium">
-                  {option.title}
-                </span>
-                {option.badge}
-              </span>
-              {option.description ? (
-                <span className="text-ink-muted mt-1 block text-[12.5px] leading-snug">
-                  {option.description}
-                </span>
-              ) : null}
-            </span>
+            <CardBody option={option} selected={selected} layout={layout} visual={visual} />
 
             {selected ? (
-              <motion.span
-                layoutId={`choice-tick-${name}`}
-                className={cn(
-                  "bg-ink text-ink-inverse flex size-4.5 shrink-0 items-center justify-center rounded-full",
-                  layout === "tile" ? "absolute top-2.5 right-2.5" : "mt-1",
-                )}
-              >
+              <motion.span layoutId={`choice-tick-${name}`} className={tickClass(layout)}>
                 <Check className="size-3" />
               </motion.span>
             ) : null}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Several answers — the same cards, each one switched on and off              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The same cards, for a question with several answers — which days you open.
+ * Each card is a toggle button (aria-pressed) rather than a radio: tapping one
+ * never touches the others. A switched-on card looks exactly like a chosen
+ * ChoiceGroup card, so "on" reads the same across the product.
+ *
+ * The tick cannot travel here — several cards hold one at once — so it pops in
+ * place. Ticks already on at the first render are simply there (no entrance in
+ * the server's HTML); Motion drops the pop under reduced motion.
+ */
+export function ChoiceToggleGroup<T extends string>({
+  label,
+  options,
+  values,
+  onToggle,
+  layout = "tile",
+  columns = 4,
+  visual = "bare",
+  compact = false,
+  className,
+}: {
+  label: string;
+  options: readonly Choice<T>[];
+  values: readonly T[];
+  onToggle: (value: T) => void;
+  layout?: CardLayout;
+  columns?: keyof typeof COLUMNS;
+  visual?: CardVisual;
+  /** Tighter tiles, for a row of many small cards. */
+  compact?: boolean;
+  className?: string;
+}) {
+  const { listRef, onKeyDown } = useRovingFocus();
+
+  return (
+    <div
+      ref={listRef}
+      role="group"
+      aria-label={label}
+      onKeyDown={onKeyDown}
+      className={cn("grid gap-2", COLUMNS[columns], className)}
+    >
+      {options.map((option, index) => {
+        const selected = values.includes(option.value);
+
+        return (
+          <button
+            key={option.value}
+            data-choice
+            type="button"
+            aria-pressed={selected}
+            disabled={option.disabled}
+            onClick={() => onToggle(option.value)}
+            style={riseDelay(index)}
+            className={cardClass(selected, layout, compact)}
+          >
+            <CardBody option={option} selected={selected} layout={layout} visual={visual} />
+
+            <AnimatePresence initial={false}>
+              {selected ? (
+                <motion.span
+                  key="tick"
+                  initial={{ scale: 0.4, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.4, opacity: 0 }}
+                  transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  className={tickClass(layout, compact)}
+                >
+                  <Check className="size-3" />
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
           </button>
         );
       })}

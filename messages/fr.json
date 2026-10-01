@@ -358,8 +358,6 @@
       "addRange": "Ajouter une plage",
       "addTimeOff": "Ajouter une absence",
       "backToDefault": "Retour aux horaires hebdomadaires",
-      "copied": "Copié sur tous les jours",
-      "copyToAll": "Copier sur tous les jours",
       "overlap": "Deux plages se chevauchent sur un même jour.",
       "weeklyTotal": "{hours} h d'ouverture par semaine",
       "customSchedule": "Horaires spécifiques à cette offre",
@@ -376,12 +374,16 @@
       "timeOffLabelPlaceholder": "Vacances",
       "timeOffTitle": "Absences",
       "to": "Au",
-      "unavailable": "Indisponible",
       "weeklyHint": "Utilisés par toutes les offres réservables sur créneau. Heures en {timezone}.",
       "weeklyTitle": "Horaires hebdomadaires",
       "wholeDay": "Toute la journée",
       "wholeDayHint": "Décochez pour ne bloquer que certaines heures de chaque jour.",
-      "blockedHours": "Heures bloquées"
+      "blockedHours": "Heures bloquées",
+      "daysLabel": "Jours d’ouverture",
+      "closed": "Fermé",
+      "copyToOpen": "Appliquer ces horaires aux autres jours ouverts",
+      "copiedToOpen": "Horaires appliqués aux jours ouverts",
+      "noDays": "Aucun jour ouvert pour l’instant : touchez un jour pour l’ouvrir."
     },
     "bookings": {
       "actionTypeFilter": "Type d'action",
@@ -1816,6 +1818,11 @@
         "details": {
           "title": "Qu'est-ce que vos clients veulent savoir ?",
           "hint": "Expérience, langues, zone couverte… Touchez une idée pour l'ajouter. Seuls les champs remplis s'affichent sur votre page."
+        },
+        "hours": {
+          "title": "Quand peut-on vous réserver ?",
+          "hint": "Pour vos offres « {action} » : vos clients ne verront que ces horaires. Touchez un jour pour l’ouvrir ou le fermer, glissez pour régler les heures.",
+          "submit": "Continuer avec ces horaires"
         }
       },
       "previewBody": "Selon votre activité, nous proposerons des champs comme {fields} — gardez ce qui colle, ignorez le reste.",
