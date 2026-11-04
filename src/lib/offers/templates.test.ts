@@ -11,7 +11,12 @@ import { ACTION_TYPES, categoryConfigSchema, localized, type CategoryField } fro
  * a typo there and a broken offer builder is this file: every template must
  * parse with the schema the app reads it with, and every field it holds must
  * turn into a valid offer field in both languages.
+ *
+ * The two reservation types were written there too and are removed again by
+ * 20261031000001_remove_bookings.sql; they are dropped here the same way, so
+ * what is parsed is what the database holds today.
  */
+const REMOVED_ACTIONS = ["calendar_booking", "direct_reservation"];
 const sql = readFileSync(
   path.join(process.cwd(), "supabase/migrations/20261001000001_offer_templates.sql"),
   "utf8",
@@ -19,7 +24,11 @@ const sql = readFileSync(
 
 const templates = [
   ...sql.matchAll(/'\{templates\}', '([\s\S]*?)'::jsonb, true\)\s+where slug = '([a-z-]+)';/g),
-].map(([, json, slug]) => ({ slug, raw: JSON.parse(json.replaceAll("''", "'")) as unknown }));
+].map(([, json, slug]) => {
+  const raw = JSON.parse(json.replaceAll("''", "'")) as Record<string, unknown>;
+  for (const action of REMOVED_ACTIONS) delete raw[action];
+  return { slug, raw };
+});
 
 describe("offer templates migration", () => {
   it("covers every activity of the catalogue", () => {
@@ -40,7 +49,7 @@ describe("offer templates migration", () => {
     ]);
   });
 
-  it.each(templates)("$slug: 2 to 4 fields for each of the five actions", ({ raw }) => {
+  it.each(templates)("$slug: 2 to 4 fields for each action", ({ raw }) => {
     const config = categoryConfigSchema.parse({ templates: raw });
     for (const action of ACTION_TYPES) {
       const fields = config.templates[action] ?? [];

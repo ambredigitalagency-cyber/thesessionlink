@@ -21,7 +21,7 @@ export type ReviewDraft = Omit<PublicOffer, "id" | "main_photo_url">;
  * the public components themselves, not a lookalike.
  *
  * The checklist points at questions rather than stages, so "the action type is
- * wrong" is one tap back to the five cards instead of a walk through the title
+ * wrong" is one tap back to the action cards instead of a walk through the title
  * and the price on the way.
  */
 export function OfferReview({
@@ -118,26 +118,6 @@ export function OfferReview({
           ) : null}
 
           <OfferDetails fields={draft.custom_fields} />
-
-          {draft.addons.length > 0 ? (
-            <div className="space-y-1.5">
-              <p className="text-ink text-[13px] font-medium">{t("addons")}</p>
-              <ul className="flex flex-wrap gap-1.5">
-                {draft.addons.map((addon) => (
-                  <li
-                    key={addon.id}
-                    className="rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-[12.5px] text-[var(--accent-ink)]"
-                  >
-                    {addon.label} ·{" "}
-                    {new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-US", {
-                      style: "currency",
-                      currency,
-                    }).format(addon.price)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
         </div>
       </div>
     </div>

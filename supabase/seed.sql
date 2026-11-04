@@ -28,7 +28,7 @@ on conflict (id) do nothing;
 insert into public.profiles (
   id, user_id, display_name, slug, headline, bio, location, category_id,
   social_links, whatsapp_number, contact_email, phone_number, contact_channels,
-  theme, locale, timezone, currency, onboarding_completed_at
+  theme, accent_color, locale, timezone, currency, onboarding_completed_at
 )
 values (
   '00000000-0000-4000-8000-000000000010',
@@ -44,7 +44,8 @@ values (
   'demo@thesessionlink.com',
   '+33612345678',
   '{"email": true, "phone": false, "whatsapp": true}',
-  '{"accent": "coral"}',
+  'classic',
+  '#f2542d',
   'en',
   'Europe/Paris',
   'EUR',
@@ -62,8 +63,8 @@ values
     '00000000-0000-4000-8000-000000000010',
     'Personal training — 60 min',
     'A one-to-one session built around your goals. Gym, park or your place.',
-    60, 'fixed', 'calendar_booking',
-    '{"duration_minutes": 60, "buffer_minutes": 15, "min_notice_hours": 4, "max_days_ahead": 45, "requires_confirmation": false, "ask_phone": "optional"}',
+    60, 'fixed', 'contact_request',
+    '{"ask_phone": "optional"}',
     '[{"id":"f_format","type":"select","definition":{"label":"Format","options":[{"id":"in_person","label":"In person"},{"id":"online","label":"Online"},{"id":"at_home","label":"At your home"}]},"value":"in_person"},
       {"id":"f_level","type":"select","definition":{"label":"Level","options":[{"id":"all","label":"All levels"},{"id":"beginner","label":"Beginner"},{"id":"intermediate","label":"Intermediate"},{"id":"advanced","label":"Advanced"}]},"value":"all"}]',
     0, true
@@ -73,8 +74,8 @@ values
     '00000000-0000-4000-8000-000000000010',
     'Small group class — 4 spots',
     'Outdoor circuit training. Bring water, we bring everything else.',
-    18, 'fixed', 'direct_reservation',
-    '{"capacity": 4, "date_mode": "required", "max_quantity_per_booking": 2, "quantity_label": "spots", "requires_confirmation": true, "ask_phone": "optional"}',
+    18, 'fixed', 'contact_request',
+    '{"ask_phone": "optional", "message_prompt": "Which date suits you, and how many of you?"}',
     '[{"id":"f_location","type":"text","definition":{"label":"Location","multiline":false},"value":"Parc de la Tête d''Or"}]',
     1, true
   ),
@@ -100,43 +101,21 @@ values
   )
 on conflict (id) do nothing;
 
--- A confirmed session next week and a request waiting for an answer.
-insert into public.bookings (
-  profile_id, offer_id, action_type, offer_title, client_name, client_email,
-  client_phone, client_message, starts_at, ends_at, status, locale, client_timezone
-)
-values (
-  '00000000-0000-4000-8000-000000000010',
-  '00000000-0000-4000-8000-000000000101',
-  'calendar_booking',
-  'Personal training — 60 min',
-  'Julien Meyer',
-  'julien@example.com',
-  '+33600000001',
-  'First session, I have a sensitive left knee.',
-  date_trunc('hour', now()) + interval '7 days' + interval '10 hours',
-  date_trunc('hour', now()) + interval '7 days' + interval '11 hours',
-  'confirmed',
-  'fr',
-  'Europe/Paris'
-)
-on conflict do nothing;
-
-insert into public.bookings (
-  profile_id, offer_id, action_type, offer_title, client_name, client_email,
-  client_message, requested_date, quantity, status, locale
-)
-values (
-  '00000000-0000-4000-8000-000000000010',
-  '00000000-0000-4000-8000-000000000102',
-  'direct_reservation',
-  'Small group class — 4 spots',
-  'Chloé Bernard',
-  'chloe@example.com',
-  'Coming with a friend, is that ok?',
-  (now() + interval '3 days')::date,
-  2,
-  'pending',
-  'fr'
-)
-on conflict do nothing;
+-- The offers above laid the page out (socials, contacts, one block per offer).
+-- A few richer blocks under them, to show what a page can hold.
+insert into public.page_blocks (profile_id, type, position, config)
+select '00000000-0000-4000-8000-000000000010', b.type, (
+         select coalesce(max(position), -1) from public.page_blocks
+          where profile_id = '00000000-0000-4000-8000-000000000010'
+       ) + b.ord, b.config::jsonb
+  from (values
+    (1, 'stats', '{"items": [{"value": "8 yrs", "label": "coaching"}, {"value": "300+", "label": "clients"}, {"value": "4.9/5", "label": "average rating"}]}'),
+    (2, 'reviews', '{"layout": "carousel", "items": [{"name": "Julien M.", "text": "Twelve weeks in and I still look forward to every session.", "rating": 5}, {"name": "Chloé B.", "text": "Patient, precise, and the small group keeps you honest.", "rating": 5}]}'),
+    (3, 'hours', '{"days": [{"closed": true, "open": "09:00", "close": "18:00"}, {"closed": false, "open": "07:00", "close": "20:00"}, {"closed": false, "open": "07:00", "close": "20:00"}, {"closed": false, "open": "07:00", "close": "20:00"}, {"closed": false, "open": "07:00", "close": "20:00"}, {"closed": false, "open": "07:00", "close": "19:00"}, {"closed": false, "open": "09:00", "close": "13:00"}], "note": null}'),
+    (4, 'faq', '{"title": "Questions", "items": [{"question": "I have never trained. Is that a problem?", "answer": "Not at all: most of my clients start from zero."}, {"question": "Do I need equipment?", "answer": "No. For online sessions, a mat is enough."}]}')
+  ) as b(ord, type, config)
+ where exists (select 1 from public.profiles where id = '00000000-0000-4000-8000-000000000010')
+   and not exists (
+     select 1 from public.page_blocks
+      where profile_id = '00000000-0000-4000-8000-000000000010' and type = 'stats'
+   );

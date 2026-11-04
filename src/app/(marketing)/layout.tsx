@@ -8,7 +8,12 @@ export default async function MarketingLayout({ children }: LayoutProps<"/">) {
 
   return (
     <NextIntlClientProvider
-      messages={pickMessages(messages, [...BASE_NAMESPACES, "landing", "offers.actions"])}
+      messages={pickMessages(messages, [
+        ...BASE_NAMESPACES,
+        "landing",
+        "offers.actions",
+        "publicProfile",
+      ])}
     >
       {children}
     </NextIntlClientProvider>

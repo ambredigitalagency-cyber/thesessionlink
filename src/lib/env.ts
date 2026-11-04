@@ -18,6 +18,15 @@ export const siteUrl = (
     : "http://localhost:3000")
 ).replace(/\/$/, "");
 
+/**
+ * The WhatsApp number support answers on, in international form (+212…),
+ * linked from the landing's footer. Unset = no support link is shown.
+ */
+export function supportWhatsapp(): string | null {
+  const digits = (process.env.SUPPORT_WHATSAPP ?? "").replace(/\D/g, "");
+  return digits.length >= 8 && digits.length <= 15 ? digits : null;
+}
+
 export function assertSupabasePublicEnv() {
   if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error(
@@ -42,6 +51,13 @@ export const serverEnv = {
   },
   get cronSecret() {
     return process.env.CRON_SECRET ?? "";
+  },
+  /**
+   * Keys the daily visitor code of page statistics (src/lib/tracking). Unset =
+   * nothing is counted. Changing it only resets the day's de-duplication.
+   */
+  get trackingSecret() {
+    return process.env.TRACKING_SECRET ?? "";
   },
   /**
    * Opens the console at /admin/login without a Supabase account. Solo/demo

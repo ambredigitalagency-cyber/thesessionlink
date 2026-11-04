@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 /**
  * Page transition for the dashboard. A `template` remounts on every navigation,
  * unlike a layout, so the enter animation replays when the pro moves between
- * Offers, Bookings, Profile and Settings — no AnimatePresence needed.
+ * My page, Offers and Settings — no AnimatePresence needed.
  *
  * Deliberately short and shallow: 4px of travel over 220ms reads as the page
  * settling, not as a transition to sit through. The root MotionConfig drops the

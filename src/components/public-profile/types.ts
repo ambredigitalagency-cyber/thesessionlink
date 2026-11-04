@@ -1,7 +1,5 @@
-import type { Addon } from "@/lib/offers/addons";
 import type { OfferField } from "@/lib/offers/fields";
 import type { ActionType } from "@/lib/offers/schema";
-import type { CardStyle, ProfileLayout, SocialKey, ThemeAccent } from "@/lib/validation";
 
 export type PublicOffer = {
   id: string;
@@ -15,10 +13,9 @@ export type PublicOffer = {
   action_type: ActionType;
   action_config: unknown;
   custom_fields: OfferField[];
-  /** Extras the client can tick; empty where the action type has no price. */
-  addons: Addon[];
 };
 
+/** What the page header and its blocks need to know about the coach. */
 export type PublicProfile = {
   id: string;
   slug: string;
@@ -28,25 +25,13 @@ export type PublicProfile = {
   avatar_url: string | null;
   location: string | null;
   categoryName: string | null;
-  social_links: Partial<Record<SocialKey, string | null>>;
+  /** The fallback number of WhatsApp offers that do not set their own. */
   whatsapp_number: string | null;
-  contact_email: string | null;
-  phone_number: string | null;
-  calendar_visible: boolean;
-  custom_closed_message: string | null;
-  timezone: string;
   currency: string;
-  accent: ThemeAccent;
-  layout: ProfileLayout;
-  cards: CardStyle;
+  timezone: string;
   /** Profile-level details (experience, languages…), already parsed. */
   details: OfferField[];
   locale: "en" | "fr";
-  /**
-   * Gateways this coach can actually be paid through, right now.
-   *
-   * Names only — the account identifiers stay on the server. An empty list
-   * means the payment step is not shown at all, whatever an offer asks for.
-   */
-  paymentProviders: ("stripe" | "paypal")[];
+  /** First offer created: blocks are public and the page is indexed. */
+  published: boolean;
 };

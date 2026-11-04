@@ -13,7 +13,7 @@ export type ApplyResult = {
 /**
  * Applies one verified Paddle event to the coach's profile.
  *
- * Safe to receive twice and in any order, like settlePayment() for Stripe:
+ * Safe to receive twice and in any order:
  *
  *   * an event id already in paddle_webhook_events is acknowledged and
  *     skipped — a retry or a replay never applies twice;
@@ -59,14 +59,18 @@ export async function applyPaddleEvent(facts: PaddleFacts): Promise<ApplyResult>
       return { applied: false, reason: "stale", profileId: profile.id };
     }
 
+    // The day it stopped dates the grace period (src/lib/billing/access.ts):
+    // kept from the first inactive event, cleared as soon as it is active again.
+    const active = subscriptionIsActive(facts.status);
     const { error } = await supabase
       .from("profiles")
       .update({
         ...link,
         subscription_status: facts.status,
-        subscription_active: subscriptionIsActive(facts.status),
+        subscription_active: active,
         subscription_renews_at: facts.status === "canceled" ? null : facts.renewsAt,
         subscription_synced_at: facts.occurredAt,
+        subscription_ended_at: active ? null : (profile.subscription_ended_at ?? facts.occurredAt),
       })
       .eq("id", profile.id);
     if (error) throw new Error(`profile update failed: ${error.code}`);
@@ -86,12 +90,14 @@ type ProfileRow = {
   paddle_customer_id: string | null;
   paddle_subscription_id: string | null;
   subscription_synced_at: string | null;
+  subscription_ended_at: string | null;
 };
 
 /** By our own profile id first (set server-side at checkout), then by Paddle ids. */
 async function findProfile(facts: PaddleFacts): Promise<ProfileRow | null> {
   const supabase = createSupabaseAdminClient();
-  const columns = "id, paddle_customer_id, paddle_subscription_id, subscription_synced_at";
+  const columns =
+    "id, paddle_customer_id, paddle_subscription_id, subscription_synced_at, subscription_ended_at";
 
   if (facts.profileId) {
     const { data } = await supabase

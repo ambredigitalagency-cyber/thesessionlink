@@ -14,10 +14,13 @@ export function AuthForm({
   intent,
   next,
   linkError,
+  inApp = false,
 }: {
   intent: "login" | "signup";
   next: string;
   linkError?: boolean;
+  /** In an app's own browser: say where the link will sign them in. */
+  inApp?: boolean;
 }) {
   const t = useTranslations("auth");
   const tError = useTranslations("errors");
@@ -60,6 +63,11 @@ export function AuthForm({
           <p className="text-ink-muted mt-1.5 text-[14px] leading-relaxed">
             {t("sentBody", { email })}
           </p>
+          {inApp ? (
+            <p className="text-ink mt-3 rounded-[var(--radius-sm)] bg-[var(--accent-soft)] p-3 text-[13.5px] leading-relaxed">
+              {t("inApp.sentHint")}
+            </p>
+          ) : null}
           <p className="text-ink-muted mt-5 text-[13px]">
             {t("sentHint")}{" "}
             <button

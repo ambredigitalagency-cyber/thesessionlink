@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Accordion, Dialog, DropdownMenu } from "radix-ui";
 import type { ComponentProps, ReactNode } from "react";
 
@@ -35,6 +36,7 @@ export function Modal({
   footer?: ReactNode;
   size?: "sm" | "md" | "lg";
 }) {
+  const tCommon = useTranslations("common");
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -63,7 +65,7 @@ export function Modal({
             </div>
             <Dialog.Close className="text-ink-subtle hover:bg-ink/5 hover:text-ink -mt-1 -mr-1 rounded-full p-2 transition-colors">
               <X className="size-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{tCommon("close")}</span>
             </Dialog.Close>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-2">{children}</div>
@@ -79,7 +81,7 @@ export function Modal({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Sheet — slides in from the right (booking details, offer preview)            */
+/* Sheet — slides in from the right (offer details, offer preview)              */
 /* -------------------------------------------------------------------------- */
 
 export function Sheet({
@@ -99,6 +101,7 @@ export function Sheet({
   footer?: ReactNode;
   className?: string;
 }) {
+  const tCommon = useTranslations("common");
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
@@ -125,7 +128,7 @@ export function Sheet({
             </div>
             <Dialog.Close className="text-ink-subtle hover:bg-ink/5 hover:text-ink -mr-1 rounded-full p-2 transition-colors">
               <X className="size-4" />
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{tCommon("close")}</span>
             </Dialog.Close>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>

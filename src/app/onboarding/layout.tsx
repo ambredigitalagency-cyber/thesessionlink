@@ -14,11 +14,9 @@ export default async function OnboardingLayout({ children }: LayoutProps<"/onboa
   const messages = pickMessages(await getMessages(), [
     ...BASE_NAMESPACES,
     "onboarding",
-    "offers",
-    // The hours screen is the dashboard's week editor.
-    "dashboard.availability",
-    "publicProfile.gallery",
-    "media",
+    "publicProfile",
+    "page.appearance",
+    "stats.links",
     "share",
   ]);
 
@@ -44,7 +42,7 @@ export default async function OnboardingLayout({ children }: LayoutProps<"/onboa
         </div>
       </header>
 
-      <main className="relative mx-auto w-full max-w-2xl flex-1 px-5 pt-4 pb-20 sm:px-8">
+      <main className="relative mx-auto w-full max-w-3xl flex-1 px-4 pt-4 pb-20 sm:px-8">
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
       </main>
     </div>

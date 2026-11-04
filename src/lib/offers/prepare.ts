@@ -1,6 +1,4 @@
-import { acceptsAddons } from "@/lib/offers/addons";
 import { parseActionConfig } from "@/lib/offers/schema";
-import { offerIsPayable } from "@/lib/payments/amount";
 import { fieldErrorsFrom, offerInputSchema } from "@/lib/validation";
 
 /**
@@ -19,23 +17,10 @@ export function prepareOffer(input: unknown) {
     };
   }
 
-  const { action_config, price, price_type, photos, addons, ...rest } = parsed.data;
+  const { action_config, price, price_type, photos, ...rest } = parsed.data;
 
   // "free" and "on_request" never carry an amount.
   const amount = price_type === "free" || price_type === "on_request" ? null : price;
-  const config = parseActionConfig(parsed.data.action_type, action_config);
-
-  // Online payment needs a firm amount to charge. The form already refuses to
-  // switch it on without one, but a price edited afterwards — or a payload
-  // that never went through the form — must not leave an offer asking clients
-  // to pay a figure nobody agreed on.
-  if (
-    "online_payment" in config &&
-    config.online_payment !== "off" &&
-    !offerIsPayable({ price: amount, price_type })
-  ) {
-    config.online_payment = "off";
-  }
 
   return {
     ok: true as const,
@@ -44,9 +29,7 @@ export function prepareOffer(input: unknown) {
       photos,
       price_type,
       price: amount,
-      action_config: config,
-      // Extras only mean something where there is a price to add them to.
-      addons: acceptsAddons(parsed.data.action_type) ? addons : [],
+      action_config: parseActionConfig(parsed.data.action_type, action_config),
     },
   };
 }

@@ -1,19 +1,11 @@
 import { ImageResponse } from "next/og";
 
+import { DEFAULT_ACCENT, normalizeHex } from "@/lib/page/themes";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export const alt = "Booking page";
+export const alt = "Profile page";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-
-const ACCENTS: Record<string, string> = {
-  coral: "#f2542d",
-  ink: "#0c0c0d",
-  forest: "#1f7a55",
-  ocean: "#2563eb",
-  violet: "#7c3aed",
-  amber: "#b45309",
-};
 
 /** Link preview used when a pro shares their page on social or in messages. */
 export default async function OpengraphImage({ params }: { params: Promise<{ slug: string }> }) {
@@ -22,12 +14,11 @@ export default async function OpengraphImage({ params }: { params: Promise<{ slu
 
   const { data: profile } = await supabase
     .from("public_profiles")
-    .select("display_name, headline, location, theme, avatar_url")
+    .select("display_name, headline, location, accent_color, avatar_url")
     .eq("slug", slug)
     .maybeSingle();
 
-  const theme = (profile?.theme ?? {}) as { accent?: string };
-  const accent = ACCENTS[theme.accent ?? "coral"] ?? ACCENTS.coral;
+  const accent = normalizeHex(profile?.accent_color) ?? DEFAULT_ACCENT;
   const name = profile?.display_name ?? slug;
   const initials = name
     .split(/\s+/)

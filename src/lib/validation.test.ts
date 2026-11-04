@@ -16,8 +16,6 @@ const base = {
   locale: "fr",
   timezone: "Africa/Casablanca",
   currency: "EUR",
-  reminder_hours_before: 24,
-  notify_new_bookings: true,
 };
 
 const whatsapp = (value: string | null) =>

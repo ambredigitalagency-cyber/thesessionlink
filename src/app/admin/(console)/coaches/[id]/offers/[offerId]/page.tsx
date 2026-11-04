@@ -8,7 +8,6 @@ import { adminUpdateOffer } from "@/actions/admin";
 import { AdminOfferEditor } from "@/components/admin/admin-offer-editor";
 import { adminDb, requireAdmin } from "@/lib/admin/access";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
-import { parseAddons } from "@/lib/offers/addons";
 import { parseOfferFields } from "@/lib/offers/fields";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 
@@ -26,14 +25,13 @@ export default async function AdminOfferPage({
   const t = await getTranslations("admin.intervention");
   const supabase = await adminDb(actor);
 
-  const [{ data: offer }, { data: coach }, { data: gateways }] = await Promise.all([
+  const [{ data: offer }, { data: coach }] = await Promise.all([
     supabase.from("offers").select("*").eq("id", offerId).eq("profile_id", id).maybeSingle(),
     supabase
       .from("profiles")
       .select("id, display_name, currency, locale, whatsapp_number, category_id")
       .eq("id", id)
       .maybeSingle(),
-    supabase.from("payment_accounts").select("status, charges_enabled").eq("profile_id", id),
   ]);
   if (!offer || !coach) notFound();
 
@@ -89,9 +87,6 @@ export default async function AdminOfferPage({
             currency={coach.currency}
             locale={coach.locale}
             profileWhatsapp={coach.whatsapp_number}
-            gatewayReady={(gateways ?? []).some(
-              (row) => row.status === "connected" && row.charges_enabled,
-            )}
             initial={{
               id: offer.id,
               title: offer.title,
@@ -102,7 +97,6 @@ export default async function AdminOfferPage({
               action_type: offer.action_type,
               action_config: offer.action_config,
               custom_fields: parseOfferFields(offer.custom_fields),
-              addons: parseAddons(offer.addons),
               is_active: offer.is_active,
             }}
           />

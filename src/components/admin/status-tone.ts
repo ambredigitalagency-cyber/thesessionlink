@@ -11,7 +11,8 @@ import type { AccountStatus } from "@/lib/admin/status";
 export const STATUS_BAR: Record<AccountStatus, string> = {
   subscribed: "bg-success",
   trial: "bg-[var(--console-accent)]",
-  expired: "bg-warning",
+  grace: "bg-warning",
+  expired: "bg-ink-subtle",
   suspended: "bg-danger",
   deleted: "bg-danger",
 };
@@ -19,16 +20,18 @@ export const STATUS_BAR: Record<AccountStatus, string> = {
 export const STATUS_TEXT: Record<AccountStatus, string> = {
   subscribed: "text-success",
   trial: "text-[var(--console-accent-ink)]",
-  expired: "text-warning",
+  grace: "text-warning",
+  expired: "text-ink-muted",
   suspended: "text-danger",
   deleted: "text-danger",
 };
 
-/** The same five states as a chip, for the one page that shows a single coach. */
+/** The same six states as a chip, for the one page that shows a single coach. */
 export const STATUS_CHIP: Record<AccountStatus, string> = {
   subscribed: "bg-success-soft text-success",
   trial: "bg-[var(--console-accent-soft)] text-[var(--console-accent-ink)]",
-  expired: "bg-warning-soft text-warning",
+  grace: "bg-warning-soft text-warning",
+  expired: "bg-ink/5 text-ink-muted",
   suspended: "bg-danger-soft text-danger",
   deleted: "bg-danger-soft text-danger",
 };

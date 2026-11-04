@@ -7,7 +7,10 @@ const MAX_EDGE = 1600;
 const AVATAR_EDGE = 640;
 const MAX_INPUT_BYTES = 12 * 1024 * 1024;
 
-export type UploadFolder = "avatar" | "offers";
+export type UploadFolder = "avatar" | "offers" | "page";
+
+/** PDFs only, and small: a catalogue or a price list, not a library. */
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 export class UploadError extends Error {
   constructor(public code: "too_large" | "unsupported" | "failed" | "unauthenticated") {
@@ -73,6 +76,56 @@ export async function uploadImage(file: File, folder: UploadFolder): Promise<str
   } = supabase.storage.from(BUCKET).getPublicUrl(path);
 
   return publicUrl;
+}
+
+/**
+ * Uploads one PDF to `media/{user_id}/files/…`.
+ *
+ * The type is checked twice — the declared MIME type and the file's first
+ * bytes (`%PDF-`) — because a browser trusts the extension. The stored name
+ * is a random id; the name shown to visitors is cleaned separately.
+ */
+export async function uploadPdf(file: File): Promise<{ url: string; name: string }> {
+  if (file.type !== "application/pdf" || !/\.pdf$/i.test(file.name)) {
+    throw new UploadError("unsupported");
+  }
+  if (file.size > MAX_FILE_BYTES) throw new UploadError("too_large");
+  const head = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+  if (String.fromCharCode(...head) !== "%PDF-") throw new UploadError("unsupported");
+
+  const supabase = getSupabaseBrowserClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new UploadError("unauthenticated");
+
+  const path = `${user.id}/files/${crypto.randomUUID()}.pdf`;
+  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
+    contentType: "application/pdf",
+    cacheControl: "31536000",
+  });
+  if (error) {
+    console.error("[upload] pdf failed", error);
+    throw new UploadError("failed");
+  }
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return { url: publicUrl, name: cleanFileName(file.name) };
+}
+
+/** "Tarifs 2026 (v2).PDF" → "Tarifs 2026 (v2)": no path, no control characters, 80 max. */
+export function cleanFileName(name: string): string {
+  const base = name.split(/[\\/]/).pop() ?? "";
+  return (
+    base
+      .replace(/\.pdf$/i, "")
+      .replace(/[\u0000-\u001f\u007f<>"]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 80) || "document"
+  );
 }
 
 /** Best-effort cleanup when a pro replaces or removes an image. */

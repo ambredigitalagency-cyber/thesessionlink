@@ -4,9 +4,7 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 
-import { saveWeeklySchedule } from "@/actions/availability";
 import { createOffer, updateOffer } from "@/actions/offers";
-import { WeekHoursEditor } from "@/components/availability/week-hours";
 import { OfferPhotosUpload } from "@/components/media/offer-photos-upload";
 import { Button } from "@/components/ui/button";
 import { ChoiceChips } from "@/components/ui/choice-cards";
@@ -16,7 +14,6 @@ import { ToggleRow } from "@/components/ui/primitives";
 import { ScaleSlider } from "@/components/ui/slider";
 import { StepProgress } from "@/components/ui/step-progress";
 import { notify } from "@/lib/notify";
-import { acceptsAddons, type Addon } from "@/lib/offers/addons";
 import {
   FIELD_LIMITS,
   fieldFromSuggestion,
@@ -32,21 +29,11 @@ import {
   type AnyActionConfig,
   type CategoryField,
 } from "@/lib/offers/schema";
-import { OFFER_PHASES, offerPhasesFor, type OfferPhase } from "@/lib/offers/wizard";
+import { OFFER_PHASES, type OfferPhase } from "@/lib/offers/wizard";
 import { PRICE_STOPS } from "@/lib/scales";
-import {
-  DEFAULT_WEEK,
-  sameWeek,
-  toWeekHours,
-  toWeeklyRules,
-  weekProblem,
-  type WeekHours,
-  type WeeklyRule,
-} from "@/lib/scheduling/weekly";
 import { fieldErrorsFrom, type ActionResult } from "@/lib/validation";
 
 import { ActionConfigFields } from "./action-config-fields";
-import { AddonsEditor } from "./addons-editor";
 import { ActionTypePicker } from "./action-type-picker";
 import { CustomFieldsEditor } from "./custom-fields-editor";
 import { OfferReview, type ReviewDraft } from "./offer-review";
@@ -62,7 +49,6 @@ export type OfferInitialValues = {
   action_type: ActionType;
   action_config: unknown;
   custom_fields: OfferField[];
-  addons: Addon[];
   is_active: boolean;
 };
 
@@ -83,7 +69,6 @@ export type OfferStep = (typeof STEPS)[number];
 
 const PHASE_STEP: Record<OfferPhase, OfferStep> = {
   action: "essentials",
-  hours: "essentials",
   basics: "essentials",
   settings: "essentials",
   details: "details",
@@ -98,7 +83,7 @@ type PriceType = (typeof PRICE_TYPES)[number];
 function phaseForError(key: string): OfferPhase {
   if (key.startsWith("custom_fields")) return "details";
   if (key.startsWith("photos")) return "photos";
-  if (key.startsWith("action_config") || key.startsWith("addons")) return "settings";
+  if (key.startsWith("action_config")) return "settings";
   return "basics";
 }
 
@@ -125,8 +110,6 @@ type Props = {
   currency: string;
   locale: string;
   profileWhatsapp?: string | null;
-  /** True when the coach has a gateway connected and cleared to charge. */
-  gatewayReady?: boolean;
   /**
    * Draws the progress bar, given how far through the questions we are (0-1).
    *
@@ -151,13 +134,6 @@ type Props = {
    * signed-in user's storage folder, which is only right for the coach.
    */
   photosEditable?: boolean;
-  /**
-   * Asks for the weekly hours right after the action, when that action is a
-   * calendar booking. Given by onboarding, where the first offer is also the
-   * moment the coach first says when they work; `saved` is the schedule
-   * already in the database (null: the Monday–Friday default).
-   */
-  hours?: { saved: WeeklyRule[] | null };
 };
 
 export function OfferForm({
@@ -169,7 +145,6 @@ export function OfferForm({
   currency,
   locale,
   profileWhatsapp,
-  gatewayReady = false,
   progress,
   headingLevel = 2,
   initial,
@@ -178,14 +153,13 @@ export function OfferForm({
   onCancel,
   save,
   photosEditable = true,
-  hours,
 }: Props) {
   const t = useTranslations("offers.form");
   const tAction = useTranslations("offers.actions");
   const tError = useTranslations("errors");
 
   const startingActionType =
-    initial?.action_type ?? suggestedActionType ?? ("calendar_booking" as ActionType);
+    initial?.action_type ?? suggestedActionType ?? ("contact_request" as ActionType);
 
   const [phase, setPhase] = useState<OfferPhase>("action");
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -203,7 +177,6 @@ export function OfferForm({
   const [isActive, setIsActive] = useState(initial?.is_active ?? true);
   const [actionType, setActionType] = useState<ActionType>(startingActionType);
   const [fields, setFields] = useState<OfferField[]>(initial?.custom_fields ?? []);
-  const [addons, setAddons] = useState<Addon[]>(initial?.addons ?? []);
   /**
    * The template last laid into the offer: for which action, and which field
    * each of its suggestions became. Tracked by id rather than by label so a
@@ -229,14 +202,6 @@ export function OfferForm({
     () => configs[actionType] ?? defaultActionConfig(actionType),
     [configs, actionType],
   );
-
-  // The weekly hours, when this wizard asks for them (see `hours` in Props).
-  // Saved on leaving their question, and only if they changed.
-  const [savedWeek, setSavedWeek] = useState<WeekHours>(() =>
-    hours?.saved ? toWeekHours(hours.saved) : DEFAULT_WEEK,
-  );
-  const [week, setWeek] = useState<WeekHours>(savedWeek);
-  const phases = offerPhasesFor(Boolean(hours), actionType);
 
   function changeActionType(next: ActionType) {
     setActionType(next);
@@ -377,7 +342,7 @@ export function OfferForm({
 
   function goTo(target: OfferPhase) {
     if (target === "details") applyTemplate();
-    setDirection(phases.indexOf(target) >= phases.indexOf(phase) ? 1 : -1);
+    setDirection(OFFER_PHASES.indexOf(target) >= OFFER_PHASES.indexOf(phase) ? 1 : -1);
     setPhase(target);
     // Move focus with the question, so keyboard and screen reader users follow.
     requestAnimationFrame(() => {
@@ -387,36 +352,9 @@ export function OfferForm({
   }
 
   function next() {
-    if (phase === "hours") {
-      saveHours();
-      return;
-    }
     if (phase === "basics" && Object.keys(validate("essentials")).length > 0) return;
     if (phase === "details" && Object.keys(validate("details")).length > 0) return;
-    goTo(phases[phases.indexOf(phase) + 1]);
-  }
-
-  /** Writes the week if it changed, then moves on; a refused week stays on screen. */
-  function saveHours() {
-    const after = phases[phases.indexOf("hours") + 1];
-    if (sameWeek(week, savedWeek)) {
-      goTo(after);
-      return;
-    }
-    const problem = weekProblem(week);
-    if (problem) {
-      notify.error(tError(problem === "overlap" ? "overlapping_rules" : "end_before_start"));
-      return;
-    }
-    startTransition(async () => {
-      const result = await saveWeeklySchedule({ offer_id: null, rules: toWeeklyRules(week) });
-      if (result.ok) {
-        setSavedWeek(week);
-        goTo(after);
-      } else {
-        notify.error(tError(result.error as "unexpected"));
-      }
-    });
+    goTo(OFFER_PHASES[OFFER_PHASES.indexOf(phase) + 1]);
   }
 
   /** Leaves an optional screen as it is. Details added and then abandoned are dropped. */
@@ -425,9 +363,7 @@ export function OfferForm({
       setFields(initial?.custom_fields ?? []);
       setApplied(null);
     }
-    // Skipping the hours keeps what is saved (the default, for a new profile).
-    if (phase === "hours") setWeek(savedWeek);
-    goTo(phases[phases.indexOf(phase) + 1]);
+    goTo(OFFER_PHASES[OFFER_PHASES.indexOf(phase) + 1]);
   }
 
   /** From the settings straight to the review: details and photos stay empty. */
@@ -453,8 +389,6 @@ export function OfferForm({
       action_type: actionType,
       action_config: config,
       custom_fields: fields,
-      // Kept in the form while switching action types, sent only where they apply.
-      addons: acceptsAddons(actionType) ? addons.filter((addon) => addon.label.trim()) : [],
       is_active: isActive,
     };
 
@@ -573,22 +507,10 @@ export function OfferForm({
     <ActionConfigFields
       actionType={actionType}
       config={config}
-      locale={locale}
       profileWhatsapp={profileWhatsapp}
-      payments={{
-        gatewayReady,
-        // A price the client can act on: a firm number, not "from" and not
-        // "on request". Read live, so switching the price type off a firm
-        // amount closes the payment options in the same breath.
-        priceIsFirm: priceType === "fixed" && price !== "" && Number(price) > 0,
-      }}
       onChange={(nextConfig) => setConfigs((current) => ({ ...current, [actionType]: nextConfig }))}
     />
   );
-
-  const addonsSection = acceptsAddons(actionType) ? (
-    <AddonsEditor addons={addons} onChange={setAddons} currency={currency} errors={errors} />
-  ) : null;
 
   // The template's own suggestions are ticked or unticked above; offering
   // them again among the ideas would list the same field twice.
@@ -647,7 +569,6 @@ export function OfferForm({
               </div>
               {settingsSection}
             </section>
-            {addonsSection}
           </div>
         </FormSection>
 
@@ -700,19 +621,17 @@ export function OfferForm({
     action_type: actionType,
     action_config: config,
     custom_fields: fields,
-    addons: acceptsAddons(actionType) ? addons.filter((addon) => addon.label.trim()) : [],
   };
 
   const step = PHASE_STEP[phase];
   const stepIndex = STEPS.indexOf(step);
-  const siblings = phases.filter((item) => PHASE_STEP[item] === step);
-  const index = phases.indexOf(phase);
+  const siblings = OFFER_PHASES.filter((item) => PHASE_STEP[item] === step);
+  const index = OFFER_PHASES.indexOf(phase);
 
   return (
     <div className="space-y-7">
       {progress ? (
-        // The count follows the action: a calendar offer has one more question.
-        progress((index + 1) / phases.length)
+        progress((index + 1) / OFFER_PHASES.length)
       ) : (
         <StepProgress
           label={t("progress")}
@@ -743,10 +662,6 @@ export function OfferForm({
           />
         ) : null}
 
-        {phase === "hours" ? (
-          <WeekHoursEditor week={week} onChange={setWeek} locale={locale} />
-        ) : null}
-
         {phase === "basics" ? (
           <div className="space-y-3">
             <PhaseField index={0}>{titleField}</PhaseField>
@@ -755,12 +670,7 @@ export function OfferForm({
           </div>
         ) : null}
 
-        {phase === "settings" ? (
-          <div className="space-y-8">
-            <PhaseField>{settingsSection}</PhaseField>
-            {addonsSection ? <PhaseField index={1}>{addonsSection}</PhaseField> : null}
-          </div>
-        ) : null}
+        {phase === "settings" ? <PhaseField>{settingsSection}</PhaseField> : null}
         {phase === "details" ? (
           <div className="space-y-6">
             {template && templateFields.length > 0 ? (
@@ -789,7 +699,7 @@ export function OfferForm({
           <Button
             type="button"
             variant="ghost"
-            onClick={() => goTo(phases[index - 1])}
+            onClick={() => goTo(OFFER_PHASES[index - 1])}
             className="self-start sm:self-auto"
           >
             <ArrowLeft className="size-4" />
@@ -822,13 +732,13 @@ export function OfferForm({
               <Button type="button" size="lg" variant="secondary" onClick={skipToReview}>
                 {t("skipToReview")}
               </Button>
-            ) : phase === "details" || phase === "photos" || phase === "hours" ? (
-              <Button type="button" size="lg" variant="secondary" onClick={skip} disabled={pending}>
+            ) : phase === "details" || phase === "photos" ? (
+              <Button type="button" size="lg" variant="secondary" onClick={skip}>
                 {t("skip")}
               </Button>
             ) : null}
-            <Button type="button" size="lg" onClick={next} loading={phase === "hours" && pending}>
-              {phase === "hours" ? t("phases.hours.submit") : t("continue")}
+            <Button type="button" size="lg" onClick={next}>
+              {t("continue")}
               <ArrowRight className="size-4" />
             </Button>
           </div>

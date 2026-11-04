@@ -253,7 +253,7 @@ describe("suggestions", () => {
       type: "number",
       unit: "min",
       label: { en: "Duration", fr: "Durée" },
-      skip_for_actions: ["calendar_booking"],
+      skip_for_actions: ["whatsapp_direct"],
     },
   ];
 
@@ -279,7 +279,7 @@ describe("suggestions", () => {
 
   it("offers only suggestions that fit the action and are not already added", () => {
     const added = [fieldFromSuggestion(suggestions[0], "fr")];
-    const available = availableSuggestions(suggestions, added, "calendar_booking", "fr");
+    const available = availableSuggestions(suggestions, added, "whatsapp_direct", "fr");
     expect(available.map((item) => item.key)).toEqual(["includes"]);
   });
 });

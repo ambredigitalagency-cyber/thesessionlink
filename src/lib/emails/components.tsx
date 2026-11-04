@@ -151,7 +151,7 @@ export function EmailButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-/** Key/value block used for booking summaries. */
+/** Key/value block used for request summaries. */
 export function EmailDetails({ rows }: { rows: { label: string; value: string }[] }) {
   return (
     <Section

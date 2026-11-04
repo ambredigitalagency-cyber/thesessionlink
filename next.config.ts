@@ -38,9 +38,14 @@ const supabaseStorage = readSupabaseStorage();
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseStorage
-      ? [{ ...supabaseStorage, pathname: "/storage/v1/object/public/**" }]
-      : [],
+    remotePatterns: [
+      ...(supabaseStorage
+        ? [{ ...supabaseStorage, pathname: "/storage/v1/object/public/**" }]
+        : []),
+      // Thumbnails of the YouTube blocks; the player itself is never loaded
+      // until a visitor presses play.
+      { protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**" },
+    ],
     // Local Supabase storage during development.
     dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
     localPatterns: [{ pathname: "/**" }],

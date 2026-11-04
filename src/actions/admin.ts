@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { z } from "zod";
 
 import { adminDb, requireAdminForAction, type AdminActor } from "@/lib/admin/access";
-import { sendBookingStatusUpdate } from "@/lib/emails/send";
 import { prepareOffer } from "@/lib/offers/prepare";
 import { parseActionConfig } from "@/lib/offers/schema";
 import {
@@ -15,7 +13,6 @@ import {
 } from "@/lib/admin/impersonation";
 import type { Json } from "@/lib/supabase/database.types";
 import type { ActionResult } from "@/lib/validation";
-import { offerFreedSlot } from "@/lib/waitlist";
 
 /**
  * Everything the platform console can do to a coach's account.
@@ -41,7 +38,6 @@ type AuditAction =
   | "impersonate_stop"
   | "restore_account"
   | "edit_offer"
-  | "edit_booking"
   | "export_data";
 
 async function audit(
@@ -144,9 +140,23 @@ export async function setSubscription(
   if (!parsed.success) return { ok: false, error: "invalid_input" };
 
   const supabase = await adminDb(admin);
+  const { data: current } = await supabase
+    .from("profiles")
+    .select("subscription_active, subscription_ended_at")
+    .eq("id", profileId)
+    .maybeSingle();
+  // Switching off dates the start of the grace period, as a Paddle
+  // cancellation would; switching on clears it.
   const { error } = await supabase
     .from("profiles")
-    .update({ subscription_active: parsed.data.active })
+    .update({
+      subscription_active: parsed.data.active,
+      subscription_ended_at: parsed.data.active
+        ? null
+        : current?.subscription_active
+          ? new Date().toISOString()
+          : (current?.subscription_ended_at ?? null),
+    })
     .eq("id", profileId);
 
   if (error) return { ok: false, error: "unexpected" };
@@ -390,110 +400,6 @@ export async function adminUpdateOffer(offerId: string, input: unknown): Promise
 
   const slug = (before.profiles as { slug: string } | null)?.slug;
   if (slug) revalidatePath(`/${slug}`);
-  revalidatePath("/admin", "layout");
-  return { ok: true };
-}
-
-const bookingInterventionSchema = z.object({
-  bookingId: idSchema,
-  change: z.enum(["confirm", "cancel", "mark_no_show", "clear_no_show"]),
-  note: z.string().trim().max(1000).optional(),
-  notifyClient: z.boolean().default(true),
-});
-
-/**
- * Changes a booking's status from the console: confirm, cancel, or mark the
- * client absent (and take it back). The rules are the coach's: a no-show is
- * only for a confirmed session already started. Confirming and cancelling
- * email the client like the coach's own buttons do, unless the admin unticks
- * it. An optional note is appended to the booking's internal notes, signed
- * "Console", so the coach sees what was done and why.
- */
-export async function adminUpdateBooking(input: {
-  bookingId: string;
-  change: "confirm" | "cancel" | "mark_no_show" | "clear_no_show";
-  note?: string;
-  notifyClient?: boolean;
-}): Promise<ActionResult> {
-  const admin = await requireAdminForAction();
-  const parsed = bookingInterventionSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "invalid_input" };
-  const { bookingId, change, note, notifyClient } = parsed.data;
-
-  const supabase = await adminDb(admin);
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("id, profile_id, status, no_show, starts_at, internal_notes, offer_title")
-    .eq("id", bookingId)
-    .maybeSingle();
-  if (!booking) return { ok: false, error: "not_found" };
-
-  const patch: {
-    status?: "confirmed" | "cancelled";
-    cancelled_at?: string | null;
-    cancelled_by?: "pro" | null;
-    no_show?: boolean;
-    internal_notes?: string;
-  } = {};
-
-  if (change === "confirm") {
-    patch.status = "confirmed";
-    patch.cancelled_at = null;
-    patch.cancelled_by = null;
-  } else if (change === "cancel") {
-    patch.status = "cancelled";
-    patch.cancelled_at = new Date().toISOString();
-    patch.cancelled_by = "pro";
-  } else {
-    if (booking.status !== "confirmed" || !booking.starts_at)
-      return { ok: false, error: "not_available" };
-    if (new Date(booking.starts_at) > new Date()) return { ok: false, error: "session_not_past" };
-    patch.no_show = change === "mark_no_show";
-  }
-
-  if (note) {
-    const stamp = new Intl.DateTimeFormat("fr-FR", {
-      dateStyle: "short",
-      timeStyle: "short",
-      timeZone: "Europe/Paris",
-    }).format(new Date());
-    patch.internal_notes = [booking.internal_notes, `[Console · ${stamp}] ${note}`]
-      .filter(Boolean)
-      .join("\n\n");
-  }
-
-  const { data: updated, error } = await supabase
-    .from("bookings")
-    .update(patch)
-    .eq("id", bookingId)
-    .select("*")
-    .single();
-  if (error || !updated) {
-    if (error?.code === "23P01") return { ok: false, error: "slot_taken" };
-    console.error("[admin] booking update failed", error?.code, error?.message);
-    return { ok: false, error: "unexpected" };
-  }
-
-  const emails = notifyClient && (change === "confirm" || change === "cancel");
-  if (emails) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", booking.profile_id)
-      .single();
-    if (profile) after(async () => sendBookingStatusUpdate({ booking: updated, profile }));
-  }
-  if (change === "cancel") after(() => offerFreedSlot(updated));
-
-  await audit(admin, "edit_booking", booking.profile_id, {
-    booking_id: bookingId,
-    offer: booking.offer_title,
-    change,
-    from: change.endsWith("no_show") ? { no_show: booking.no_show } : { status: booking.status },
-    client_notified: Boolean(emails),
-    note: note || null,
-  });
-
   revalidatePath("/admin", "layout");
   return { ok: true };
 }

@@ -4,8 +4,8 @@ import "server-only";
  * Paddle Billing — the coach's subscription to TheSessionLink.
  *
  * Paddle is the merchant of record here: it sells the 19 €/month plan to the
- * coach, collects VAT and handles cards. This is unrelated to Stripe Connect
- * and PayPal (lib/payments), which carry what a coach's own clients pay them.
+ * coach, collects VAT and handles cards. It is the only payment the product
+ * handles: a coach's own clients settle with the coach directly.
  *
  * ---------------------------------------------------------------------------
  * SANDBOX vs PRODUCTION

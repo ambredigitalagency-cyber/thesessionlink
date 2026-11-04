@@ -4,10 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
-import { OfferAvailability } from "@/components/dashboard/offer-availability";
 import { requireOnboardedProfile } from "@/lib/auth";
-import { gatewayStates } from "@/lib/payments/accounts";
-import { parseAddons } from "@/lib/offers/addons";
 import { parseOfferFields } from "@/lib/offers/fields";
 import { parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,7 +12,6 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export default async function EditOfferPage({ params }: PageProps<"/dashboard/offers/[id]">) {
   const { id } = await params;
   const profile = await requireOnboardedProfile();
-  const gateways = await gatewayStates(profile.id);
   const t = await getTranslations("dashboard.offers");
 
   const supabase = await createSupabaseServerClient();
@@ -28,19 +24,13 @@ export default async function EditOfferPage({ params }: PageProps<"/dashboard/of
 
   if (!offer) notFound();
 
-  const [{ data: category }, { data: rules }] = await Promise.all([
-    profile.category_id
-      ? supabase
-          .from("activity_categories")
-          .select("config")
-          .eq("id", profile.category_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    supabase
-      .from("availabilities")
-      .select("id, offer_id, weekday, start_time, end_time")
-      .eq("profile_id", profile.id),
-  ]);
+  const { data: category } = profile.category_id
+    ? await supabase
+        .from("activity_categories")
+        .select("config")
+        .eq("id", profile.category_id)
+        .maybeSingle()
+    : { data: null };
 
   const config = parseCategoryConfig(category?.config);
 
@@ -64,7 +54,6 @@ export default async function EditOfferPage({ params }: PageProps<"/dashboard/of
           currency={profile.currency}
           locale={profile.locale}
           profileWhatsapp={profile.whatsapp_number}
-          gatewayReady={gateways.some((gateway) => gateway.ready)}
           initial={{
             id: offer.id,
             title: offer.title,
@@ -75,25 +64,10 @@ export default async function EditOfferPage({ params }: PageProps<"/dashboard/of
             action_type: offer.action_type,
             action_config: offer.action_config,
             custom_fields: parseOfferFields(offer.custom_fields),
-            addons: parseAddons(offer.addons),
             is_active: offer.is_active,
           }}
         />
       </div>
-
-      {offer.action_type === "calendar_booking" ? (
-        <OfferAvailability
-          offerId={offer.id}
-          offerTitle={offer.title}
-          locale={profile.locale}
-          rules={(rules ?? []).map((rule) => ({
-            offer_id: rule.offer_id,
-            weekday: rule.weekday,
-            start_time: rule.start_time,
-            end_time: rule.end_time,
-          }))}
-        />
-      ) : null}
     </>
   );
 }

@@ -7,8 +7,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Private areas and one-off client links stay out of search results.
-      disallow: ["/dashboard", "/onboarding", "/booking/", "/api/", "/login"],
+      // Private areas stay out of search results.
+      disallow: ["/dashboard", "/onboarding", "/admin", "/auth/", "/api/", "/login"],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };

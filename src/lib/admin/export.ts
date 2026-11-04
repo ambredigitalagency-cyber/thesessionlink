@@ -5,20 +5,15 @@
  *
  * Column lists are explicit on purpose. A new column on the table does not
  * leave the platform because someone added it; it leaves when it is written
- * here. Clients' health notes are not written here, and never will be.
+ * here.
  */
 
-export const EXPORT_KINDS = ["offers", "clients", "bookings"] as const;
+export const EXPORT_KINDS = ["offers"] as const;
 export type ExportKind = (typeof EXPORT_KINDS)[number];
 
 export const EXPORT_COLUMNS = {
   offers:
     "id, title, description, price, price_type, action_type, action_config, custom_fields, is_active, position, created_at, updated_at",
-  // Everything the CRM holds except health_notes.
-  clients:
-    "id, name, email, phone, notes, tags, birth_date, address, custom_fields, created_at, updated_at",
-  bookings:
-    "id, offer_id, offer_title, action_type, client_name, client_email, client_phone, client_message, starts_at, ends_at, requested_date, quantity, status, no_show, payment_status, payment_amount_cents, payment_currency, cancelled_at, cancelled_by, created_at",
 } as const satisfies Record<ExportKind, string>;
 
 /** Written as an escape, not a literal: an invisible character in source is a trap. */
@@ -47,7 +42,7 @@ export function columnsOf(kind: ExportKind): string[] {
   return EXPORT_COLUMNS[kind].split(",").map((column) => column.trim());
 }
 
-/** "export-atelier-sofia-clients-2026-09-28.csv" */
+/** "export-atelier-sofia-offers-2026-09-28.csv" */
 export function exportFilename(
   slug: string,
   kind: ExportKind | "all",

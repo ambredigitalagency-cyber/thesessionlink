@@ -111,46 +111,6 @@ export function NoOffersArt({ className }: Props) {
   );
 }
 
-/** An empty agenda: a week with nothing in it yet. */
-export function NoBookingsArt({ className }: Props) {
-  const entrance = useEntrance();
-
-  return (
-    <Frame className={className}>
-      <rect
-        x="14"
-        y="12"
-        width="104"
-        height="68"
-        rx="10"
-        className="fill-ink/[0.03] stroke-ink/10"
-        strokeWidth="1.5"
-      />
-      <rect x="14" y="12" width="104" height="13" rx="10" className="fill-ink/[0.05]" />
-      <rect x="22" y="17" width="18" height="3" rx="1.5" className="fill-ink/20" />
-
-      {Array.from({ length: 12 }, (_, index) => {
-        const column = index % 4;
-        const row = Math.floor(index / 4);
-        const highlight = index === 5;
-
-        return (
-          <motion.rect
-            key={index}
-            {...entrance(0.1 + index * 0.025)}
-            x={23 + column * 23}
-            y={33 + row * 15}
-            width="17"
-            height="9"
-            rx="3"
-            className={highlight ? "fill-[var(--color-brand)]/70" : "fill-ink/[0.07]"}
-          />
-        );
-      })}
-    </Frame>
-  );
-}
-
 /** An empty client list: one card, still blank. */
 export function NoClientsArt({ className }: Props) {
   const entrance = useEntrance();

@@ -5,7 +5,16 @@
  * filters and the figures can never disagree with each other.
  */
 
-export const ACCOUNT_STATUSES = ["deleted", "suspended", "subscribed", "trial", "expired"] as const;
+import { accessState } from "@/lib/billing/access";
+
+export const ACCOUNT_STATUSES = [
+  "deleted",
+  "suspended",
+  "subscribed",
+  "trial",
+  "grace",
+  "expired",
+] as const;
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 
 export type AccountFields = {
@@ -14,21 +23,20 @@ export type AccountFields = {
   suspended_at: string | null;
   /** The coach asked to leave; the account is awaiting its purge. */
   deleted_at?: string | null;
+  /** When the last subscription stopped; dates the grace period. */
+  subscription_ended_at?: string | null;
 };
 
 /**
  * A pending deletion wins over everything, then suspension — both are
- * decisions, not states of the subscription. Then a paid subscription, then an
- * unfinished trial.
+ * decisions, not states of the subscription. Then the access state, the same
+ * rule the dashboard and the public page follow (src/lib/billing/access.ts):
+ * subscribed (manual activation included), trial, grace, expired (offline).
  */
 export function accountStatus(account: AccountFields, now = new Date()): AccountStatus {
   if (account.deleted_at) return "deleted";
   if (account.suspended_at) return "suspended";
-  if (account.subscription_active) return "subscribed";
-  if (account.trial_ends_at && new Date(account.trial_ends_at).getTime() > now.getTime()) {
-    return "trial";
-  }
-  return "expired";
+  return accessState(account, now);
 }
 
 export function trialDaysLeft(account: AccountFields, now = new Date()): number {
@@ -76,6 +84,7 @@ export function platformTotals(
     suspended: 0,
     subscribed: 0,
     trial: 0,
+    grace: 0,
     expired: 0,
   };
   const perCategory = new Map<string, number>();

@@ -1,8 +1,79 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
+      access_emails: {
+        Row: {
+          created_at: string;
+          kind: string;
+          period_end: string;
+          profile_id: string;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          kind: string;
+          period_end: string;
+          profile_id: string;
+          status?: string;
+        };
+        Update: {
+          created_at?: string;
+          kind?: string;
+          period_end?: string;
+          profile_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "access_emails_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "admin_coach_overview";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "access_emails_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "access_emails_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       activity_categories: {
         Row: {
           config: Json;
@@ -140,289 +211,6 @@ export type Database = {
           },
         ];
       };
-      availabilities: {
-        Row: {
-          created_at: string;
-          end_time: string;
-          id: string;
-          offer_id: string | null;
-          profile_id: string;
-          start_time: string;
-          weekday: number;
-        };
-        Insert: {
-          created_at?: string;
-          end_time: string;
-          id?: string;
-          offer_id?: string | null;
-          profile_id: string;
-          start_time: string;
-          weekday: number;
-        };
-        Update: {
-          created_at?: string;
-          end_time?: string;
-          id?: string;
-          offer_id?: string | null;
-          profile_id?: string;
-          start_time?: string;
-          weekday?: number;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "availabilities_offer_id_fkey";
-            columns: ["offer_id"];
-            isOneToOne: false;
-            referencedRelation: "offers";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "availabilities_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_coach_overview";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "availabilities_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "availabilities_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      bookings: {
-        Row: {
-          action_type: Database["public"]["Enums"]["action_type"];
-          addons: Json;
-          cancelled_at: string | null;
-          cancelled_by: string | null;
-          client_email: string;
-          client_id: string | null;
-          client_message: string | null;
-          client_name: string;
-          client_phone: string | null;
-          client_timezone: string | null;
-          created_at: string;
-          details: Json;
-          ends_at: string | null;
-          group_key: string | null;
-          id: string;
-          internal_notes: string | null;
-          locale: string;
-          manage_token: string;
-          no_show: boolean;
-          offer_id: string | null;
-          offer_title: string;
-          payment_amount_cents: number | null;
-          payment_currency: string | null;
-          payment_due_at: string | null;
-          payment_provider: string | null;
-          payment_status: string;
-          profile_id: string;
-          quantity: number;
-          reminder_sent_at: string | null;
-          requested_date: string | null;
-          series_id: string | null;
-          starts_at: string | null;
-          status: Database["public"]["Enums"]["booking_status"];
-          updated_at: string;
-        };
-        Insert: {
-          action_type: Database["public"]["Enums"]["action_type"];
-          addons?: Json;
-          cancelled_at?: string | null;
-          cancelled_by?: string | null;
-          client_email: string;
-          client_id?: string | null;
-          client_message?: string | null;
-          client_name: string;
-          client_phone?: string | null;
-          client_timezone?: string | null;
-          created_at?: string;
-          details?: Json;
-          ends_at?: string | null;
-          group_key?: string | null;
-          id?: string;
-          internal_notes?: string | null;
-          locale?: string;
-          manage_token?: string;
-          no_show?: boolean;
-          offer_id?: string | null;
-          offer_title: string;
-          payment_amount_cents?: number | null;
-          payment_currency?: string | null;
-          payment_due_at?: string | null;
-          payment_provider?: string | null;
-          payment_status?: string;
-          profile_id: string;
-          quantity?: number;
-          reminder_sent_at?: string | null;
-          requested_date?: string | null;
-          series_id?: string | null;
-          starts_at?: string | null;
-          status?: Database["public"]["Enums"]["booking_status"];
-          updated_at?: string;
-        };
-        Update: {
-          action_type?: Database["public"]["Enums"]["action_type"];
-          addons?: Json;
-          cancelled_at?: string | null;
-          cancelled_by?: string | null;
-          client_email?: string;
-          client_id?: string | null;
-          client_message?: string | null;
-          client_name?: string;
-          client_phone?: string | null;
-          client_timezone?: string | null;
-          created_at?: string;
-          details?: Json;
-          ends_at?: string | null;
-          group_key?: string | null;
-          id?: string;
-          internal_notes?: string | null;
-          locale?: string;
-          manage_token?: string;
-          no_show?: boolean;
-          offer_id?: string | null;
-          offer_title?: string;
-          payment_amount_cents?: number | null;
-          payment_currency?: string | null;
-          payment_due_at?: string | null;
-          payment_provider?: string | null;
-          payment_status?: string;
-          profile_id?: string;
-          quantity?: number;
-          reminder_sent_at?: string | null;
-          requested_date?: string | null;
-          series_id?: string | null;
-          starts_at?: string | null;
-          status?: Database["public"]["Enums"]["booking_status"];
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "bookings_client_id_fkey";
-            columns: ["client_id"];
-            isOneToOne: false;
-            referencedRelation: "client_summaries";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "bookings_client_id_fkey";
-            columns: ["client_id"];
-            isOneToOne: false;
-            referencedRelation: "clients";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "bookings_offer_id_fkey";
-            columns: ["offer_id"];
-            isOneToOne: false;
-            referencedRelation: "offers";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "bookings_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_coach_overview";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "bookings_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "bookings_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      clients: {
-        Row: {
-          address: string | null;
-          birth_date: string | null;
-          created_at: string;
-          custom_fields: Json;
-          email: string;
-          health_notes: string | null;
-          id: string;
-          name: string;
-          notes: string | null;
-          phone: string | null;
-          profile_id: string;
-          tags: string[];
-          updated_at: string;
-        };
-        Insert: {
-          address?: string | null;
-          birth_date?: string | null;
-          created_at?: string;
-          custom_fields?: Json;
-          email: string;
-          health_notes?: string | null;
-          id?: string;
-          name: string;
-          notes?: string | null;
-          phone?: string | null;
-          profile_id: string;
-          tags?: string[];
-          updated_at?: string;
-        };
-        Update: {
-          address?: string | null;
-          birth_date?: string | null;
-          created_at?: string;
-          custom_fields?: Json;
-          email?: string;
-          health_notes?: string | null;
-          id?: string;
-          name?: string;
-          notes?: string | null;
-          phone?: string | null;
-          profile_id?: string;
-          tags?: string[];
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "clients_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_coach_overview";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "clients_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "clients_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       coach_sign_ins: {
         Row: {
           created_at: string;
@@ -454,7 +242,6 @@ export type Database = {
         Row: {
           action_config: Json;
           action_type: Database["public"]["Enums"]["action_type"];
-          addons: Json;
           created_at: string;
           custom_fields: Json;
           description: string | null;
@@ -472,7 +259,6 @@ export type Database = {
         Insert: {
           action_config?: Json;
           action_type: Database["public"]["Enums"]["action_type"];
-          addons?: Json;
           created_at?: string;
           custom_fields?: Json;
           description?: string | null;
@@ -490,7 +276,6 @@ export type Database = {
         Update: {
           action_config?: Json;
           action_type?: Database["public"]["Enums"]["action_type"];
-          addons?: Json;
           created_at?: string;
           custom_fields?: Json;
           description?: string | null;
@@ -525,6 +310,35 @@ export type Database = {
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      onboarding_progress: {
+        Row: {
+          category_id: string | null;
+          step: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          category_id?: string | null;
+          step: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          category_id?: string | null;
+          step?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "activity_categories";
             referencedColumns: ["id"];
           },
         ];
@@ -578,66 +392,70 @@ export type Database = {
           },
         ];
       };
-      payment_accounts: {
+      page_blocks: {
         Row: {
-          charges_enabled: boolean;
-          connected_at: string | null;
+          config: Json;
           created_at: string;
-          details: Json;
-          external_id: string | null;
           id: string;
-          onboarding_ref: string | null;
-          payouts_enabled: boolean;
+          offer_id: string | null;
+          pending: boolean;
+          position: number;
           profile_id: string;
-          provider: string;
-          status: string;
+          suggested: boolean;
+          type: string;
           updated_at: string;
+          visible: boolean;
         };
         Insert: {
-          charges_enabled?: boolean;
-          connected_at?: string | null;
+          config?: Json;
           created_at?: string;
-          details?: Json;
-          external_id?: string | null;
           id?: string;
-          onboarding_ref?: string | null;
-          payouts_enabled?: boolean;
+          offer_id?: string | null;
+          pending?: boolean;
+          position?: number;
           profile_id: string;
-          provider: string;
-          status?: string;
+          suggested?: boolean;
+          type: string;
           updated_at?: string;
+          visible?: boolean;
         };
         Update: {
-          charges_enabled?: boolean;
-          connected_at?: string | null;
+          config?: Json;
           created_at?: string;
-          details?: Json;
-          external_id?: string | null;
           id?: string;
-          onboarding_ref?: string | null;
-          payouts_enabled?: boolean;
+          offer_id?: string | null;
+          pending?: boolean;
+          position?: number;
           profile_id?: string;
-          provider?: string;
-          status?: string;
+          suggested?: boolean;
+          type?: string;
           updated_at?: string;
+          visible?: boolean;
         };
         Relationships: [
           {
-            foreignKeyName: "payment_accounts_profile_id_fkey";
+            foreignKeyName: "page_blocks_offer_id_fkey";
+            columns: ["offer_id"];
+            isOneToOne: false;
+            referencedRelation: "offers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "page_blocks_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "admin_coach_overview";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "payment_accounts_profile_id_fkey";
+            foreignKeyName: "page_blocks_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "payment_accounts_profile_id_fkey";
+            foreignKeyName: "page_blocks_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
@@ -645,86 +463,70 @@ export type Database = {
           },
         ];
       };
-      payments: {
+      page_events: {
         Row: {
-          amount_cents: number;
-          booking_id: string | null;
-          capture_id: string | null;
+          block_id: string | null;
+          city: string | null;
+          contact_kind: string | null;
+          country: string | null;
           created_at: string;
-          currency: string;
-          external_id: string | null;
-          failure_reason: string | null;
-          id: string;
-          offer_id: string | null;
-          paid_at: string | null;
+          device: string | null;
+          id: number;
           profile_id: string;
-          provider: string;
-          status: string;
-          updated_at: string;
+          source: string;
+          type: string;
+          visitor_hash: string;
         };
         Insert: {
-          amount_cents: number;
-          booking_id?: string | null;
-          capture_id?: string | null;
+          block_id?: string | null;
+          city?: string | null;
+          contact_kind?: string | null;
+          country?: string | null;
           created_at?: string;
-          currency: string;
-          external_id?: string | null;
-          failure_reason?: string | null;
-          id?: string;
-          offer_id?: string | null;
-          paid_at?: string | null;
+          device?: string | null;
+          id?: never;
           profile_id: string;
-          provider: string;
-          status?: string;
-          updated_at?: string;
+          source?: string;
+          type: string;
+          visitor_hash: string;
         };
         Update: {
-          amount_cents?: number;
-          booking_id?: string | null;
-          capture_id?: string | null;
+          block_id?: string | null;
+          city?: string | null;
+          contact_kind?: string | null;
+          country?: string | null;
           created_at?: string;
-          currency?: string;
-          external_id?: string | null;
-          failure_reason?: string | null;
-          id?: string;
-          offer_id?: string | null;
-          paid_at?: string | null;
+          device?: string | null;
+          id?: never;
           profile_id?: string;
-          provider?: string;
-          status?: string;
-          updated_at?: string;
+          source?: string;
+          type?: string;
+          visitor_hash?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "payments_booking_id_fkey";
-            columns: ["booking_id"];
+            foreignKeyName: "page_events_block_id_fkey";
+            columns: ["block_id"];
             isOneToOne: false;
-            referencedRelation: "bookings";
+            referencedRelation: "page_blocks";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "payments_offer_id_fkey";
-            columns: ["offer_id"];
-            isOneToOne: false;
-            referencedRelation: "offers";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "payments_profile_id_fkey";
+            foreignKeyName: "page_events_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "admin_coach_overview";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "payments_profile_id_fkey";
+            foreignKeyName: "page_events_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "payments_profile_id_fkey";
+            foreignKeyName: "page_events_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
@@ -752,15 +554,14 @@ export type Database = {
       };
       profiles: {
         Row: {
+          accent_color: string;
           avatar_url: string | null;
           bio: string | null;
-          calendar_visible: boolean;
           category_id: string | null;
           contact_channels: Json;
           contact_email: string | null;
           created_at: string;
           currency: string;
-          custom_closed_message: string | null;
           custom_fields: Json;
           deleted_at: string | null;
           deletion_warned_at: string | null;
@@ -769,24 +570,22 @@ export type Database = {
           id: string;
           locale: string;
           location: string | null;
-          notify_new_bookings: boolean;
           onboarding_completed_at: string | null;
           paddle_customer_id: string | null;
           paddle_subscription_id: string | null;
-          payment_method: string | null;
+          page_initialized_at: string | null;
           phone_number: string | null;
-          reminder_hours_before: number;
-          reminder_message: string | null;
           slug: string;
           social_links: Json;
           subscription_active: boolean;
+          subscription_ended_at: string | null;
           subscription_renews_at: string | null;
           subscription_status: string | null;
           subscription_synced_at: string | null;
           suspended_at: string | null;
           suspended_by: string | null;
           suspension_reason: string | null;
-          theme: Json;
+          theme: string;
           timezone: string;
           trial_ends_at: string;
           updated_at: string;
@@ -794,15 +593,14 @@ export type Database = {
           whatsapp_number: string | null;
         };
         Insert: {
+          accent_color?: string;
           avatar_url?: string | null;
           bio?: string | null;
-          calendar_visible?: boolean;
           category_id?: string | null;
           contact_channels?: Json;
           contact_email?: string | null;
           created_at?: string;
           currency?: string;
-          custom_closed_message?: string | null;
           custom_fields?: Json;
           deleted_at?: string | null;
           deletion_warned_at?: string | null;
@@ -811,24 +609,22 @@ export type Database = {
           id?: string;
           locale?: string;
           location?: string | null;
-          notify_new_bookings?: boolean;
           onboarding_completed_at?: string | null;
           paddle_customer_id?: string | null;
           paddle_subscription_id?: string | null;
-          payment_method?: string | null;
+          page_initialized_at?: string | null;
           phone_number?: string | null;
-          reminder_hours_before?: number;
-          reminder_message?: string | null;
           slug: string;
           social_links?: Json;
           subscription_active?: boolean;
+          subscription_ended_at?: string | null;
           subscription_renews_at?: string | null;
           subscription_status?: string | null;
           subscription_synced_at?: string | null;
           suspended_at?: string | null;
           suspended_by?: string | null;
           suspension_reason?: string | null;
-          theme?: Json;
+          theme?: string;
           timezone?: string;
           trial_ends_at?: string;
           updated_at?: string;
@@ -836,15 +632,14 @@ export type Database = {
           whatsapp_number?: string | null;
         };
         Update: {
+          accent_color?: string;
           avatar_url?: string | null;
           bio?: string | null;
-          calendar_visible?: boolean;
           category_id?: string | null;
           contact_channels?: Json;
           contact_email?: string | null;
           created_at?: string;
           currency?: string;
-          custom_closed_message?: string | null;
           custom_fields?: Json;
           deleted_at?: string | null;
           deletion_warned_at?: string | null;
@@ -853,24 +648,22 @@ export type Database = {
           id?: string;
           locale?: string;
           location?: string | null;
-          notify_new_bookings?: boolean;
           onboarding_completed_at?: string | null;
           paddle_customer_id?: string | null;
           paddle_subscription_id?: string | null;
-          payment_method?: string | null;
+          page_initialized_at?: string | null;
           phone_number?: string | null;
-          reminder_hours_before?: number;
-          reminder_message?: string | null;
           slug?: string;
           social_links?: Json;
           subscription_active?: boolean;
+          subscription_ended_at?: string | null;
           subscription_renews_at?: string | null;
           subscription_status?: string | null;
           subscription_synced_at?: string | null;
           suspended_at?: string | null;
           suspended_by?: string | null;
           suspension_reason?: string | null;
-          theme?: Json;
+          theme?: string;
           timezone?: string;
           trial_ends_at?: string;
           updated_at?: string;
@@ -905,144 +698,48 @@ export type Database = {
         };
         Relationships: [];
       };
-      time_off: {
+      tracking_sources: {
         Row: {
           created_at: string;
-          end_time: string | null;
-          ends_on: string;
           id: string;
-          label: string | null;
+          kind: string;
+          label: string;
           profile_id: string;
-          start_time: string | null;
-          starts_on: string;
+          slug: string;
         };
         Insert: {
           created_at?: string;
-          end_time?: string | null;
-          ends_on: string;
           id?: string;
-          label?: string | null;
+          kind: string;
+          label: string;
           profile_id: string;
-          start_time?: string | null;
-          starts_on: string;
+          slug: string;
         };
         Update: {
           created_at?: string;
-          end_time?: string | null;
-          ends_on?: string;
           id?: string;
-          label?: string | null;
+          kind?: string;
+          label?: string;
           profile_id?: string;
-          start_time?: string | null;
-          starts_on?: string;
+          slug?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "time_off_profile_id_fkey";
+            foreignKeyName: "tracking_sources_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "admin_coach_overview";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "time_off_profile_id_fkey";
+            foreignKeyName: "tracking_sources_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "time_off_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      waitlist_entries: {
-        Row: {
-          booking_id: string | null;
-          client_email: string;
-          client_name: string;
-          client_timezone: string | null;
-          created_at: string;
-          expires_at: string | null;
-          id: string;
-          locale: string;
-          notified_at: string | null;
-          offer_id: string;
-          profile_id: string;
-          seats: number;
-          slot_start: string;
-          status: string;
-          token: string;
-        };
-        Insert: {
-          booking_id?: string | null;
-          client_email: string;
-          client_name: string;
-          client_timezone?: string | null;
-          created_at?: string;
-          expires_at?: string | null;
-          id?: string;
-          locale?: string;
-          notified_at?: string | null;
-          offer_id: string;
-          profile_id: string;
-          seats?: number;
-          slot_start: string;
-          status?: string;
-          token?: string;
-        };
-        Update: {
-          booking_id?: string | null;
-          client_email?: string;
-          client_name?: string;
-          client_timezone?: string | null;
-          created_at?: string;
-          expires_at?: string | null;
-          id?: string;
-          locale?: string;
-          notified_at?: string | null;
-          offer_id?: string;
-          profile_id?: string;
-          seats?: number;
-          slot_start?: string;
-          status?: string;
-          token?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "waitlist_entries_booking_id_fkey";
-            columns: ["booking_id"];
-            isOneToOne: false;
-            referencedRelation: "bookings";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "waitlist_entries_offer_id_fkey";
-            columns: ["offer_id"];
-            isOneToOne: false;
-            referencedRelation: "offers";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "waitlist_entries_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_coach_overview";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "waitlist_entries_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "waitlist_entries_profile_id_fkey";
+            foreignKeyName: "tracking_sources_profile_id_fkey";
             columns: ["profile_id"];
             isOneToOne: false;
             referencedRelation: "public_profiles";
@@ -1054,7 +751,6 @@ export type Database = {
     Views: {
       admin_coach_overview: {
         Row: {
-          bookings_count: number | null;
           category_id: string | null;
           category_name: Json | null;
           contact_email: string | null;
@@ -1062,12 +758,12 @@ export type Database = {
           deleted_at: string | null;
           display_name: string | null;
           id: string | null;
-          last_booking_at: string | null;
           locale: string | null;
           offers_count: number | null;
           onboarding_completed_at: string | null;
           slug: string | null;
           subscription_active: boolean | null;
+          subscription_ended_at: string | null;
           subscription_status: string | null;
           suspended_at: string | null;
           suspension_reason: string | null;
@@ -1084,138 +780,58 @@ export type Database = {
           },
         ];
       };
-      client_summaries: {
-        Row: {
-          bookings_count: number | null;
-          created_at: string | null;
-          email: string | null;
-          id: string | null;
-          last_booking_at: string | null;
-          name: string | null;
-          next_session_at: string | null;
-          notes: string | null;
-          pending_count: number | null;
-          phone: string | null;
-          profile_id: string | null;
-          recent_bookings_count: number | null;
-          spent: number | null;
-          tags: string[] | null;
-          updated_at: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "clients_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_coach_overview";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "clients_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "clients_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      public_payment_options: {
-        Row: {
-          profile_id: string | null;
-          provider: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "payment_accounts_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_coach_overview";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "payment_accounts_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "payment_accounts_profile_id_fkey";
-            columns: ["profile_id"];
-            isOneToOne: false;
-            referencedRelation: "public_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       public_profiles: {
         Row: {
+          accent_color: string | null;
           avatar_url: string | null;
           bio: string | null;
-          calendar_visible: boolean | null;
           category_id: string | null;
-          contact_email: string | null;
           currency: string | null;
-          custom_closed_message: string | null;
           custom_fields: Json | null;
           display_name: string | null;
           headline: string | null;
           id: string | null;
           locale: string | null;
           location: string | null;
-          phone_number: string | null;
+          published: boolean | null;
           slug: string | null;
-          social_links: Json | null;
-          theme: Json | null;
+          theme: string | null;
           timezone: string | null;
           whatsapp_number: string | null;
         };
         Insert: {
+          accent_color?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
-          calendar_visible?: boolean | null;
           category_id?: string | null;
-          contact_email?: never;
           currency?: string | null;
-          custom_closed_message?: string | null;
           custom_fields?: Json | null;
           display_name?: string | null;
           headline?: string | null;
           id?: string | null;
           locale?: string | null;
           location?: string | null;
-          phone_number?: never;
+          published?: never;
           slug?: string | null;
-          social_links?: Json | null;
-          theme?: Json | null;
+          theme?: string | null;
           timezone?: string | null;
           whatsapp_number?: never;
         };
         Update: {
+          accent_color?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
-          calendar_visible?: boolean | null;
           category_id?: string | null;
-          contact_email?: never;
           currency?: string | null;
-          custom_closed_message?: string | null;
           custom_fields?: Json | null;
           display_name?: string | null;
           headline?: string | null;
           id?: string | null;
           locale?: string | null;
           location?: string | null;
-          phone_number?: never;
+          published?: never;
           slug?: string | null;
-          social_links?: Json | null;
-          theme?: Json | null;
+          theme?: string | null;
           timezone?: string | null;
           whatsapp_number?: never;
         };
@@ -1231,6 +847,29 @@ export type Database = {
       };
     };
     Functions: {
+      access_email_due: {
+        Args: {
+          p_now: string;
+          p_subscription_active: boolean;
+          p_subscription_ended_at: string;
+          p_trial_ends_at: string;
+        };
+        Returns: string;
+      };
+      access_ends_at: {
+        Args: { p_subscription_ended_at: string; p_trial_ends_at: string };
+        Returns: string;
+      };
+      access_state: { Args: { p_profile_id: string }; Returns: string };
+      access_state_at: {
+        Args: {
+          p_now: string;
+          p_subscription_active: boolean;
+          p_subscription_ended_at: string;
+          p_trial_ends_at: string;
+        };
+        Returns: string;
+      };
       admin_active_sessions: {
         Args: { p_user_id: string };
         Returns: {
@@ -1246,25 +885,42 @@ export type Database = {
           email_confirmed: boolean;
           last_sign_in_at: string;
           provider: string;
+          slug: string;
+          step: string;
           user_id: string;
         }[];
       };
+      available_slugs: { Args: { p_slugs: string[] }; Returns: string[] };
+      build_default_page: { Args: { p_profile_id: string }; Returns: number };
+      can_edit_own_page: { Args: never; Returns: boolean };
       check_rate_limit: {
         Args: { p_bucket: string; p_limit: number; p_window: string };
         Returns: boolean;
       };
+      claim_access_emails: {
+        Args: { p_limit?: number; p_now?: string };
+        Returns: {
+          contact_email: string;
+          display_name: string;
+          kind: string;
+          locale: string;
+          period_end: string;
+          profile_id: string;
+          slug: string;
+          user_id: string;
+        }[];
+      };
       claim_due_deletion_warnings: {
         Args: { p_grace_days?: number; p_limit?: number; p_warn_days?: number };
         Returns: {
+          accent_color: string;
           avatar_url: string | null;
           bio: string | null;
-          calendar_visible: boolean;
           category_id: string | null;
           contact_channels: Json;
           contact_email: string | null;
           created_at: string;
           currency: string;
-          custom_closed_message: string | null;
           custom_fields: Json;
           deleted_at: string | null;
           deletion_warned_at: string | null;
@@ -1273,24 +929,22 @@ export type Database = {
           id: string;
           locale: string;
           location: string | null;
-          notify_new_bookings: boolean;
           onboarding_completed_at: string | null;
           paddle_customer_id: string | null;
           paddle_subscription_id: string | null;
-          payment_method: string | null;
+          page_initialized_at: string | null;
           phone_number: string | null;
-          reminder_hours_before: number;
-          reminder_message: string | null;
           slug: string;
           social_links: Json;
           subscription_active: boolean;
+          subscription_ended_at: string | null;
           subscription_renews_at: string | null;
           subscription_status: string | null;
           subscription_synced_at: string | null;
           suspended_at: string | null;
           suspended_by: string | null;
           suspension_reason: string | null;
-          theme: Json;
+          theme: string;
           timezone: string;
           trial_ends_at: string;
           updated_at: string;
@@ -1304,77 +958,59 @@ export type Database = {
           isSetofReturn: true;
         };
       };
-      claim_due_reminders: {
-        Args: { p_limit?: number };
-        Returns: {
-          action_type: Database["public"]["Enums"]["action_type"];
-          addons: Json;
-          cancelled_at: string | null;
-          cancelled_by: string | null;
-          client_email: string;
-          client_id: string | null;
-          client_message: string | null;
-          client_name: string;
-          client_phone: string | null;
-          client_timezone: string | null;
-          created_at: string;
-          details: Json;
-          ends_at: string | null;
-          group_key: string | null;
-          id: string;
-          internal_notes: string | null;
-          locale: string;
-          manage_token: string;
-          no_show: boolean;
-          offer_id: string | null;
-          offer_title: string;
-          payment_amount_cents: number | null;
-          payment_currency: string | null;
-          payment_due_at: string | null;
-          payment_provider: string | null;
-          payment_status: string;
-          profile_id: string;
-          quantity: number;
-          reminder_sent_at: string | null;
-          requested_date: string | null;
-          series_id: string | null;
-          starts_at: string | null;
-          status: Database["public"]["Enums"]["booking_status"];
-          updated_at: string;
-        }[];
-        SetofOptions: {
-          from: "*";
-          to: "bookings";
-          isOneToOne: false;
-          isSetofReturn: true;
-        };
-      };
       current_profile_id: { Args: never; Returns: string };
+      dispatch_access_emails: { Args: never; Returns: undefined };
+      dispatch_account_purge: { Args: never; Returns: undefined };
       dispatch_deletion_warnings: { Args: never; Returns: undefined };
-      dispatch_reminders: { Args: never; Returns: undefined };
-      expire_unpaid_bookings: { Args: never; Returns: number };
+      exposes_whatsapp: { Args: { p_profile_id: string }; Returns: boolean };
+      is_live_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_platform_admin: { Args: never; Returns: boolean };
       is_public_profile: { Args: { p_profile_id: string }; Returns: boolean };
       is_reserved_slug: { Args: { p_slug: string }; Returns: boolean };
       is_slug_available: { Args: { p_slug: string }; Returns: boolean };
+      onboarding_advance: {
+        Args: { p_category_id?: string; p_step: string };
+        Returns: string;
+      };
+      onboarding_publish: {
+        Args: {
+          p_block: Json;
+          p_kind: string;
+          p_offer_title: string;
+          p_pending: Json;
+        };
+        Returns: boolean;
+      };
+      onboarding_step_rank: { Args: { p_step: string }; Returns: number };
+      page_stats: {
+        Args: { p_days: number; p_profile_id: string };
+        Returns: Json;
+      };
       profile_unavailable: { Args: { p_slug: string }; Returns: boolean };
       purge_deleted_accounts: {
         Args: { p_grace_days?: number };
         Returns: number;
       };
-      replace_weekly_availability: {
-        Args: { p_offer_id: string; p_rules: Json };
-        Returns: number;
+      purge_page_events: { Args: { p_months?: number }; Returns: number };
+      record_page_event: {
+        Args: {
+          p_block_id: string;
+          p_city: string;
+          p_contact_kind: string;
+          p_country: string;
+          p_device: string;
+          p_profile_id: string;
+          p_source: string;
+          p_type: string;
+          p_visitor_hash: string;
+        };
+        Returns: boolean;
       };
+      social_url: { Args: { p_key: string; p_value: string }; Returns: string };
+      trial_summary: { Args: { p_profile_id: string }; Returns: Json };
     };
     Enums: {
-      action_type:
-        | "calendar_booking"
-        | "direct_reservation"
-        | "contact_request"
-        | "whatsapp_direct"
-        | "quote_request";
-      booking_status: "pending" | "confirmed" | "cancelled";
+      action_type: "contact_request" | "whatsapp_direct" | "quote_request";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1494,16 +1130,12 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
-      action_type: [
-        "calendar_booking",
-        "direct_reservation",
-        "contact_request",
-        "whatsapp_direct",
-        "quote_request",
-      ],
-      booking_status: ["pending", "confirmed", "cancelled"],
+      action_type: ["contact_request", "whatsapp_direct", "quote_request"],
     },
   },
 } as const;

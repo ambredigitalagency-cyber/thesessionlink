@@ -20,14 +20,14 @@ export type CoachRow = {
   created_at: string;
   trial_ends_at: string | null;
   subscription_active: boolean | null;
+  subscription_ended_at?: string | null;
   suspended_at: string | null;
   deleted_at: string | null;
   offers_count: number;
-  bookings_count: number;
   category_name: unknown;
 };
 
-type SortKey = "created_at" | "display_name" | "bookings_count" | "offers_count";
+type SortKey = "created_at" | "display_name" | "offers_count";
 
 /**
  * The filters, in the order an account lives them.
@@ -172,7 +172,6 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
               {header("display_name", t("coaches.name"))}
               {header("created_at", t("coaches.signedUp"))}
               {header("offers_count", t("coaches.offers"), "right")}
-              {header("bookings_count", t("coaches.bookings"), "right")}
               <th scope="col" className="w-8 pb-2.5" />
             </tr>
           </thead>
@@ -225,9 +224,6 @@ export function AdminCoaches({ coaches }: { coaches: CoachRow[] }) {
                   </td>
                   <td className="text-ink-muted px-3 py-3 text-right tabular-nums">
                     {coach.offers_count}
-                  </td>
-                  <td className="text-ink-muted px-3 py-3 text-right tabular-nums">
-                    {coach.bookings_count}
                   </td>
                   <td className="py-3 pl-3">
                     <ChevronRight

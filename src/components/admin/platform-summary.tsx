@@ -86,6 +86,7 @@ export function PlatformSummary({
           value={String(totals.byStatus.subscribed)}
           parts={[
             { value: String(totals.byStatus.trial), label: t("status.trial") },
+            { value: String(totals.byStatus.grace), label: t("status.grace") },
             { value: String(totals.byStatus.expired), label: t("status.expired") },
           ]}
         />

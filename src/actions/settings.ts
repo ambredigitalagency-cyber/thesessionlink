@@ -7,8 +7,6 @@ import { redirect } from "next/navigation";
 import { impersonationTarget } from "@/lib/admin/impersonation";
 import { getCurrentUser, requireProfileForAction } from "@/lib/auth";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
-import { accountFor, disconnectAccount } from "@/lib/payments/accounts";
-import { revokeStripeAccess } from "@/lib/payments/stripe";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fieldErrorsFrom, settingsSchema, type ActionResult } from "@/lib/validation";
 
@@ -43,13 +41,9 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
       contact_email: parsed.data.contact_email,
       phone_number: parsed.data.phone_number,
       whatsapp_number: parsed.data.whatsapp_number,
-      contact_channels: parsed.data.contact_channels,
       locale: parsed.data.locale,
       timezone: parsed.data.timezone,
       currency: parsed.data.currency,
-      reminder_hours_before: parsed.data.reminder_hours_before,
-      reminder_message: parsed.data.reminder_message,
-      notify_new_bookings: parsed.data.notify_new_bookings,
     })
     .eq("id", profile.id);
 
@@ -70,10 +64,10 @@ export async function updateSettings(input: unknown): Promise<ActionResult> {
  * "Delete my account" — a decision the coach can still go back on.
  *
  * It used to delete the auth user, and everything cascaded: profile, offers,
- * bookings, clients, in one click with nothing to restore from. Now the click
- * marks the profile instead. Access stops immediately — the dashboard sends
- * them to an explanation, the public page stops resolving, no booking can
- * reach them — while the rows stay put. purge_deleted_accounts() performs the
+ * in one click with nothing to restore from. Now the click marks the profile
+ * instead. Access stops immediately — the dashboard sends them to an
+ * explanation, the public page stops resolving, no request can reach them —
+ * while the rows stay put. purge_deleted_accounts() performs the
  * real deletion after the grace period, and until then an admin can undo it.
  *
  * auth.users is deliberately untouched: it is the cascade's root, and removing
@@ -111,52 +105,4 @@ export async function deleteAccount(confirmation: string): Promise<ActionResult>
 
   await supabase.auth.signOut();
   redirect("/");
-}
-
-/**
- * Unlinks a payment gateway.
- *
- * Marked disabled rather than deleted: past payments keep pointing at a row
- * that explains where the money went, and reconnecting later is an update
- * rather than a resurrection.
- *
- * The two providers cannot be cut off the same way, and pretending otherwise
- * would be a lie told in the interface:
- *
- *   * Stripe has a deauthorize endpoint, so the platform's access really is
- *     revoked on Stripe's side as well as ours.
- *   * PayPal has no partner-initiated equivalent in the Commerce Platform
- *     API — only the seller can withdraw permissions, from their own PayPal
- *     account, which reaches us later as MERCHANT.PARTNER-CONSENT.REVOKED.
- *     So we stop using it immediately and hand back the one step only the
- *     coach can perform, rather than claiming a revocation we did not make.
- */
-export async function disconnectGateway(
-  provider: string,
-): Promise<ActionResult<{ manualRevoke: boolean }>> {
-  const profile = await requireProfileForAction();
-
-  if (provider !== "stripe" && provider !== "paypal") {
-    return { ok: false, error: "invalid_input" };
-  }
-
-  const account = await accountFor(profile.id, provider);
-  if (!account) return { ok: false, error: "not_found" };
-
-  let revoked = false;
-  if (provider === "stripe" && account.external_id) {
-    revoked = await revokeStripeAccess(account.external_id);
-    if (!revoked) {
-      // Stripe refused to deauthorize. Disconnecting locally anyway would
-      // leave the coach believing the link is gone when it is not.
-      console.error("[payments] stripe deauthorize failed", account.external_id);
-      return { ok: false, error: "gateway_error" };
-    }
-  }
-
-  await disconnectAccount(profile.id, provider);
-
-  revalidatePath("/dashboard/settings");
-  revalidatePath(`/${profile.slug}`);
-  return { ok: true, data: { manualRevoke: provider === "paypal" } };
 }

@@ -10,13 +10,19 @@ export type UnfinishedSignup = {
   created_at: string;
   last_sign_in_at: string | null;
   email_confirmed: boolean;
+  /** Furthest sign-up step reached. */
+  step: string;
+  /** The link, once reserved. */
+  slug: string | null;
 };
 
+const STEPS = ["category", "identity", "button", "appearance", "done"] as const;
+
 /**
- * Accounts that exist but have no profile yet: they confirmed their email or
- * signed in with Google, then stopped before choosing a name and a link. They
- * are not coaches in the console's sense — nothing public, nothing to act on —
- * so they get their own short list instead of empty rows in the coach table.
+ * Accounts whose sign-up stopped along the way, with the step they reached:
+ * before choosing a link (no profile yet, so absent from the coach table),
+ * or with a link reserved but the page not finished. Read top to bottom, the
+ * steps show where people drop off.
  */
 export async function UnfinishedSignups({
   signups,
@@ -44,6 +50,14 @@ export async function UnfinishedSignups({
             <Mail className="text-ink-subtle size-4 shrink-0" aria-hidden />
             <span className="text-ink min-w-0 flex-1 truncate text-[14px] font-medium">
               {signup.email ?? t("noEmail")}
+            </span>
+            {signup.slug ? (
+              <span className="text-ink-muted font-mono text-[12px]">/{signup.slug}</span>
+            ) : null}
+            <span className="bg-warning-soft text-warning rounded-full px-2 py-0.5 text-[11.5px] font-medium">
+              {t(
+                `steps.${STEPS.includes(signup.step as (typeof STEPS)[number]) ? (signup.step as (typeof STEPS)[number]) : "category"}`,
+              )}
             </span>
             <span className="rounded-full bg-[var(--console-accent-soft)] px-2 py-0.5 text-[11.5px] font-medium text-[var(--console-accent-ink)]">
               {signup.provider === "google" ? "Google" : t("emailProvider")}

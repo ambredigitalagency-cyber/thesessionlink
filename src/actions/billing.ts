@@ -1,6 +1,7 @@
 "use server";
 
-import { getCurrentUser, requireProfileForAction } from "@/lib/auth";
+import { getCurrentProfile, getCurrentUser, requireProfileForAction } from "@/lib/auth";
+import { accessState, type AccessState } from "@/lib/billing/access";
 import {
   PaddleError,
   createSubscriptionTransaction,
@@ -19,12 +20,23 @@ import type { ActionResult } from "@/lib/validation";
  * session (see the profiles_guard_billing trigger).
  */
 
+/**
+ * Where the signed-in account stands right now — what the subscription screen
+ * polls after a payment, until Paddle's webhook has switched it on. Read only,
+ * and only ever about the caller's own account.
+ */
+export async function currentAccessState(): Promise<AccessState | null> {
+  const profile = await getCurrentProfile();
+  return profile ? accessState(profile, new Date()) : null;
+}
+
 /** Prepares a checkout: the Paddle customer, and a transaction bound to this profile. */
 export async function startSubscriptionCheckout(): Promise<
   ActionResult<{ transactionId: string }>
 > {
   if (!paddleConfigured()) return { ok: false, error: "billing_unavailable" };
-  const profile = await requireProfileForAction();
+  // Subscribing is precisely what a locked account must still be able to do.
+  const profile = await requireProfileForAction({ allowLocked: true });
   const user = await getCurrentUser();
   if (!user?.email) return { ok: false, error: "unauthenticated" };
   if (profile.subscription_active && profile.paddle_subscription_id) {
@@ -63,7 +75,7 @@ export async function startSubscriptionCheckout(): Promise<
  */
 export async function openBillingPortal(): Promise<ActionResult<{ url: string }>> {
   if (!paddleConfigured()) return { ok: false, error: "billing_unavailable" };
-  const profile = await requireProfileForAction();
+  const profile = await requireProfileForAction({ allowLocked: true });
   if (!profile.paddle_customer_id) return { ok: false, error: "not_found" };
 
   try {

@@ -10,8 +10,8 @@ import type { ActionType } from "@/lib/offers/schema";
  * WHY NOT LOTTIE — the obvious tool for this was ruled out on weight. The
  * runtime alone is around 250 kB before a single animation, and each animation
  * is a JSON file on top; that is half again the landing's entire JavaScript
- * budget for five decorative loops. What these need to show — a slot being
- * picked, a seat being taken, a message arriving — is a handful of rectangles
+ * budget for a few decorative loops. What these need to show — a message
+ * arriving, a quote being written — is a handful of rectangles
  * and a line, which is exactly what this design system is already made of.
  * Motion is already a dependency and animates SVG attributes for free, so each
  * glyph here costs a few hundred bytes of markup and nothing else.
@@ -36,7 +36,7 @@ const EASE = [0.16, 1, 0.3, 1] as const;
 
 type GlyphProps = { className?: string };
 
-/** Shared canvas so the five line up optically at any size. */
+/** Shared canvas so they all line up optically at any size. */
 function Frame({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <svg
@@ -73,118 +73,6 @@ export const GLYPH_ON_DARK = {
 } as React.CSSProperties;
 
 /* -------------------------------------------------------------------------- */
-
-/** A week of slots; one fills in and is ticked. */
-function CalendarGlyph({ className }: GlyphProps) {
-  const still = useReducedMotion();
-  const slots = Array.from({ length: 12 }, (_, i) => i);
-
-  return (
-    <Frame className={className}>
-      <rect
-        x="8"
-        y="10"
-        width="104"
-        height="70"
-        rx="10"
-        className="fill-[var(--glyph-surface)] stroke-[var(--glyph-line)]"
-        strokeWidth="1.5"
-      />
-      <rect x="8" y="10" width="104" height="14" rx="10" className="fill-[var(--glyph-muted)]" />
-
-      {slots.map((index) => {
-        const column = index % 4;
-        const row = Math.floor(index / 4);
-        const chosen = index === 6;
-
-        return (
-          <motion.rect
-            key={index}
-            x={18 + column * 23}
-            y={32 + row * 16}
-            width="17"
-            height="10"
-            rx="3"
-            className={chosen ? "fill-[var(--glyph-accent)]" : "fill-[var(--glyph-muted)]"}
-            initial={{ opacity: 0, scale: 0.6 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: still ? 0 : 0.2 + index * 0.04, duration: 0.4, ease: EASE }}
-            style={{ transformOrigin: `${26 + column * 23}px ${37 + row * 16}px` }}
-          />
-        );
-      })}
-
-      {/* The tick lands last: the moment the slot becomes a booking. */}
-      <motion.path
-        d="M56 51.5 L59.5 55 L67 47"
-        stroke="white"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ delay: still ? 0 : 0.85, duration: 0.45, ease: "easeOut" }}
-      />
-    </Frame>
-  );
-}
-
-/** Seats in a row; one is taken and the counter drops. */
-function TicketGlyph({ className }: GlyphProps) {
-  const still = useReducedMotion();
-
-  return (
-    <Frame className={className}>
-      <rect
-        x="8"
-        y="18"
-        width="104"
-        height="52"
-        rx="10"
-        className="fill-[var(--glyph-surface)] stroke-[var(--glyph-line)]"
-        strokeWidth="1.5"
-      />
-      {/* The notch that makes it read as a ticket. */}
-      <circle cx="78" cy="18" r="6" className="fill-[var(--glyph-hole)]" />
-      <circle cx="78" cy="70" r="6" className="fill-[var(--glyph-hole)]" />
-      <path
-        d="M78 26 v36"
-        className="stroke-[var(--glyph-line)]"
-        strokeWidth="1.5"
-        strokeDasharray="3 4"
-      />
-
-      {[0, 1, 2, 3].map((seat) => (
-        <motion.rect
-          key={seat}
-          x={18 + seat * 14}
-          y="36"
-          width="10"
-          height="16"
-          rx="3"
-          className={seat === 1 ? "fill-[var(--glyph-accent)]" : "fill-[var(--glyph-muted)]"}
-          // `y` here is a transform, not the attribute: it has to end at 0 or
-          // the seat lands a whole rect-height below where it was drawn.
-          initial={{ y: 8, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: still ? 0 : 0.15 + seat * 0.08, duration: 0.45, ease: EASE }}
-        />
-      ))}
-
-      <motion.rect
-        x="86"
-        y="38"
-        width="18"
-        height="12"
-        rx="4"
-        className="fill-[var(--glyph-muted)]"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: still ? 0 : 0.5, duration: 0.4 }}
-      />
-    </Frame>
-  );
-}
 
 /** A message being typed, then sent. */
 function MessageGlyph({ className }: GlyphProps) {
@@ -286,12 +174,108 @@ function QuoteGlyph({ className }: GlyphProps) {
   );
 }
 
+/** A handset, and the call going out in rings. */
+function CallGlyph({ className }: GlyphProps) {
+  const still = useReducedMotion();
+
+  return (
+    <Frame className={className}>
+      <rect
+        x="38"
+        y="10"
+        width="44"
+        height="70"
+        rx="10"
+        className="fill-[var(--glyph-surface)] stroke-[var(--glyph-line)]"
+        strokeWidth="1.5"
+      />
+      <rect x="52" y="16" width="16" height="3" rx="1.5" className="fill-[var(--glyph-muted)]" />
+      <motion.circle
+        cx="60"
+        cy="48"
+        r="12"
+        className="fill-[var(--glyph-accent)]"
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: still ? 0 : 0.1, duration: 0.45, ease: EASE }}
+        style={{ transformOrigin: "60px 48px" }}
+      />
+      {[0, 1].map((ring) => (
+        <motion.path
+          key={ring}
+          d={`M${92 + ring * 9} ${34 - ring * 6} a${20 + ring * 9} ${20 + ring * 9} 0 0 1 0 ${28 + ring * 12}`}
+          className="stroke-[var(--glyph-accent)]"
+          strokeWidth="3"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 - ring * 0.35 }}
+          transition={{ delay: still ? 0 : 0.35 + ring * 0.15, duration: 0.45, ease: EASE }}
+        />
+      ))}
+    </Frame>
+  );
+}
+
+/** A button with a link drawn across it, and the arrow it leads to. */
+function LinkGlyph({ className }: GlyphProps) {
+  const still = useReducedMotion();
+
+  return (
+    <Frame className={className}>
+      <rect
+        x="12"
+        y="26"
+        width="96"
+        height="36"
+        rx="18"
+        className="fill-[var(--glyph-surface)] stroke-[var(--glyph-line)]"
+        strokeWidth="1.5"
+      />
+      <motion.path
+        d="M34 44 h40"
+        className="stroke-[var(--glyph-muted)]"
+        strokeWidth="4"
+        strokeLinecap="round"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ delay: still ? 0 : 0.1, duration: 0.5, ease: EASE }}
+      />
+      <motion.circle
+        cx="90"
+        cy="44"
+        r="10"
+        className="fill-[var(--glyph-accent)]"
+        initial={{ opacity: 0, scale: 0.6 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: still ? 0 : 0.45, duration: 0.4, ease: EASE }}
+        style={{ transformOrigin: "90px 44px" }}
+      />
+      <motion.path
+        d="M86 44 h8 m-3 -3.5 l3.5 3.5 l-3.5 3.5"
+        stroke="var(--glyph-hole)"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: still ? 0 : 0.6, duration: 0.3 }}
+      />
+    </Frame>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 
 export const ACTION_GLYPHS: Record<ActionType, (props: GlyphProps) => React.ReactElement> = {
-  calendar_booking: CalendarGlyph,
-  direct_reservation: TicketGlyph,
   contact_request: MessageGlyph,
   whatsapp_direct: WhatsappGlyph,
   quote_request: QuoteGlyph,
 };
+
+/** The sign-up's main-button choice: the same family, two more drawings. */
+export const PRIMARY_GLYPHS = {
+  whatsapp: WhatsappGlyph,
+  call: CallGlyph,
+  message: MessageGlyph,
+  link: LinkGlyph,
+} as const;

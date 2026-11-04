@@ -27,6 +27,7 @@ export async function ProfileUnavailable({ locale }: { locale: Locale }) {
         <h1 className="text-ink mt-8 text-[26px] leading-snug font-semibold tracking-[-0.03em]">
           {t("title")}
         </h1>
+        <p className="text-ink-muted mt-3 text-[15px] leading-relaxed">{t("body")}</p>
 
         <div className="mt-8 flex flex-col justify-center gap-2.5 sm:flex-row">
           <Button asChild variant="secondary" size="lg">

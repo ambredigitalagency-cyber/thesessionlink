@@ -325,44 +325,6 @@
   --console-accent-ink: #27405f;
 }
 
-/*
- * Event colours, by action type.
- *
- * Deliberately muted and kept apart from the accent presets above: the accent
- * is the pro's branding on their public page, these are data categories inside
- * the dashboard. Reusing the accent here would make a coral profile look like
- * everything was the same kind of booking.
- */
-[data-action="calendar_booking"] {
-  --event: #5566cc;
-  --event-soft: #eef0fb;
-  --event-ink: #38468f;
-}
-
-[data-action="direct_reservation"] {
-  --event: #2f9182;
-  --event-soft: #e8f4f1;
-  --event-ink: #1f6b5c;
-}
-
-[data-action="contact_request"] {
-  --event: #a3843c;
-  --event-soft: #f7f1e5;
-  --event-ink: #6d5526;
-}
-
-[data-action="quote_request"] {
-  --event: #8c5a9c;
-  --event-soft: #f4eef6;
-  --event-ink: #5f3a6b;
-}
-
-[data-action="whatsapp_direct"] {
-  --event: #4f8a6b;
-  --event-soft: #ebf3ee;
-  --event-ink: #356049;
-}
-
 * {
   border-color: var(--color-line);
 }
@@ -569,5 +531,209 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * The public page (and its preview in the editor).
+ *
+ * Everything a theme decides arrives as custom properties on `.page-root`
+ * (see themeStyle() in src/lib/page/themes.ts); the button and card families
+ * come as data attributes on the same element. Blocks only ever use these
+ * classes, so the eight themes need no branch in the components.
+ */
+@layer components {
+  /* The theme's solid base under its gradient: a long page never runs past
+     the gradient onto the app's light canvas. */
+  .page-root {
+    background: var(--page-bg), var(--page-base);
+    background-color: var(--page-base);
+    color: var(--page-text);
+    font-family: var(--page-font);
+  }
+
+  .page-btn {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 3.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--page-radius);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--page-text);
+    text-align: left;
+    transition:
+      transform 0.25s var(--ease-out-expo),
+      box-shadow 0.25s var(--ease-out-expo),
+      background-color 0.2s ease;
+  }
+
+  .page-btn:focus-visible,
+  .page-icon-btn:focus-visible,
+  .page-card button:focus-visible {
+    outline: 2px solid var(--accent-ink);
+    outline-offset: 3px;
+  }
+
+  [data-buttons="card"] .page-btn {
+    background: var(--page-surface);
+    border: 1px solid var(--page-border);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 10px 24px -16px rgb(0 0 0 / 0.3);
+    backdrop-filter: blur(12px);
+  }
+
+  [data-buttons="outline"] .page-btn {
+    border: 1.5px solid color-mix(in oklab, var(--page-text) 70%, transparent);
+  }
+
+  [data-buttons="outline"] .page-btn:hover {
+    background: color-mix(in oklab, var(--page-text) 6%, transparent);
+  }
+
+  [data-buttons="accent"] .page-btn {
+    background: var(--accent);
+    color: var(--accent-on);
+    box-shadow: 0 10px 24px -16px color-mix(in oklab, var(--accent) 80%, black);
+  }
+
+  [data-buttons="brutal"] .page-btn {
+    background: var(--page-surface);
+    border: 2px solid #111;
+    box-shadow: 4px 4px 0 #111;
+  }
+
+  /* The one solid call-to-action, whatever the theme. */
+  .page-btn.page-btn-primary {
+    background: var(--accent);
+    color: var(--accent-on);
+    border-color: transparent;
+  }
+
+  [data-buttons="brutal"] .page-btn.page-btn-primary {
+    border-color: #111;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .page-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    [data-buttons="brutal"] .page-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 #111;
+    }
+
+    .page-btn:active {
+      transform: scale(0.985);
+    }
+  }
+
+  .page-card {
+    border-radius: min(var(--page-radius), 24px);
+    padding: 1.15rem 1.2rem;
+  }
+
+  [data-cards="shadow"] .page-card {
+    background: var(--page-surface);
+    border: 1px solid var(--page-border);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.04),
+      0 12px 30px -20px rgb(0 0 0 / 0.3);
+  }
+
+  [data-cards="outline"] .page-card {
+    border: 1.5px solid var(--page-border);
+  }
+
+  [data-cards="flat"] .page-card {
+    background: var(--page-surface);
+    border-top: 1px solid var(--page-border);
+    border-bottom: 1px solid var(--page-border);
+    border-radius: 0;
+  }
+
+  [data-cards="glass"] .page-card {
+    background: var(--page-surface);
+    border: 1px solid var(--page-border);
+    backdrop-filter: blur(14px);
+  }
+
+  [data-cards="brutal"] .page-card {
+    background: var(--page-surface);
+    border: 2px solid #111;
+    box-shadow: 4px 4px 0 #111;
+  }
+
+  .page-icon-btn {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: var(--page-text);
+    background: color-mix(in oklab, var(--page-text) 7%, transparent);
+    transition:
+      background-color 0.2s ease,
+      transform 0.25s var(--ease-out-expo);
+  }
+
+  .page-icon-btn:hover {
+    background: var(--accent);
+    color: var(--accent-on);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .page-icon-btn:hover {
+      transform: translateY(-2px);
+    }
+  }
+}
+
+/*
+ * The printable QR sheet (Statistics › My tracking links). Off screen, and on
+ * paper the only thing printed: the code, the name, one line, the address.
+ */
+.print-sheet {
+  display: none;
+}
+
+@media print {
+  body > *:not(.print-sheet) {
+    display: none !important;
+  }
+
+  .print-sheet {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: #000;
+    background: #fff;
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    text-align: center;
+  }
+
+  .print-name {
+    margin-top: 18px;
+    font-size: 28px;
+    font-weight: 600;
+  }
+
+  .print-cta {
+    font-size: 18px;
+  }
+
+  .print-url {
+    font-size: 13px;
+    color: #444;
   }
 }

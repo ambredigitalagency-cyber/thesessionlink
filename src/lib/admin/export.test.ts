@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { EXPORT_COLUMNS, columnsOf, exportFilename, toCsv } from "./export";
+import { exportFilename, toCsv } from "./export";
 
 describe("toCsv", () => {
   it("writes a header, quotes what needs quoting, and starts with a BOM", () => {
@@ -21,17 +21,10 @@ describe("toCsv", () => {
   });
 });
 
-describe("export columns", () => {
-  it("never include clients' health notes", () => {
-    expect(columnsOf("clients")).not.toContain("health_notes");
-    expect(EXPORT_COLUMNS.clients).not.toMatch(/health/);
-  });
-});
-
 describe("exportFilename", () => {
   it("names the coach, the content and the day", () => {
-    expect(
-      exportFilename("atelier-sofia", "clients", "csv", new Date("2026-09-28T10:00:00Z")),
-    ).toBe("export-atelier-sofia-clients-2026-09-28.csv");
+    expect(exportFilename("atelier-sofia", "offers", "csv", new Date("2026-09-28T10:00:00Z"))).toBe(
+      "export-atelier-sofia-offers-2026-09-28.csv",
+    );
   });
 });

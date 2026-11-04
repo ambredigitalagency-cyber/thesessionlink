@@ -43,8 +43,11 @@ declare global {
 }
 
 let loading: Promise<PaddleGlobal> | null = null;
+/** Paddle is initialised once; the button that opened the checkout hears its end. */
+let onCheckoutCompleted: () => void = () => {};
 
 function loadPaddle(environment: "sandbox" | "production", token: string, onCompleted: () => void) {
+  onCheckoutCompleted = onCompleted;
   loading ??= new Promise<PaddleGlobal>((resolve, reject) => {
     const script = document.createElement("script");
     script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
@@ -57,7 +60,7 @@ function loadPaddle(environment: "sandbox" | "production", token: string, onComp
       paddle.Initialize({
         token,
         eventCallback: (event) => {
-          if (event.name === "checkout.completed") onCompleted();
+          if (event.name === "checkout.completed") onCheckoutCompleted();
         },
       });
       resolve(paddle);
@@ -77,12 +80,15 @@ export function SubscribeButton({
   locale,
   label,
   size = "md",
+  onCompleted,
 }: {
   environment: "sandbox" | "production";
   clientToken: string;
   locale: string;
   label: string;
   size?: "sm" | "md" | "lg";
+  /** Replaces the default "thanks, refresh in a moment" once the payment went through. */
+  onCompleted?: () => void;
 }) {
   const t = useTranslations("dashboard.billing");
   const tError = useTranslations("errors");
@@ -106,11 +112,16 @@ export function SubscribeButton({
       }
       const { transactionId } = result.data;
       try {
-        const paddle = await loadPaddle(environment, clientToken, () => {
-          notify.success(t("thanks"));
-          // The webhook flips the status; give it a moment, then show it.
-          setTimeout(() => router.refresh(), 2500);
-        });
+        const paddle = await loadPaddle(
+          environment,
+          clientToken,
+          onCompleted ??
+            (() => {
+              notify.success(t("thanks"));
+              // The webhook flips the status; give it a moment, then show it.
+              setTimeout(() => router.refresh(), 2500);
+            }),
+        );
         paddle.Checkout.open({
           transactionId,
           settings: {

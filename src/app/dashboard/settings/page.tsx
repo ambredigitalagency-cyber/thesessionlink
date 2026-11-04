@@ -1,27 +1,19 @@
 import { getTranslations } from "next-intl/server";
 
-import { PaymentGateways } from "@/components/dashboard/payment-gateways";
 import { SettingsForm } from "@/components/dashboard/settings-form";
 import { SubscriptionCard } from "@/components/dashboard/subscription-card";
 import { requireOnboardedProfile, requireUser } from "@/lib/auth";
-import { gatewayStates } from "@/lib/payments/accounts";
 
 export async function generateMetadata() {
   const t = await getTranslations("dashboard.nav");
   return { title: t("settings") };
 }
 
-const NOTICES = ["connected", "pending", "declined", "not_configured", "error"];
-
-export default async function SettingsPage({ searchParams }: PageProps<"/dashboard/settings">) {
+export default async function SettingsPage() {
   const user = await requireUser();
   const profile = await requireOnboardedProfile();
   const t = await getTranslations("dashboard.settings");
 
-  const query = await searchParams;
-  const raw = Array.isArray(query.payments) ? query.payments[0] : query.payments;
-  const notice = typeof raw === "string" && NOTICES.includes(raw) ? raw : null;
-  const gateways = await gatewayStates(profile.id);
   // Server Component: one reference time for the request.
   const now = new Date();
 
@@ -33,11 +25,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/dashboa
       </header>
 
       <SubscriptionCard profile={profile} now={now} />
-      <SettingsForm
-        profile={profile}
-        accountEmail={user.email ?? ""}
-        payments={<PaymentGateways gateways={gateways} notice={notice} />}
-      />
+      <SettingsForm profile={profile} accountEmail={user.email ?? ""} />
     </>
   );
 }

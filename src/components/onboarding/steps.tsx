@@ -3,22 +3,19 @@
 import { useTranslations } from "next-intl";
 
 import { StepProgress } from "@/components/ui/step-progress";
-
-const STEPS = [1, 2, 3, 4] as const;
+import { SCREENS, type Screen } from "@/lib/onboarding/steps";
 
 /**
- * Account, the link (activity, name, address), the first offer, then the page
- * itself — the finishing touches and the share screen. The offer sits right
- * after the link because it is what makes the page worth visiting; the
- * cosmetic profile comes once the page is live.
+ * The trade, the name and link, the main button, the look. The page goes
+ * live at the end of the third; the fourth only dresses it.
  */
 export function OnboardingSteps({
   current,
   advance,
   className,
 }: {
-  current: 1 | 2 | 3 | 4;
-  /** Progress inside the current step, for steps walked in several phases. */
+  current: Screen;
+  /** Progress inside the current step, 0–1. */
   advance?: number;
   className?: string;
 }) {
@@ -31,8 +28,8 @@ export function OnboardingSteps({
     <nav aria-label={t("aria")} className={className}>
       <StepProgress
         label={t("aria")}
-        steps={STEPS.map((step) => t(`${step}` as "1"))}
-        current={current - 1}
+        steps={SCREENS.map((screen) => t(screen))}
+        current={SCREENS.indexOf(current)}
         advance={advance}
       />
     </nav>

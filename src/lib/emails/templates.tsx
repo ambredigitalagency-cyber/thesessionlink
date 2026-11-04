@@ -40,10 +40,10 @@ export function MagicLinkEmail({
 }
 
 /**
- * One layout for every booking-related email (confirmation, new request,
- * reminder, status change). Keeps the voice identical across the lifecycle.
+ * One layout for every notice (a request to the coach, its acknowledgement,
+ * the deletion warning). Keeps the voice identical from one email to the next.
  */
-export function BookingNoticeEmail({
+export function NoticeEmail({
   preview,
   heading,
   intro,

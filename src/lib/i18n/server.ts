@@ -17,10 +17,10 @@ async function loadMessages(locale: Locale): Promise<Messages> {
 
 /**
  * Translator usable outside a request scope (emails, cron jobs), where the
- * locale comes from the data (booking / profile) rather than from a cookie.
+ * locale comes from the data (request / profile) rather than from a cookie.
  *
- * Email copy is addressed with computed keys (`confirmed.subject` /
- * `pending.subject`), so this translator is intentionally string-keyed.
+ * Email copy is addressed with keys built at runtime, so this translator is
+ * intentionally string-keyed.
  * `npm test` checks that every key used here exists in both locales.
  */
 export type LooseTranslator = (

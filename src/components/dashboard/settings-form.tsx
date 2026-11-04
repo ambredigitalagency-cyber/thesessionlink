@@ -3,14 +3,13 @@
 import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useMemo, useState, useTransition, type ReactNode } from "react";
+import { useMemo, useState, useTransition } from "react";
 
-import { deleteAccount, updateSettings } from "@/actions/settings";
+import { updateSettings } from "@/actions/settings";
+import { DeleteAccountButton } from "@/components/dashboard/delete-account";
 import { Button } from "@/components/ui/button";
 import { Field, Input, NativeSelect } from "@/components/ui/field";
-import { Modal } from "@/components/ui/overlays";
-import { Card, CardHeader, ToggleRow } from "@/components/ui/primitives";
-import { ReminderSettings } from "@/components/dashboard/reminder-settings";
+import { Card, CardHeader } from "@/components/ui/primitives";
 import { notify } from "@/lib/notify";
 import { DELETION_GRACE_DAYS } from "@/lib/account/deletion";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
@@ -27,39 +26,22 @@ function timezoneOptions(current: string) {
 export function SettingsForm({
   profile,
   accountEmail,
-  payments,
 }: {
   profile: Tables<"profiles">;
   accountEmail: string;
-  /** Rendered by the page: the gateways read a table this form never touches. */
-  payments?: ReactNode;
 }) {
   const t = useTranslations("dashboard.settings");
   const tCommon = useTranslations("common");
   const tError = useTranslations("errors");
   const router = useRouter();
 
-  const channels = (profile.contact_channels ?? {}) as {
-    email?: boolean;
-    phone?: boolean;
-    whatsapp?: boolean;
-  };
-
   const [contactEmail, setContactEmail] = useState(profile.contact_email ?? "");
   const [phone, setPhone] = useState(profile.phone_number ?? "");
   const [whatsapp, setWhatsapp] = useState(profile.whatsapp_number ?? "");
-  const [showEmail, setShowEmail] = useState(channels.email ?? true);
-  const [showPhone, setShowPhone] = useState(channels.phone ?? false);
-  const [showWhatsapp, setShowWhatsapp] = useState(channels.whatsapp ?? true);
   const [locale, setLocale] = useState(profile.locale);
   const [timezone, setTimezone] = useState(profile.timezone);
   const [currency, setCurrency] = useState(profile.currency);
-  const [reminderHours, setReminderHours] = useState(profile.reminder_hours_before);
-  const [reminderMessage, setReminderMessage] = useState(profile.reminder_message ?? "");
-  const [notifyBookings, setNotifyBookings] = useState(profile.notify_new_bookings);
 
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [confirmation, setConfirmation] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
 
@@ -71,13 +53,9 @@ export function SettingsForm({
         contact_email: contactEmail.trim() || null,
         phone_number: phone.trim() || null,
         whatsapp_number: whatsapp.trim() || null,
-        contact_channels: { email: showEmail, phone: showPhone, whatsapp: showWhatsapp },
         locale,
         timezone,
         currency,
-        reminder_hours_before: reminderHours,
-        reminder_message: reminderMessage.trim() || null,
-        notify_new_bookings: notifyBookings,
       });
 
       if (result.ok) {
@@ -130,27 +108,6 @@ export function SettingsForm({
               />
             </Field>
           </div>
-
-          <div className="divide-line border-line divide-y border-t">
-            <ToggleRow
-              title={t("showEmail")}
-              description={t("showEmailHint")}
-              checked={showEmail}
-              onCheckedChange={setShowEmail}
-            />
-            <ToggleRow
-              title={t("showPhone")}
-              description={t("showPhoneHint")}
-              checked={showPhone}
-              onCheckedChange={setShowPhone}
-            />
-            <ToggleRow
-              title={t("showWhatsapp")}
-              description={t("showWhatsappHint")}
-              checked={showWhatsapp}
-              onCheckedChange={setShowWhatsapp}
-            />
-          </div>
         </div>
       </Card>
 
@@ -188,32 +145,7 @@ export function SettingsForm({
             </NativeSelect>
           </Field>
         </div>
-
-        <div className="divide-line border-line mt-4 divide-y border-t">
-          <ToggleRow
-            title={t("notify")}
-            description={t("notifyHint")}
-            checked={notifyBookings}
-            onCheckedChange={setNotifyBookings}
-          />
-        </div>
       </Card>
-
-      <Card className="p-5 sm:p-7">
-        <CardHeader title={t("remindersTitle")} description={t("remindersHint")} />
-        <div className="mt-5">
-          <ReminderSettings
-            hours={reminderHours}
-            onHours={setReminderHours}
-            message={reminderMessage}
-            onMessage={setReminderMessage}
-            proName={profile.display_name}
-            error={errorFor("reminder_message")}
-          />
-        </div>
-      </Card>
-
-      {payments}
 
       <Card className="border-danger/20 p-5 sm:p-7">
         <CardHeader
@@ -221,9 +153,7 @@ export function SettingsForm({
           description={t("dangerHint", { count: DELETION_GRACE_DAYS })}
         />
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button variant="danger" onClick={() => setDeleteOpen(true)}>
-            {t("deleteAccount")}
-          </Button>
+          <DeleteAccountButton accountEmail={accountEmail} />
           <span className="text-ink-subtle inline-flex items-center gap-1.5 text-[12.5px]">
             <Info className="size-3.5" />
             {t("deleteNote", { count: DELETION_GRACE_DAYS })}
@@ -236,43 +166,6 @@ export function SettingsForm({
           {tCommon("save")}
         </Button>
       </div>
-
-      <Modal
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        size="sm"
-        title={t("deleteTitle")}
-        description={t("deleteBody", { count: DELETION_GRACE_DAYS })}
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
-              {tCommon("cancel")}
-            </Button>
-            <Button
-              variant="danger"
-              loading={pending}
-              disabled={confirmation.trim().toLowerCase() !== accountEmail.toLowerCase()}
-              onClick={() =>
-                startTransition(async () => {
-                  const result = await deleteAccount(confirmation);
-                  if (result && !result.ok) notify.error(tError(result.error as "unexpected"));
-                })
-              }
-            >
-              {t("deleteConfirm")}
-            </Button>
-          </>
-        }
-      >
-        <Field label={t("deleteConfirmLabel", { email: accountEmail })}>
-          <Input
-            value={confirmation}
-            onChange={(event) => setConfirmation(event.target.value)}
-            placeholder={accountEmail}
-            autoComplete="off"
-          />
-        </Field>
-      </Modal>
     </div>
   );
 }

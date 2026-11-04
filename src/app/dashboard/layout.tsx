@@ -11,7 +11,9 @@ import { FirstOfferPrompt } from "@/components/dashboard/first-offer-prompt";
 import { TrialBanner } from "@/components/dashboard/trial-banner";
 import { DashboardSidebarNav, DashboardTabBar } from "@/components/dashboard/nav";
 import { ShareLink } from "@/components/share/share-link";
-import { getImpersonatedProfile, requireOnboardedProfile } from "@/lib/auth";
+import { Paywall } from "@/components/dashboard/paywall";
+import { getCurrentUser, getImpersonatedProfile, requireOnboardedProfile } from "@/lib/auth";
+import { accessState, isLocked } from "@/lib/billing/access";
 import { siteUrl } from "@/lib/env";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -25,35 +27,65 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
   const tCommon = await getTranslations("common");
 
   const supabase = await createSupabaseServerClient();
-  const [{ count: pendingCount }, { count: liveOffers }] = await Promise.all([
-    supabase
-      .from("bookings")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id)
-      .eq("status", "pending"),
-    // Published offers only: a coach whose offers are all paused shows the
-    // same "being set up" public page as one who has none.
-    supabase
-      .from("offers")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id)
-      .eq("is_active", true),
-  ]);
+  // Published offers only: a coach whose offers are all paused shows the
+  // same "being set up" public page as one who has none.
+  const { count: liveOffers } = await supabase
+    .from("offers")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", profile.id)
+    .eq("is_active", true);
 
   const publicUrl = absoluteUrl(`/${profile.slug}`, siteUrl);
   // Server Component: one reference time for the request.
   const now = new Date();
+  const state = accessState(profile, now);
   const messages = pickMessages(await getMessages(), [
     ...BASE_NAMESPACES,
     "dashboard",
     "offers",
-    "publicProfile.gallery",
+    "page",
+    "stats",
+    "publicProfile",
     "media",
     "share",
-    "bookingStatus",
     // Only shipped while an admin is looking through this account.
     ...(impersonated ? ["admin.banner"] : []),
   ]);
+
+  // Trial or subscription over: the dashboard gives way to the subscription
+  // screen. Nothing else is reachable from here — and the actions behind it
+  // refuse a locked account on their own (requireProfileForAction).
+  if (isLocked(state)) {
+    const user = await getCurrentUser();
+    return (
+      <NextIntlClientProvider messages={messages}>
+        {impersonated ? <ImpersonationBanner coachName={impersonated.display_name} /> : null}
+        <div className="flex min-h-dvh flex-col">
+          <header className="border-line flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-8">
+            <Logo className="text-[15px] sm:text-[17px]" />
+            <div className="flex items-center gap-3">
+              <PreferenceToggles tone="paper" />
+              <form action={signOut}>
+                <button
+                  type="submit"
+                  className="text-ink-muted hover:text-ink text-[13px] underline underline-offset-4 transition-colors"
+                >
+                  {tCommon("logout")}
+                </button>
+              </form>
+            </div>
+          </header>
+          <main className="flex-1 px-4 pt-8 pb-16 sm:px-6">
+            <Paywall
+              profile={profile}
+              state={state === "grace" ? "grace" : "expired"}
+              accountEmail={user?.email ?? profile.contact_email ?? ""}
+            />
+          </main>
+        </div>
+      </NextIntlClientProvider>
+    );
+  }
 
   return (
     <NextIntlClientProvider messages={messages}>
@@ -67,7 +99,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
           </Link>
 
           <div className="mt-8 flex-1">
-            <DashboardSidebarNav pendingCount={pendingCount ?? 0} />
+            <DashboardSidebarNav />
           </div>
 
           <div className="border-line space-y-4 border-t pt-5">
@@ -124,7 +156,7 @@ export default async function DashboardLayout({ children }: LayoutProps<"/dashbo
           </main>
         </div>
 
-        <DashboardTabBar pendingCount={pendingCount ?? 0} />
+        <DashboardTabBar />
       </div>
     </NextIntlClientProvider>
   );

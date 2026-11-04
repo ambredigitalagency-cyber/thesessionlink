@@ -22,7 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 
 import { deleteOffer, duplicateOffer, reorderOffers, setOfferActive } from "@/actions/offers";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ import { Badge, EmptyState } from "@/components/ui/primitives";
 import { NoOffersArt } from "@/components/dashboard/empty-illustrations";
 import { notify } from "@/lib/notify";
 import { ACTION_ICONS } from "@/lib/offers/meta";
-import { parseActionConfig, type ActionType } from "@/lib/offers/schema";
+import type { ActionType } from "@/lib/offers/schema";
 import { cn, formatPrice } from "@/lib/utils";
 
 export type OfferListItem = {
@@ -48,7 +48,6 @@ export type OfferListItem = {
   price_type: "fixed" | "from" | "free" | "on_request";
   main_photo_url: string | null;
   action_type: ActionType;
-  action_config: unknown;
   is_active: boolean;
   position: number;
 };
@@ -74,6 +73,8 @@ export function OffersList({
     setOffers(initialOffers);
   }
 
+  // A fixed id keeps dnd-kit's accessibility ids identical on the server and in the browser.
+  const dndId = useId();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -113,7 +114,12 @@ export function OffersList({
   }
 
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      id={dndId}
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext
         items={offers.map((offer) => offer.id)}
         strategy={verticalListSortingStrategy}
@@ -154,7 +160,6 @@ function OfferRow({
 
   const Icon = ACTION_ICONS[offer.action_type];
   const price = formatPrice(offer.price, currency, locale, offer.price_type);
-  const config = parseActionConfig(offer.action_type, offer.action_config);
 
   function toggleActive() {
     startTransition(async () => {
@@ -219,9 +224,6 @@ function OfferRow({
                   ? tCommon("from", { price: price.amount ?? "" })
                   : price.amount}
           </span>
-          {offer.action_type === "calendar_booking" && "duration_minutes" in config ? (
-            <span className="text-ink-subtle text-[13px]">· {config.duration_minutes} min</span>
-          ) : null}
           {!offer.is_active ? <Badge tone="outline">{t("hidden")}</Badge> : null}
         </div>
       </div>

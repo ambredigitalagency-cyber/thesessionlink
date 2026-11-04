@@ -18,7 +18,6 @@ export function AdminOfferEditor({
   currency,
   locale,
   profileWhatsapp,
-  gatewayReady,
   initial,
 }: {
   coachId: string;
@@ -27,7 +26,6 @@ export function AdminOfferEditor({
   currency: string;
   locale: string;
   profileWhatsapp: string | null;
-  gatewayReady: boolean;
   initial: OfferInitialValues;
 }) {
   const router = useRouter();
@@ -41,7 +39,6 @@ export function AdminOfferEditor({
       currency={currency}
       locale={locale}
       profileWhatsapp={profileWhatsapp}
-      gatewayReady={gatewayReady}
       initial={initial}
       save={save}
       photosEditable={false}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   useRef,
@@ -173,12 +173,15 @@ export function PreferenceToggles({
   const t = useTranslations("common.preferences");
   const locale = useLocale() as Locale;
   const router = useRouter();
+  const pathname = usePathname();
   const [pending, startTransition] = useTransition();
 
   function changeLocale(next: Locale) {
     startTransition(async () => {
       await setLocale(next);
-      router.refresh();
+      // The landing's fixed-language addresses follow the switch.
+      if (pathname === "/fr" || pathname === "/en") router.replace(`/${next}`);
+      else router.refresh();
     });
   }
 

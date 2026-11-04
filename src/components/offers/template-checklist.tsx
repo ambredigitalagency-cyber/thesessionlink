@@ -41,7 +41,7 @@ export function TemplateChecklist({
   locale,
   onToggle,
 }: {
-  /** "Fitness coach · Calendar booking" */
+  /** "Fitness coach · Request a quote" */
   eyebrow: string;
   suggestions: CategoryField[];
   /** Keys of the suggestions currently in the offer. */

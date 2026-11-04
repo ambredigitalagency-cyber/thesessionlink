@@ -240,14 +240,16 @@ export function GalleryUpload({
   value,
   onChange,
   max = 8,
+  folder = "offers",
 }: {
   value: string[];
   onChange: (urls: string[]) => void;
   max?: number;
+  folder?: UploadFolder;
 }) {
   const t = useTranslations("media");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { upload, busy } = useUploader("offers");
+  const { upload, busy } = useUploader(folder);
 
   return (
     <div className="flex flex-wrap gap-2">

@@ -327,7 +327,7 @@ export function ChoiceToggleGroup<T extends string>({
 /* Chips — the same question, at the size of a setting                         */
 /* -------------------------------------------------------------------------- */
 
-/** A pressed pill. Shared with the booking filters and the field editor. */
+/** A pressed pill. Shared with the field editor. */
 export function chipClass(active: boolean) {
   return cn(
     "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[13px] font-medium transition-[color,background-color,border-color,transform] duration-200 ease-[var(--ease-out-expo)] active:scale-[0.96]",

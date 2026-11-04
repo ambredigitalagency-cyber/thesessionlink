@@ -4,19 +4,22 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 
-import { PublicProfileView } from "@/components/public-profile/profile-view";
+import { PageView } from "@/components/page/page-view";
 import { ProfileUnavailable } from "@/components/public-profile/unavailable";
 import type { PublicOffer, PublicProfile } from "@/components/public-profile/types";
 import { LOCALE_COOKIE, isLocale, type Locale } from "@/lib/i18n/config";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
-import { acceptsAddons, parseAddons } from "@/lib/offers/addons";
 import { parseOfferFields } from "@/lib/offers/fields";
-import { payableProviders } from "@/lib/payments/accounts";
 import { localized } from "@/lib/offers/schema";
+import { parseBlocks } from "@/lib/page/blocks";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { parseTheme } from "@/lib/validation";
 
-async function loadProfile(slug: string) {
+/**
+ * The page, read as a visitor reads it: through the public view and the
+ * policies, never the service key. Blocks and offers only come back for a
+ * published page, so a page being set up shows its header and nothing else.
+ */
+async function loadPage(slug: string) {
   const supabase = await createSupabaseServerClient();
 
   const { data: profile } = await supabase
@@ -27,15 +30,23 @@ async function loadProfile(slug: string) {
 
   if (!profile?.id) return null;
 
-  const [{ data: offers }, { data: category }] = await Promise.all([
+  const [{ data: blocks }, { data: offers }, { data: category }] = await Promise.all([
+    supabase
+      .from("page_blocks")
+      .select("id, type, config, visible, offer_id")
+      .eq("profile_id", profile.id)
+      .eq("visible", true)
+      // The policies already hide blocks to complete from visitors; the coach's
+      // own session may read them, and must not see them here either.
+      .eq("pending", false)
+      .order("position"),
     supabase
       .from("offers")
       .select(
-        "id, title, description, price, price_type, main_photo_url, photos, action_type, action_config, custom_fields, addons",
+        "id, title, description, price, price_type, main_photo_url, photos, action_type, action_config, custom_fields",
       )
       .eq("profile_id", profile.id)
-      .eq("is_active", true)
-      .order("position"),
+      .eq("is_active", true),
     profile.category_id
       ? supabase
           .from("activity_categories")
@@ -45,7 +56,12 @@ async function loadProfile(slug: string) {
       : Promise.resolve({ data: null }),
   ]);
 
-  return { profile, offers: offers ?? [], category: category?.name ?? null };
+  return {
+    profile,
+    blocks: parseBlocks(blocks ?? []),
+    offers: offers ?? [],
+    category: category?.name ?? null,
+  };
 }
 
 /**
@@ -72,7 +88,7 @@ async function resolveLocale(profileLocale: string | null): Promise<Locale> {
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const data = await loadProfile(slug);
+  const data = await loadPage(slug);
 
   if (!data) {
     if (await profileIsUnavailable(slug)) {
@@ -85,9 +101,9 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
     return { title: "Not found" };
   }
 
-  const { profile, offers } = data;
+  const { profile } = data;
   const description =
-    profile.headline ?? profile.bio?.slice(0, 160) ?? `Book with ${profile.display_name}`;
+    profile.headline ?? profile.bio?.slice(0, 160) ?? profile.display_name ?? undefined;
 
   return {
     title: profile.display_name,
@@ -101,14 +117,14 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
     },
     // A page still being set up has nothing to find yet; it is indexed once
     // its first offer is published.
-    robots: offers.length > 0 ? { index: true, follow: true } : { index: false, follow: true },
+    robots: profile.published ? { index: true, follow: true } : { index: false, follow: true },
   };
 }
 
 export default async function PublicProfilePage({ params, searchParams }: PageProps<"/[slug]">) {
   const { slug } = await params;
   const query = await searchParams;
-  const data = await loadProfile(slug);
+  const data = await loadPage(slug);
 
   if (!data) {
     if (await profileIsUnavailable(slug)) {
@@ -117,21 +133,13 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     notFound();
   }
 
-  const { profile, offers, category } = data;
+  const { profile, blocks, offers, category } = data;
   const locale = await resolveLocale(profile.locale);
   const messages = pickMessages(await getMessages({ locale }), [
     ...BASE_NAMESPACES,
     "publicProfile",
     "offers.actions",
   ]);
-
-  const theme = parseTheme(profile.theme);
-
-  // A page still being set up — link reserved, no offer published — shows no
-  // way to reach the coach, who has not yet decided how they want to be
-  // reached. Dropped here rather than hidden in the view, so the details never
-  // reach the page's payload either.
-  const reachable = offers.length > 0;
 
   const viewProfile: PublicProfile = {
     id: profile.id as string,
@@ -142,20 +150,12 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     avatar_url: profile.avatar_url,
     location: profile.location,
     categoryName: category ? localized(category, locale, "") || null : null,
-    social_links: (profile.social_links ?? {}) as PublicProfile["social_links"],
-    whatsapp_number: reachable ? profile.whatsapp_number : null,
-    contact_email: reachable ? profile.contact_email : null,
-    phone_number: reachable ? profile.phone_number : null,
-    calendar_visible: profile.calendar_visible ?? true,
-    custom_closed_message: profile.custom_closed_message,
-    timezone: profile.timezone ?? "UTC",
+    whatsapp_number: profile.whatsapp_number,
     currency: profile.currency ?? "EUR",
-    accent: theme.accent,
-    layout: theme.layout,
-    cards: theme.cards,
+    timezone: profile.timezone ?? "Europe/Paris",
     details: parseOfferFields(profile.custom_fields),
     locale: isLocale(profile.locale) ? profile.locale : "en",
-    paymentProviders: await payableProviders(profile.id as string),
+    published: Boolean(profile.published),
   };
 
   const viewOffers: PublicOffer[] = offers.map((offer) => ({
@@ -169,7 +169,6 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
     action_type: offer.action_type,
     action_config: offer.action_config,
     custom_fields: parseOfferFields(offer.custom_fields),
-    addons: acceptsAddons(offer.action_type) ? parseAddons(offer.addons) : [],
   }));
 
   const requestedOffer = typeof query.offer === "string" ? query.offer : undefined;
@@ -177,9 +176,12 @@ export default async function PublicProfilePage({ params, searchParams }: PagePr
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <main className="min-h-dvh">
-        <PublicProfileView
+        <PageView
           profile={viewProfile}
+          blocks={blocks}
           offers={viewOffers}
+          theme={profile.theme ?? "classic"}
+          accent={profile.accent_color ?? ""}
           initialOfferId={
             viewOffers.some((offer) => offer.id === requestedOffer) ? requestedOffer : undefined
           }

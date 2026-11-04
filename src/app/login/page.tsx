@@ -1,13 +1,18 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 import Link from "next/link";
 
 import { AuthForm } from "@/components/auth/auth-form";
 import { GoogleButton } from "@/components/auth/google-button";
+import { InAppNotice } from "@/components/auth/in-app-notice";
 import { Logo } from "@/components/brand/logo";
+import { detectInAppBrowser } from "@/lib/auth/in-app-browser";
+import { siteUrl } from "@/lib/env";
 import { BASE_NAMESPACES, pickMessages } from "@/lib/i18n/pick";
 import { safeNextPath } from "@/lib/safe-redirect";
 import { PreferenceToggles } from "@/components/preferences/preference-toggles";
+import { absoluteUrl } from "@/lib/utils";
 
 export async function generateMetadata() {
   const t = await getTranslations("auth");
@@ -22,6 +27,15 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const oauthError = params.error === "oauth_failed";
   const t = await getTranslations("auth");
   const messages = pickMessages(await getMessages(), [...BASE_NAMESPACES, "auth"]);
+
+  // Inside Instagram, Facebook, TikTok… Google refuses to sign anyone in, so
+  // the email link leads and the way out to a real browser is offered. Any
+  // other browser keeps the page exactly as it was.
+  const inApp = detectInAppBrowser((await headers()).get("user-agent"));
+  const query = new URLSearchParams();
+  if (intent === "signup") query.set("intent", "signup");
+  if (next !== "/onboarding") query.set("next", next);
+  const pageUrl = absoluteUrl(`/login${query.size > 0 ? `?${query}` : ""}`, siteUrl);
 
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center px-4 py-12">
@@ -39,7 +53,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           {intent === "signup" ? (
             <p className="bg-ink/5 text-ink-muted mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[12px] font-medium">
               <span className="size-1.5 rounded-full bg-[var(--accent)]" />
-              Step 1 of 4
+              {t("signupBadge")}
             </p>
           ) : null}
 
@@ -51,8 +65,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           </p>
 
           <NextIntlClientProvider messages={messages}>
-            <GoogleButton next={next} oauthError={oauthError} />
-            <AuthForm intent={intent} next={next} linkError={linkError} />
+            {inApp ? (
+              <InAppNotice browser={inApp} pageUrl={pageUrl} />
+            ) : (
+              <GoogleButton next={next} oauthError={oauthError} />
+            )}
+            <AuthForm intent={intent} next={next} linkError={linkError} inApp={Boolean(inApp)} />
           </NextIntlClientProvider>
         </div>
 

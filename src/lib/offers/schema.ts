@@ -4,13 +4,7 @@ import { z } from "zod";
 /* Action types                                                                */
 /* -------------------------------------------------------------------------- */
 
-export const ACTION_TYPES = [
-  "calendar_booking",
-  "direct_reservation",
-  "contact_request",
-  "whatsapp_direct",
-  "quote_request",
-] as const;
+export const ACTION_TYPES = ["contact_request", "whatsapp_direct", "quote_request"] as const;
 
 export type ActionType = (typeof ACTION_TYPES)[number];
 
@@ -19,49 +13,9 @@ export const actionTypeSchema = z.enum(ACTION_TYPES);
 const askPhoneSchema = z.enum(["hidden", "optional", "required"]);
 export type AskPhone = z.infer<typeof askPhoneSchema>;
 
-/**
- * Online payment, on the two action types that are a transaction.
- *
- * "off"      — nothing changes; the client books and pays the coach as before.
- * "optional" — the client may pay online or choose to pay on site.
- * "required" — the booking is only confirmed once the payment settles.
- *
- * A contact request, a WhatsApp click and a quote request are conversations,
- * not transactions: they carry no amount, so they carry no payment.
- */
-const onlinePaymentSchema = z.enum(["off", "optional", "required"]);
-export type OnlinePayment = z.infer<typeof onlinePaymentSchema>;
-
 /* -------------------------------------------------------------------------- */
 /* action_config — settings that depend on the action type, never on the niche  */
 /* -------------------------------------------------------------------------- */
-
-export const calendarBookingConfigSchema = z.object({
-  duration_minutes: z.number().int().min(5).max(600).default(60),
-  /** Seats per slot: 1 for a one-to-one session, more for a group class. */
-  capacity: z.number().int().min(1).max(100).default(1),
-  /** Lets a client book a weekly, fortnightly or monthly series in one go. */
-  allow_recurring: z.boolean().default(false),
-  buffer_minutes: z.number().int().min(0).max(240).default(0),
-  /** Step between two slot starts. Defaults to the duration. */
-  slot_interval_minutes: z.number().int().min(5).max(240).nullable().default(null),
-  min_notice_hours: z.number().int().min(0).max(720).default(12),
-  max_days_ahead: z.number().int().min(1).max(365).default(60),
-  requires_confirmation: z.boolean().default(false),
-  ask_phone: askPhoneSchema.default("optional"),
-  online_payment: onlinePaymentSchema.default("off"),
-});
-
-export const directReservationConfigSchema = z.object({
-  /** null = unlimited. Counted per requested date when a date is asked. */
-  capacity: z.number().int().min(1).max(10000).nullable().default(null),
-  date_mode: z.enum(["none", "optional", "required"]).default("optional"),
-  max_quantity_per_booking: z.number().int().min(1).max(50).default(1),
-  quantity_label: z.string().max(40).nullable().default(null),
-  requires_confirmation: z.boolean().default(true),
-  ask_phone: askPhoneSchema.default("optional"),
-  online_payment: onlinePaymentSchema.default("off"),
-});
 
 export const contactRequestConfigSchema = z.object({
   cta_label: z.string().max(40).nullable().default(null),
@@ -89,15 +43,11 @@ export const quoteRequestConfigSchema = z.object({
 });
 
 export const actionConfigSchemas = {
-  calendar_booking: calendarBookingConfigSchema,
-  direct_reservation: directReservationConfigSchema,
   contact_request: contactRequestConfigSchema,
   whatsapp_direct: whatsappDirectConfigSchema,
   quote_request: quoteRequestConfigSchema,
 } as const;
 
-export type CalendarBookingConfig = z.infer<typeof calendarBookingConfigSchema>;
-export type DirectReservationConfig = z.infer<typeof directReservationConfigSchema>;
 export type ContactRequestConfig = z.infer<typeof contactRequestConfigSchema>;
 export type WhatsappDirectConfig = z.infer<typeof whatsappDirectConfigSchema>;
 export type QuoteRequestConfig = z.infer<typeof quoteRequestConfigSchema>;
@@ -122,25 +72,6 @@ export function defaultActionConfig<T extends ActionType>(actionType: T): Action
 /** Action types that need a phone number question in the public form. */
 export function askPhoneFor(actionType: ActionType, config: AnyActionConfig): AskPhone {
   return "ask_phone" in config ? config.ask_phone : "hidden";
-}
-
-/** Action types that can carry an amount, and so can be paid online. */
-export const PAYABLE_ACTION_TYPES = ["calendar_booking", "direct_reservation"] as const;
-
-export function supportsOnlinePayment(actionType: ActionType): boolean {
-  return (PAYABLE_ACTION_TYPES as readonly ActionType[]).includes(actionType);
-}
-
-/** How this offer is set up to be paid, "off" for the types that cannot be. */
-export function onlinePaymentFor(actionType: ActionType, config: AnyActionConfig): OnlinePayment {
-  if (!supportsOnlinePayment(actionType)) return "off";
-  return "online_payment" in config ? config.online_payment : "off";
-}
-
-export function requiresConfirmation(actionType: ActionType, config: AnyActionConfig): boolean {
-  if ("requires_confirmation" in config) return config.requires_confirmation;
-  // Messages and quote requests always land as "to process".
-  return true;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -187,9 +118,9 @@ export const categoryConfigSchema = z.object({
   default_action_type: actionTypeSchema.default("contact_request"),
   suggested_fields: z.array(categoryFieldSchema).default([]),
   /**
-   * The details this activity usually shows for each action type — a fitness
-   * class you reserve a spot in is described differently from a one-to-one
-   * session you book on the calendar. Offered ticked when an offer is built.
+   * The details this activity usually shows for each action type — a quote
+   * request is described differently from a WhatsApp chat. Offered ticked
+   * when an offer is built.
    */
   templates: z
     .partialRecord(actionTypeSchema, z.array(categoryFieldSchema).max(TEMPLATE_MAX_FIELDS))

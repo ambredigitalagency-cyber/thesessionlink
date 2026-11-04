@@ -31,11 +31,7 @@ import { PreferenceToggles } from "@/components/preferences/preference-toggles";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const actor = await requireAdmin();
   const t = await getTranslations("admin");
-  const messages = pickMessages(await getMessages(), [
-    ...BASE_NAMESPACES,
-    "admin",
-    "bookingStatus",
-  ]);
+  const messages = pickMessages(await getMessages(), [...BASE_NAMESPACES, "admin"]);
 
   // The password door has no Supabase session to end: leaving it removes the
   // console cookie. A member signs out of their account, as before.

@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  CalendarClock,
+  ChartNoAxesColumn,
   LayoutGrid,
   Loader2,
   Search,
@@ -33,24 +33,19 @@ import { cn } from "@/lib/utils";
 
 const ICONS: Record<SearchHit["kind"], LucideIcon> = {
   offer: LayoutGrid,
-  client: UserRound,
-  booking: CalendarClock,
 };
 
 /** Always available, so the palette is useful before anything is typed. */
 const DESTINATIONS = [
-  { key: "offers", href: "/dashboard/offers", icon: LayoutGrid, from: "nav" },
-  { key: "bookings", href: "/dashboard/bookings", icon: CalendarClock, from: "nav" },
-  // Clients are a tab of Bookings, and their label lives there rather than in
-  // the nav namespace.
-  { key: "clients", href: "/dashboard/bookings/clients", icon: UserRound, from: "tabs" },
-  { key: "settings", href: "/dashboard/settings", icon: Settings, from: "nav" },
+  { key: "page", href: "/dashboard/page", icon: UserRound },
+  { key: "offers", href: "/dashboard/offers", icon: LayoutGrid },
+  { key: "stats", href: "/dashboard/stats", icon: ChartNoAxesColumn },
+  { key: "settings", href: "/dashboard/settings", icon: Settings },
 ] as const;
 
 export function CommandPalette() {
   const t = useTranslations("dashboard.palette");
   const tNav = useTranslations("dashboard.nav");
-  const tTabs = useTranslations("dashboard.bookings.tabs");
   const router = useRouter();
 
   const [open, setOpen] = useState(false);
@@ -120,10 +115,7 @@ export function CommandPalette() {
       ? DESTINATIONS.map((destination) => ({
           key: destination.key,
           icon: destination.icon,
-          title:
-            destination.from === "tabs"
-              ? tTabs(destination.key as "clients")
-              : tNav(destination.key as "offers"),
+          title: tNav(destination.key),
           subtitle: null,
           href: destination.href,
         }))

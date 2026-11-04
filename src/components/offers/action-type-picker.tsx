@@ -8,18 +8,18 @@ import { ACTION_ICONS } from "@/lib/offers/meta";
 import { ACTION_TYPES, type ActionType } from "@/lib/offers/schema";
 
 /**
- * The five ways a client can act on an offer. Closed set on purpose: each one
- * maps to a different public flow and a different booking shape.
+ * The three ways a client can act on an offer. Closed set on purpose: each one
+ * maps to a different public flow.
  *
  * `size="question"` is the version that owns a whole phase of the builder:
  * each card carries the animated drawing the landing page already uses for
- * that action — a slot being picked, a seat being taken, two bubbles meeting.
+ * that action — two bubbles meeting, a quote being written.
  * They were written for exactly this job and cost a few hundred bytes each,
  * and reusing them means the promise made on the landing and the choice made
  * in the product are literally the same picture.
  *
  * `size="row"` is the compact version, for the single-page editor where this
- * is one section among many and a five-card gallery would drown the rest.
+ * is one section among many and a gallery of cards would drown the rest.
  */
 export function ActionTypePicker({
   value,

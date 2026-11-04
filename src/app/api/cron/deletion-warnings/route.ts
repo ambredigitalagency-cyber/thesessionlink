@@ -87,3 +87,9 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({ claimed: profiles?.length ?? 0, sent, failed });
 }
+
+/**
+ * pg_cron calls with POST (net.http_post, see dispatch_deletion_warnings); a
+ * hand-run check uses GET. Both do the same thing.
+ */
+export const POST = GET;

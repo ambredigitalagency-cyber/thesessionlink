@@ -5,23 +5,18 @@ import { getLocale, getTranslations } from "next-intl/server";
 
 import { AuditTrail } from "@/components/admin/audit-trail";
 import { CoachNotes, CoachRefChip } from "@/components/admin/coach-file";
-import {
-  CoachBookingsPanel,
-  CoachEvolution,
-  CoachOffersPanel,
-  ExportMenu,
-} from "@/components/admin/coach-insights";
+import { CoachOffersPanel, ExportMenu } from "@/components/admin/coach-insights";
 import { CoachControls } from "@/components/admin/coach-controls";
 import { ConsoleKpi, ConsolePanel } from "@/components/admin/console-kpi";
 import { STATUS_BAR, STATUS_CHIP } from "@/components/admin/status-tone";
 import { deletionDaysLeft, deletionDueAt } from "@/lib/account/deletion";
 import { adminDb, requireAdmin } from "@/lib/admin/access";
-import { coachActivity, paymentSummary, profileCompleteness } from "@/lib/admin/coach-file";
+import { profileCompleteness } from "@/lib/admin/coach-file";
+import { parseStats } from "@/lib/tracking/stats";
 import { coachRef } from "@/lib/admin/ref";
 import { accountStatus, trialDaysLeft } from "@/lib/admin/status";
 import { ACTION_TYPES } from "@/lib/offers/schema";
 import { PLAN_PRICE_MONTHLY } from "@/lib/plans/config";
-import { computeStats, type StatsBooking } from "@/lib/stats/compute";
 import { formatPrice } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -74,13 +69,8 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
   const [
     { data: profileRow },
     { data: offers },
-    { data: bookings },
-    { data: payments },
-    { data: gateways },
     { data: notes },
     { data: admins },
-    { data: windows },
-    { data: timeOff },
     { data: signIns },
   ] = await Promise.all([
     supabase
@@ -96,29 +86,11 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
       .eq("profile_id", id)
       .order("position"),
     supabase
-      .from("bookings")
-      .select(
-        "id, offer_id, offer_title, client_name, status, no_show, quantity, created_at, starts_at, ends_at, requested_date, client_email, payment_status, payment_amount_cents, payment_currency",
-      )
-      .eq("profile_id", id)
-      .order("created_at", { ascending: false })
-      .limit(5000),
-    supabase.from("payments").select("status, amount_cents, currency").eq("profile_id", id),
-    supabase
-      .from("payment_accounts")
-      .select("provider, status, charges_enabled, connected_at")
-      .eq("profile_id", id),
-    supabase
       .from("admin_notes")
       .select("id, body, created_at, author_user_id, via")
       .eq("profile_id", id)
       .order("created_at", { ascending: false }),
     supabase.from("platform_admins").select("user_id, note"),
-    supabase.from("availabilities").select("weekday, start_time, end_time").eq("profile_id", id),
-    supabase
-      .from("time_off")
-      .select("starts_on, ends_on, start_time, end_time")
-      .eq("profile_id", id),
     coach.user_id
       ? supabase
           .from("coach_sign_ins")
@@ -139,51 +111,21 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
   const { data: sessions } = coach.user_id
     ? await supabase.rpc("admin_active_sessions", { p_user_id: coach.user_id })
     : { data: [] };
+  // What the page brought in over 30 days: the coach's own figures, read
+  // through the same aggregation (page_stats lets admins and the service role in).
+  const { data: rawStats } = await supabase.rpc("page_stats", { p_profile_id: id, p_days: 30 });
+  const reach = parseStats(rawStats).totals;
 
-  // Server Component: one reference time for the whole file.
-  const now = new Date();
-  const activity = coachActivity(bookings ?? [], now);
   const activeOffers = (offers ?? []).filter((offer) => offer.is_active).length;
   const lastOfferEdit = (offers ?? []).reduce<string | null>(
     (latest, offer) => (!latest || offer.updated_at > latest ? offer.updated_at : latest),
     null,
   );
   const completeness = profileRow ? profileCompleteness({ ...profileRow, activeOffers }) : null;
-  const paid = paymentSummary((payments ?? []) as Parameters<typeof paymentSummary>[0]);
   const adminNames = new Map((admins ?? []).map((row) => [row.user_id, row.note]));
 
-  // The coach's own statistics engine, over the last 90 days, week by week.
   const timezone = profileRow?.timezone ?? "Europe/Paris";
   const currency = profileRow?.currency ?? "EUR";
-  const stats = computeStats({
-    bookings: (bookings ?? []) as StatsBooking[],
-    offers: (offers ?? []).map((offer) => ({
-      id: offer.id,
-      price: offer.price,
-      price_type: offer.price_type as "fixed" | "from" | "free" | "on_request",
-    })),
-    offerTitles: new Map((offers ?? []).map((offer) => [offer.id, offer.title])),
-    windows: windows ?? [],
-    timeOff: timeOff ?? [],
-    timezone,
-    range: "90d",
-    now,
-  });
-  const weekLabel = new Intl.DateTimeFormat(locale, {
-    day: "numeric",
-    month: "short",
-    timeZone: timezone,
-  });
-  const bookingPoints = stats.buckets.map((bucket) => ({
-    key: bucket.key,
-    label: weekLabel.format(bucket.start),
-    value: bucket.bookings,
-  }));
-  const revenuePoints = stats.buckets.map((bucket) => ({
-    key: bucket.key,
-    label: weekLabel.format(bucket.start),
-    value: bucket.revenue,
-  }));
 
   const tActions = await getTranslations("offers.actions");
   const tCommon = await getTranslations("common");
@@ -211,31 +153,12 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
     timeStyle: "short",
     timeZone: timezone,
   });
-  const day = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" });
-  const bookingRows = (bookings ?? []).slice(0, 15).map((booking) => ({
-    id: booking.id,
-    offerTitle: booking.offer_title,
-    clientName: booking.client_name,
-    when: booking.starts_at
-      ? moment.format(new Date(booking.starts_at))
-      : booking.requested_date
-        ? day.format(new Date(booking.requested_date))
-        : moment.format(new Date(booking.created_at)),
-    status: booking.status as "pending" | "confirmed" | "cancelled",
-    noShow: booking.no_show,
-    canMarkNoShow:
-      booking.status === "confirmed" &&
-      Boolean(booking.starts_at) &&
-      new Date(booking.starts_at!) <= now,
-  }));
-
   const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value * 100)} %`);
-  const money = (cents: number, currency: string) =>
-    new Intl.NumberFormat(locale, { style: "currency", currency }).format(cents / 100);
 
   const status = accountStatus({
     trial_ends_at: coach.trial_ends_at,
     subscription_active: coach.subscription_active,
+    subscription_ended_at: coach.subscription_ended_at,
     suspended_at: coach.suspended_at,
     deleted_at: coach.deleted_at,
   });
@@ -261,7 +184,8 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
       label: t("coach.subscription"),
       value: coach.subscription_active ? t("coach.subscriptionOn") : t("coach.subscriptionOff"),
     },
-    { label: t("coach.lastBooking"), value: date(coach.last_booking_at) },
+    { label: t("coach.visits30"), value: new Intl.NumberFormat(locale).format(reach.views) },
+    { label: t("coach.contacts30"), value: new Intl.NumberFormat(locale).format(reach.contacts) },
   ];
 
   return (
@@ -338,8 +262,8 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
           <ConsoleKpi index={1} label={t("coach.offers")} value={String(coach.offers_count ?? 0)} />
           <ConsoleKpi
             index={2}
-            label={t("coach.bookings")}
-            value={String(coach.bookings_count ?? 0)}
+            label={t("coach.activeOffers")}
+            value={String(activeOffers)}
             tone="accent"
           />
         </div>
@@ -349,34 +273,10 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
         </ConsolePanel>
       </div>
 
-      <ConsolePanel index={4} title={t("evolution.title")} hint={t("evolution.hint")}>
-        <CoachEvolution
-          bookings={bookingPoints}
-          revenue={revenuePoints}
-          shares={stats.offers.map((offer) => ({
-            id: offer.id,
-            label: offer.label,
-            value: offer.bookings,
-            share: offer.share,
-          }))}
-          currency={currency}
-          locale={locale}
-        />
-      </ConsolePanel>
-
       <div className="grid gap-4 lg:grid-cols-2">
         <ConsolePanel index={4} title={t("activity.title")} hint={t("activity.hint")}>
           <FactList
             facts={[
-              { label: t("activity.recent"), value: String(activity.recentBookings) },
-              { label: t("activity.clients"), value: String(activity.clients) },
-              {
-                label: t("activity.noShow"),
-                value: activity.pastSessions
-                  ? `${percent(activity.noShowRate)} · ${t("activity.sessions", { count: activity.pastSessions })}`
-                  : "—",
-              },
-              { label: t("activity.cancel"), value: percent(activity.cancelRate) },
               {
                 label: t("activity.offers"),
                 value: t("activity.offersValue", {
@@ -434,57 +334,19 @@ export default async function AdminCoachPage({ params }: PageProps<"/admin/coach
                     ? t("billing.trialUntil", { date: date(coach.trial_ends_at) })
                     : t("billing.none"),
               },
-              ...(["stripe", "paypal"] as const).map((provider) => {
-                const account = (gateways ?? []).find((row) => row.provider === provider);
-                return {
-                  label: t(`billing.${provider}`),
-                  value: !account
-                    ? t("billing.gatewayNone")
-                    : account.status === "connected" && account.charges_enabled
-                      ? t("billing.gatewayReady", { date: date(account.connected_at) })
-                      : account.status === "connected"
-                        ? t("billing.gatewayLimited")
-                        : account.status === "disabled"
-                          ? t("billing.gatewayDisabled")
-                          : t("billing.gatewayPending"),
-                };
-              }),
-              {
-                label: t("billing.collected"),
-                value: paid.collected.length
-                  ? paid.collected.map((row) => money(row.cents, row.currency)).join(" · ")
-                  : "—",
-              },
-              {
-                label: t("billing.payments"),
-                value: t("billing.paymentsValue", {
-                  paid: paid.paidCount,
-                  refunded: paid.refundedCount,
-                  failed: paid.failedCount,
-                }),
-              },
             ]}
           />
           <p className="text-ink-subtle mt-4 text-[12px] leading-snug">{t("billing.footnote")}</p>
         </ConsolePanel>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ConsolePanel
-          index={6}
-          title={t("intervention.offersTitle")}
-          hint={t("intervention.offersHint")}
-        >
-          <CoachOffersPanel coachId={coach.id ?? id} offers={offerRows} />
-        </ConsolePanel>
-        <ConsolePanel
-          index={6}
-          title={t("intervention.bookingsTitle")}
-          hint={t("intervention.bookingsHint")}
-        >
-          <CoachBookingsPanel bookings={bookingRows} />
-        </ConsolePanel>
-      </div>
+      <ConsolePanel
+        index={6}
+        title={t("intervention.offersTitle")}
+        hint={t("intervention.offersHint")}
+      >
+        <CoachOffersPanel coachId={coach.id ?? id} offers={offerRows} />
+      </ConsolePanel>
 
       <ConsolePanel index={6} title={t("signIns.title")} hint={t("signIns.hint")}>
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">

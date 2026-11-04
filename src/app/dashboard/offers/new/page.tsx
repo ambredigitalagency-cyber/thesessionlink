@@ -4,13 +4,11 @@ import { getTranslations } from "next-intl/server";
 
 import { DashboardOfferForm } from "@/components/dashboard/offer-editor";
 import { requireOnboardedProfile } from "@/lib/auth";
-import { gatewayStates } from "@/lib/payments/accounts";
 import { localized, parseCategoryConfig } from "@/lib/offers/schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function NewOfferPage() {
   const profile = await requireOnboardedProfile();
-  const gateways = await gatewayStates(profile.id);
   const t = await getTranslations("dashboard.offers");
 
   const supabase = await createSupabaseServerClient();
@@ -53,7 +51,6 @@ export default async function NewOfferPage() {
           currency={profile.currency}
           locale={profile.locale}
           profileWhatsapp={profile.whatsapp_number}
-          gatewayReady={gateways.some((gateway) => gateway.ready)}
         />
       </div>
     </>

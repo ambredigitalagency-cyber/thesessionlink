@@ -19,9 +19,7 @@ export default async function DashboardOffersPage() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase
     .from("offers")
-    .select(
-      "id, title, price, price_type, main_photo_url, action_type, action_config, is_active, position",
-    )
+    .select("id, title, price, price_type, main_photo_url, action_type, is_active, position")
     .eq("profile_id", profile.id)
     .order("position");
 

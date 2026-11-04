@@ -17,7 +17,8 @@ import { URL_LOCALE_HEADER } from "@/lib/i18n/config";
  * cookie's language for `<html lang>`.
  */
 export async function proxy(request: NextRequest) {
-  const urlLocale = legalPathLocale(request.nextUrl.pathname);
+  const urlLocale =
+    legalPathLocale(request.nextUrl.pathname) ?? landingPathLocale(request.nextUrl.pathname);
   if (urlLocale) {
     const headers = new Headers(request.headers);
     headers.set(URL_LOCALE_HEADER, urlLocale);
@@ -56,13 +57,24 @@ export async function proxy(request: NextRequest) {
   }
 
   if (isSignedIn && pathname === "/login") {
+    // Signed in already: on to the sign-up, keeping where they were headed
+    // within it (the link chosen on the landing rides in ?next=).
+    const next = request.nextUrl.searchParams.get("next");
     const url = request.nextUrl.clone();
-    url.pathname = "/onboarding";
     url.search = "";
+    url.pathname = "/onboarding";
+    if (next && next.startsWith("/onboarding?") && !next.startsWith("//")) {
+      return NextResponse.redirect(new URL(next, request.url));
+    }
     return NextResponse.redirect(url);
   }
 
   return response;
+}
+
+/** The landing in a fixed language (/fr, /en), for search engines' hreflang. */
+function landingPathLocale(pathname: string): "fr" | "en" | null {
+  return pathname === "/fr" ? "fr" : pathname === "/en" ? "en" : null;
 }
 
 export const config = {
@@ -71,6 +83,8 @@ export const config = {
     "/onboarding/:path*",
     "/login",
     // Must match LEGAL_PATHS: a matcher has to be a literal.
+    "/fr",
+    "/en",
     "/mentions-legales",
     "/legal",
     "/cgu",

@@ -17,7 +17,16 @@ describe("accountStatus", () => {
   it("reads a running trial, a subscription and a lapsed account", () => {
     expect(accountStatus(account(), NOW)).toBe("trial");
     expect(accountStatus(account({ subscription_active: true }), NOW)).toBe("subscribed");
-    expect(accountStatus(account({ trial_ends_at: inDays(-1) }), NOW)).toBe("expired");
+    // A trial over for less than 7 days is in grace (page still online), then expired.
+    expect(accountStatus(account({ trial_ends_at: inDays(-1) }), NOW)).toBe("grace");
+    expect(accountStatus(account({ trial_ends_at: inDays(-8) }), NOW)).toBe("expired");
+    // Switched off by an admin 2 days ago: grace from that day.
+    expect(
+      accountStatus(
+        account({ trial_ends_at: inDays(-60), subscription_ended_at: inDays(-2) }),
+        NOW,
+      ),
+    ).toBe("grace");
   });
 
   it("puts suspension above everything else", () => {
@@ -60,6 +69,7 @@ describe("platformTotals", () => {
     expect(totals.byStatus).toEqual({
       subscribed: 2,
       trial: 1,
+      grace: 0,
       expired: 1,
       suspended: 1,
       deleted: 0,

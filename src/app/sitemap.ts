@@ -8,7 +8,13 @@ export const revalidate = 3600;
 
 /** Landing, legal pages and every published profile — the pages we want indexed. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const entries: MetadataRoute.Sitemap = [{ url: siteUrl, changeFrequency: "weekly", priority: 1 }];
+  // The landing in each language, each pointing at the other (hreflang).
+  const languages = { fr: `${siteUrl}/fr`, en: `${siteUrl}/en` };
+  const entries: MetadataRoute.Sitemap = [
+    { url: siteUrl, changeFrequency: "weekly", priority: 1, alternates: { languages } },
+    { url: `${siteUrl}/fr`, changeFrequency: "weekly", priority: 0.9, alternates: { languages } },
+    { url: `${siteUrl}/en`, changeFrequency: "weekly", priority: 0.9, alternates: { languages } },
+  ];
 
   for (const doc of LEGAL_DOCUMENTS) {
     for (const path of Object.values(LEGAL_PATHS[doc])) {

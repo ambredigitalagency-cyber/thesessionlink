@@ -11,17 +11,20 @@ import { Modal } from "@/components/ui/overlays";
 import { notify } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
-/** The copy-and-share block used on the onboarding final screen and the dashboard. */
+/** The copy-and-share block used on the sign-up's final screen and the dashboard. */
 export function ShareLink({
   url,
   displayName,
   className,
   size = "md",
+  showQr = true,
 }: {
   url: string;
   displayName: string;
   className?: string;
   size?: "sm" | "md";
+  /** Off where the page already shows its own QR code. */
+  showQr?: boolean;
 }) {
   const t = useTranslations("share");
   const [copied, setCopied] = useState(false);
@@ -96,10 +99,12 @@ export function ShareLink({
           <Share2 className="size-3.5" />
           {t("share")}
         </Button>
-        <Button type="button" variant="secondary" size="sm" onClick={() => setQrOpen(true)}>
-          <QrCode className="size-3.5" />
-          {t("qr")}
-        </Button>
+        {showQr ? (
+          <Button type="button" variant="secondary" size="sm" onClick={() => setQrOpen(true)}>
+            <QrCode className="size-3.5" />
+            {t("qr")}
+          </Button>
+        ) : null}
         <Button asChild variant="secondary" size="sm">
           <a
             href={`https://wa.me/?text=${encodeURIComponent(`${t("shareText", { name: displayName })} ${url}`)}`}

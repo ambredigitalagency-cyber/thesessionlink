@@ -1,58 +1,66 @@
 "use client";
 
-import { CalendarCheck, Link2, Sparkles } from "lucide-react";
+import { Clock } from "lucide-react";
 import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
 
-import { cn } from "@/lib/utils";
+import { PRIMARY_GLYPHS } from "@/components/marketing/action-glyphs";
+import { THEME_IDS, THEMES } from "@/lib/page/themes";
 
+import { SectionPill } from "./all-in-one";
 import { EASE, SectionHeading } from "./section";
 
-const STEPS = [
-  { key: "create", icon: Sparkles },
-  { key: "share", icon: Link2 },
-  { key: "fill", icon: CalendarCheck },
-] as const;
-
 /**
- * Three steps, as three rows.
- *
- * The previous version was a scroll-driven sticky panel: 260vh of page in
- * which the three steps swapped as you scrolled past. It looked expensive and
- * it cost the reader something — you could not skim it, you could not get to
- * step three without scrolling through one and two, and on a phone it fell
- * back to a plain stack anyway, so the effect only existed for half the
- * audience. Three rows, alternating sides, say the same thing in a third of
- * the scroll and read identically on every screen.
- *
- * The numbered rail survives, as a line down the left of the row on desktop:
- * it is what made the sequence feel like a sequence rather than three cards.
+ * The three steps, as the product really walks them: the trade and the main
+ * button (the page is live at that point), the look, then sharing the link and
+ * watching what it brings in.
  */
 export function HowItWorks() {
   const t = useTranslations("landing.how");
 
-  return (
-    <section id="how" className="relative py-20 sm:py-28">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <SectionHeading eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
+  const steps: { key: "start" | "customize" | "share"; art: ReactNode }[] = [
+    { key: "start", art: <StartArt /> },
+    { key: "customize", art: <CustomizeArt /> },
+    { key: "share", art: <ShareArt /> },
+  ];
 
-        <ol className="mt-14 space-y-14 sm:space-y-20">
-          {STEPS.map((step, index) => (
+  return (
+    <section id="how" className="scroll-mt-16 py-20 sm:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <SectionPill>{t("pill")}</SectionPill>
+            <SectionHeading title={t("title")} className="mt-4" />
+          </div>
+          <p className="bg-success-soft text-success inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] font-medium">
+            <Clock className="size-4" aria-hidden />
+            {t("badge")}
+          </p>
+        </div>
+
+        <ol className="mt-12 grid gap-4 md:grid-cols-3">
+          {steps.map((step, index) => (
             <motion.li
               key={step.key}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.55, ease: EASE }}
-              className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16"
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.5, delay: index * 0.08, ease: EASE }}
+              className="surface-card flex flex-col rounded-[1.75rem] p-6"
             >
-              <div className={cn(index % 2 === 1 && "lg:order-2")}>
-                <StepContent index={index} stepKey={step.key} icon={step.icon} />
+              <div className="bg-canvas flex h-40 items-center justify-center rounded-[1.25rem]">
+                {step.art}
               </div>
-
-              <div className={cn("h-[20rem] sm:h-[23rem]", index % 2 === 1 && "lg:order-1")}>
-                <StepVisual index={index} />
-              </div>
+              <p className="text-ink-subtle mt-5 text-[12px] font-semibold tracking-[0.1em] uppercase">
+                {t("step", { number: index + 1 })}
+              </p>
+              <h3 className="text-ink mt-1.5 text-[19px] font-semibold tracking-[-0.02em]">
+                {t(`steps.${step.key}.title`)}
+              </h3>
+              <p className="text-ink-muted mt-2 text-[14.5px] leading-relaxed">
+                {t(`steps.${step.key}.body`)}
+              </p>
             </motion.li>
           ))}
         </ol>
@@ -61,130 +69,76 @@ export function HowItWorks() {
   );
 }
 
-function StepContent({
-  index,
-  stepKey,
-  icon: Icon,
-}: {
-  index: number;
-  stepKey: string;
-  icon: typeof Sparkles;
-}) {
-  const t = useTranslations("landing.how");
-
+function StartArt() {
+  const t = useTranslations("landing.how.art");
+  const Glyph = PRIMARY_GLYPHS.whatsapp;
   return (
-    <div className="border-line relative lg:border-l lg:pl-7">
-      {/* The number sits on the rule, so three rows read as one sequence. */}
-      <span className="bg-ink text-ink-inverse flex size-8 items-center justify-center rounded-full text-[13px] font-semibold lg:absolute lg:top-0 lg:-left-4">
-        {index + 1}
-      </span>
-
-      <Icon className="mt-4 size-5 text-[var(--accent-ink)] lg:mt-1" aria-hidden />
-
-      <h3 className="text-ink mt-3 text-[24px] leading-tight font-semibold tracking-[-0.025em] sm:text-[28px]">
-        {t(`steps.${stepKey}.title` as "steps.create.title")}
-      </h3>
-      <p className="text-ink-muted mt-3 max-w-md text-[15.5px] leading-relaxed">
-        {t(`steps.${stepKey}.body` as "steps.create.body")}
-      </p>
+    <div aria-hidden className="flex items-center gap-4">
+      <div className="space-y-2">
+        {(["coach", "hair", "creator"] as const).map((key, index) => (
+          <span
+            key={key}
+            className={`block rounded-full border px-3 py-1 text-[12px] font-medium ${
+              index === 0
+                ? "border-ink bg-ink text-ink-inverse"
+                : "border-line-strong text-ink-muted bg-surface"
+            }`}
+          >
+            {t(key)}
+          </span>
+        ))}
+      </div>
+      <Glyph className="w-24" />
     </div>
   );
 }
 
-/** Abstract UI snapshots — no screenshots to keep, they stay in sync with the product. */
-function StepVisual({ index }: { index: number }) {
-  const t = useTranslations("landing.how");
+function CustomizeArt() {
+  const ids = THEME_IDS.slice(0, 6);
+  return (
+    <div aria-hidden className="grid grid-cols-3 gap-2">
+      {ids.map((id, index) => (
+        <motion.span
+          key={id}
+          initial={{ opacity: 0, scale: 0.8 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.35, delay: 0.1 + index * 0.05, ease: EASE }}
+          className="flex h-12 w-14 flex-col items-center justify-center gap-1 rounded-[10px] border border-black/5"
+          style={{ background: THEMES[id].background }}
+        >
+          <span
+            className="h-1.5 w-6 rounded-full"
+            style={{ background: THEMES[id].text, opacity: 0.6 }}
+          />
+          <span className="h-2.5 w-9 rounded-full bg-[var(--accent)]" />
+        </motion.span>
+      ))}
+    </div>
+  );
+}
 
-  if (index === 0) {
-    return (
-      <div className="surface-card flex h-full flex-col gap-3 p-5">
-        <div className="bg-ink/10 h-2 w-20 rounded-full" />
-        <div className="border-line rounded-[var(--radius-md)] border p-3.5">
-          <div className="bg-ink/15 h-2.5 w-28 rounded-full" />
-          <div className="bg-ink/8 mt-2.5 h-2 w-full rounded-full" />
-          <div className="bg-ink/8 mt-1.5 h-2 w-3/4 rounded-full" />
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {["calendar_booking", "direct_reservation", "contact_request", "quote_request"].map(
-            (key, position) => (
-              <div
-                key={key}
-                className={cn(
-                  "rounded-[var(--radius-sm)] border p-2.5 text-[11.5px] font-medium",
-                  position === 0
-                    ? "border-ink bg-ink/[0.04] text-ink"
-                    : "border-line text-ink-subtle",
-                )}
-              >
-                {t(`visuals.actions.${key}` as "visuals.actions.calendar_booking")}
-              </div>
-            ),
-          )}
-        </div>
-        <div className="bg-ink mt-auto h-9 rounded-full" />
-      </div>
-    );
-  }
-
-  if (index === 1) {
-    return (
-      <div className="surface-card flex h-full flex-col justify-center gap-4 p-6">
-        <div className="border-line-strong bg-canvas flex items-center gap-2 rounded-full border px-4 py-2.5">
-          <Link2 className="text-ink-subtle size-3.5" />
-          <span className="text-ink text-[13px] font-medium">thesessionlink.com/ana-coach</span>
-        </div>
-        {["instagram", "signature", "whatsapp", "qr"].map((key, position) => (
-          <motion.div
-            key={key}
-            initial={{ opacity: 0, x: -10 }}
-            whileInView={{ opacity: 1, x: 0 }}
+function ShareArt() {
+  const t = useTranslations("landing.how.art");
+  const bars = [30, 52, 40, 70, 58, 86];
+  return (
+    <div aria-hidden className="flex w-full max-w-[220px] flex-col gap-3 px-2">
+      <span className="border-line-strong bg-surface text-ink truncate rounded-full border px-3 py-1.5 font-mono text-[11.5px]">
+        {t("link")}
+      </span>
+      <div className="flex h-16 items-end gap-1.5">
+        {bars.map((height, index) => (
+          <motion.span
+            key={index}
+            initial={{ scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 + position * 0.08, duration: 0.4 }}
-            className="border-line flex items-center gap-3 rounded-[var(--radius-md)] border px-3.5 py-3"
-          >
-            <span className="size-7 rounded-full bg-[var(--accent-soft)]" />
-            <span className="text-ink-muted text-[13px]">
-              {t(`visuals.places.${key}` as "visuals.places.instagram")}
-            </span>
-          </motion.div>
+            transition={{ duration: 0.5, delay: 0.1 + index * 0.06, ease: EASE }}
+            className="flex-1 origin-bottom rounded-t-[4px] bg-[var(--accent)]"
+            style={{ height: `${height}%`, opacity: 0.45 + index * 0.1 }}
+          />
         ))}
       </div>
-    );
-  }
-
-  return (
-    <div className="surface-card flex h-full flex-col gap-3 p-5">
-      <div className="flex items-center justify-between">
-        <div className="bg-ink/15 h-2.5 w-24 rounded-full" />
-        <div className="bg-success-soft h-6 w-16 rounded-full" />
-      </div>
-      {[0, 1, 2].map((row) => (
-        <motion.div
-          key={row}
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.12 * row, duration: 0.4 }}
-          className="border-line flex items-center gap-3 rounded-[var(--radius-md)] border p-3"
-        >
-          <div className="bg-ink/[0.04] flex size-11 flex-col items-center justify-center rounded-[var(--radius-xs)]">
-            <span className="text-ink-muted text-[10px]">{t("visuals.day")}</span>
-            <span className="text-ink text-[12px] font-semibold">{9 + row}:00</span>
-          </div>
-          <div className="flex-1">
-            <div className="bg-ink/12 h-2.5 w-24 rounded-full" />
-            <div className="bg-ink/8 mt-1.5 h-2 w-32 rounded-full" />
-          </div>
-          <span
-            className={cn(
-              "rounded-full px-2 py-1 text-[10.5px] font-medium",
-              row === 0 ? "bg-warning-soft text-warning" : "bg-success-soft text-success",
-            )}
-          >
-            {t(`visuals.status.${row === 0 ? "pending" : "confirmed"}` as "visuals.status.pending")}
-          </span>
-        </motion.div>
-      ))}
     </div>
   );
 }

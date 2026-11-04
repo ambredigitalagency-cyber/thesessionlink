@@ -136,7 +136,6 @@ export async function duplicateOffer(id: string): Promise<ActionResult<{ id: str
       action_type: source.action_type,
       action_config: source.action_config,
       custom_fields: source.custom_fields,
-      addons: source.addons,
       position: source.position + 1,
       is_active: false,
     })

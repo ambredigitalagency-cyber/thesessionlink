@@ -44,9 +44,9 @@ export default async function AdminHomePage() {
     suspended_at: row.suspended_at,
     deleted_at: row.deleted_at,
     offers_count: row.offers_count ?? 0,
-    bookings_count: row.bookings_count ?? 0,
     category_name: row.category_name,
     subscription_status: row.subscription_status,
+    subscription_ended_at: row.subscription_ended_at,
   }));
 
   const totals = platformTotals(coaches, {

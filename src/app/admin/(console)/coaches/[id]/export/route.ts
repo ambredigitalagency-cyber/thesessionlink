@@ -12,12 +12,12 @@ import {
 } from "@/lib/admin/export";
 
 /**
- * A coach's data, as a file: /admin/coaches/<id>/export?format=json (offers,
- * clients and bookings together) or ?format=csv&kind=offers|clients|bookings.
+ * A coach's data, as a file: /admin/coaches/<id>/export?format=json or
+ * ?format=csv&kind=offers.
  *
  * Same doors as the rest of the console; anyone else gets the same 404 as a
- * console page would. Every download is journaled. Health notes never leave:
- * the columns are listed in lib/admin/export.ts, not taken from the table.
+ * console page would. Every download is journaled. The columns are listed in
+ * lib/admin/export.ts, not taken from the table.
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const actor = await currentAdmin();

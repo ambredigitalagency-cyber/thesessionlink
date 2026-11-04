@@ -4,33 +4,25 @@ import { render } from "@react-email/components";
 import type { ReactElement } from "react";
 import { Resend } from "resend";
 
-import { isEmailConfigured, serverEnv, siteUrl } from "@/lib/env";
+import { isEmailConfigured, serverEnv } from "@/lib/env";
 import { toLocale, type Locale } from "@/lib/i18n/config";
 import { getTranslator } from "@/lib/i18n/server";
-import { parseTakenAddons } from "@/lib/offers/addons";
-import { formatAmount, toMinorUnits } from "@/lib/payments/amount";
-import { buildIcs } from "@/lib/scheduling/ics";
 import type { Tables } from "@/lib/supabase/database.types";
-import { absoluteUrl } from "@/lib/utils";
 
-import { firstName, renderReminderMessage } from "./reminder-text";
-import { BookingNoticeEmail, MagicLinkEmail, type DetailRow } from "./templates";
-
-type Attachment = { filename: string; content: string };
+import { MagicLinkEmail, NoticeEmail, type DetailRow } from "./templates";
 
 type SendArgs = {
   to: string;
   subject: string;
   react: ReactElement;
   replyTo?: string | null;
-  attachments?: Attachment[];
 };
 
 /**
  * Sends through Resend. Without RESEND_API_KEY (local dev) the email is logged
- * instead, so the whole booking flow stays testable offline.
+ * instead, so every flow that emails stays testable offline.
  */
-export async function sendEmail({ to, subject, react, replyTo, attachments }: SendArgs) {
+export async function sendEmail({ to, subject, react, replyTo }: SendArgs) {
   const html = await render(react);
   const text = await render(react, { plainText: true });
 
@@ -52,10 +44,6 @@ export async function sendEmail({ to, subject, react, replyTo, attachments }: Se
       // `??` would keep an empty string: EMAIL_FROM unset, or a profile with no
       // contact email, would send Resend `reply_to: ""` and be rejected.
       replyTo: replyTo || serverEnv.emailReplyTo || undefined,
-      attachments: attachments?.map((attachment) => ({
-        filename: attachment.filename,
-        content: Buffer.from(attachment.content).toString("base64"),
-      })),
     });
 
     if (error) {
@@ -75,27 +63,11 @@ export async function sendEmail({ to, subject, react, replyTo, attachments }: Se
 
 const localeTag = (locale: Locale) => (locale === "fr" ? "fr-FR" : "en-US");
 
-export function formatDateTime(date: Date, timezone: string, locale: Locale) {
-  return new Intl.DateTimeFormat(localeTag(locale), {
-    dateStyle: "full",
-    timeStyle: "short",
-    timeZone: timezone,
-  }).format(date);
-}
-
 export function formatDateOnly(date: Date, timezone: string, locale: Locale) {
   return new Intl.DateTimeFormat(localeTag(locale), {
     dateStyle: "full",
     timeZone: timezone,
   }).format(date);
-}
-
-export function formatTimeRange(start: Date, end: Date, timezone: string, locale: Locale) {
-  const time = new Intl.DateTimeFormat(localeTag(locale), {
-    timeStyle: "short",
-    timeZone: timezone,
-  });
-  return `${time.format(start)} – ${time.format(end)}`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,294 +103,105 @@ export async function sendMagicLinkEmail({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Booking emails                                                              */
+/* Requests from a public page                                                 */
 /* -------------------------------------------------------------------------- */
 
-type Booking = Tables<"bookings">;
-type ProfileForEmail = Pick<
-  Tables<"profiles">,
-  "display_name" | "slug" | "timezone" | "locale" | "contact_email"
-> &
-  Partial<Pick<Tables<"profiles">, "reminder_message" | "currency">>;
+/** A message or a quote request, as it was sent. Nothing of it is stored. */
+export type PublicRequest = {
+  offerTitle: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string | null;
+  message: string;
+  requestedDate: string | null;
+  budget: string | null;
+  locale: string;
+};
 
-function manageUrl(booking: Booking) {
-  return absoluteUrl(`/booking/${booking.manage_token}`, siteUrl);
-}
+type ProfileForEmail = Pick<Tables<"profiles">, "display_name" | "locale" | "contact_email">;
 
-async function bookingRows(
-  booking: Booking,
-  timezone: string,
+async function requestRows(
+  request: PublicRequest,
   locale: Locale,
   audience: "client" | "pro",
-  currency?: string | null,
 ): Promise<DetailRow[]> {
   const t = await getTranslator(locale, "emails.fields");
-  const rows: DetailRow[] = [{ label: t("offer"), value: booking.offer_title }];
+  const rows: DetailRow[] = [{ label: t("offer"), value: request.offerTitle }];
 
-  if (booking.starts_at && booking.ends_at) {
-    const start = new Date(booking.starts_at);
-    const end = new Date(booking.ends_at);
-    rows.push({ label: t("when"), value: formatDateTime(start, timezone, locale) });
-    rows.push({
-      label: t("time"),
-      value: `${formatTimeRange(start, end, timezone, locale)} (${timezone})`,
-    });
-  } else if (booking.requested_date) {
+  if (request.requestedDate) {
     rows.push({
       label: t("requestedDate"),
-      value: formatDateOnly(new Date(`${booking.requested_date}T12:00:00Z`), "UTC", locale),
+      value: formatDateOnly(new Date(`${request.requestedDate}T12:00:00Z`), "UTC", locale),
     });
   }
-
-  if (booking.quantity > 1) {
-    rows.push({ label: t("quantity"), value: String(booking.quantity) });
-  }
-
-  // The extras taken, as they were priced when booked.
-  const addons = parseTakenAddons(booking.addons);
-  if (addons.length > 0) {
-    const unit = booking.payment_currency ?? currency ?? "EUR";
-    rows.push({
-      label: t("addons"),
-      value: addons
-        .map(
-          (addon) =>
-            `${addon.label} (+${formatAmount(toMinorUnits(addon.price, unit), unit, locale)})`,
-        )
-        .join(", "),
-    });
-  }
-
-  // Only a settled payment is worth stating. "Pending" would be news that goes
-  // stale between writing the email and reading it.
-  if (booking.payment_status === "paid" && booking.payment_amount_cents !== null) {
-    const provider = booking.payment_provider
-      ? ` · ${booking.payment_provider === "stripe" ? "Stripe" : "PayPal"}`
-      : "";
-    rows.push({
-      label: t("paid"),
-      value: `${formatAmount(booking.payment_amount_cents, booking.payment_currency ?? "EUR", locale)}${provider}`,
-    });
-  }
+  if (request.budget) rows.push({ label: t("budget"), value: request.budget });
 
   if (audience === "pro") {
-    rows.push({ label: t("client"), value: booking.client_name });
-    rows.push({ label: t("email"), value: booking.client_email });
-    if (booking.client_phone) rows.push({ label: t("phone"), value: booking.client_phone });
-    const budget = (booking.details as Record<string, unknown> | null)?.budget;
-    if (typeof budget === "string" && budget) {
-      rows.push({ label: t("budget"), value: budget });
-    }
+    rows.push({ label: t("client"), value: request.clientName });
+    rows.push({ label: t("email"), value: request.clientEmail });
+    if (request.clientPhone) rows.push({ label: t("phone"), value: request.clientPhone });
   }
 
   return rows;
 }
 
-function icsAttachment(booking: Booking, profile: ProfileForEmail, cancelled = false) {
-  if (!booking.starts_at || !booking.ends_at) return undefined;
-
-  return [
-    {
-      filename: "booking.ics",
-      content: buildIcs({
-        uid: booking.id,
-        start: new Date(booking.starts_at),
-        end: new Date(booking.ends_at),
-        title: `${booking.offer_title} · ${profile.display_name}`,
-        description: booking.client_message,
-        organizer: { name: profile.display_name, email: profile.contact_email },
-        url: absoluteUrl(`/${profile.slug}`, siteUrl),
-        cancelled,
-      }),
-    },
-  ];
-}
-
-/** Confirmation sent to the client right after they book or ask. */
-/** The dates of a recurring booking, short, for one row of an email. */
-async function seriesRow(series: string[], timezone: string, locale: Locale): Promise<DetailRow> {
-  const t = await getTranslator(locale, "emails.fields");
-  const day = new Intl.DateTimeFormat(localeTag(locale), {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    timeZone: timezone,
-  });
-  return {
-    label: t("series", { count: series.length }),
-    value: series.map((start) => day.format(new Date(start))).join(", "),
-  };
-}
-
-export async function sendBookingConfirmationToClient({
-  booking,
-  profile,
-  series,
-}: {
-  booking: Booking;
-  profile: ProfileForEmail;
-  /** Starts of every session when this booking opens a recurring series. */
-  series?: string[];
-}) {
-  const locale = toLocale(booking.locale);
-  const timezone = booking.client_timezone || profile.timezone;
-  const t = await getTranslator(locale, "emails.clientConfirmation");
-  const status = booking.status === "confirmed" ? "confirmed" : "pending";
-
-  return sendEmail({
-    to: booking.client_email,
-    replyTo: profile.contact_email,
-    subject: t(`${status}.subject`, { pro: profile.display_name }),
-    attachments: status === "confirmed" ? icsAttachment(booking, profile) : undefined,
-    react: BookingNoticeEmail({
-      preview: t(`${status}.preview`, { pro: profile.display_name }),
-      heading: t(`${status}.heading`),
-      intro: t(`${status}.intro`, { pro: profile.display_name }),
-      rows: [
-        ...(await bookingRows(booking, timezone, locale, "client", profile.currency)),
-        ...(series && series.length > 1 ? [await seriesRow(series, timezone, locale)] : []),
-      ],
-      message: booking.client_message,
-      messageLabel: t("yourMessage"),
-      cta: { href: manageUrl(booking), label: t("cta") },
-      note: t("note"),
-      footerNote: t("footer", { pro: profile.display_name }),
-    }),
-  });
-}
-
-/** Notification sent to the pro for every new booking or request. */
-export async function sendBookingNotificationToPro({
-  booking,
+/**
+ * The request itself, delivered to the coach. Replying answers the client
+ * directly: the email is the whole conversation, there is no inbox to open.
+ */
+export async function sendRequestToPro({
+  request,
   profile,
   to,
-  series,
 }: {
-  booking: Booking;
+  request: PublicRequest;
   profile: ProfileForEmail;
   to: string;
-  series?: string[];
 }) {
   const locale = toLocale(profile.locale);
-  const t = await getTranslator(locale, "emails.proNotification");
+  const t = await getTranslator(locale, "emails.requestToPro");
 
   return sendEmail({
     to,
-    replyTo: booking.client_email,
-    subject: t("subject", { client: booking.client_name, offer: booking.offer_title }),
-    attachments: booking.status === "confirmed" ? icsAttachment(booking, profile) : undefined,
-    react: BookingNoticeEmail({
-      preview: t("preview", { client: booking.client_name }),
-      heading: t(booking.status === "confirmed" ? "headingConfirmed" : "headingPending"),
-      intro: t("intro", { client: booking.client_name }),
-      rows: [
-        ...(await bookingRows(booking, profile.timezone, locale, "pro", profile.currency)),
-        ...(series && series.length > 1 ? [await seriesRow(series, profile.timezone, locale)] : []),
-      ],
-      message: booking.client_message,
+    replyTo: request.clientEmail,
+    subject: t("subject", { client: request.clientName, offer: request.offerTitle }),
+    react: NoticeEmail({
+      preview: t("preview", { client: request.clientName }),
+      heading: t("heading"),
+      intro: t("intro", { client: request.clientName }),
+      rows: await requestRows(request, locale, "pro"),
+      message: request.message,
       messageLabel: t("clientMessage"),
-      cta: { href: absoluteUrl("/dashboard/bookings", siteUrl), label: t("cta") },
+      note: t("note", { client: request.clientName }),
       footerNote: t("footer"),
     }),
   });
 }
 
-/** Reminder before a session (calendar bookings only). */
-export async function sendBookingReminder({
-  booking,
+/** The visitor's copy of what they sent, in their own language. */
+export async function sendRequestAcknowledgement({
+  request,
   profile,
 }: {
-  booking: Booking;
+  request: PublicRequest;
   profile: ProfileForEmail;
 }) {
-  const locale = toLocale(booking.locale);
-  const timezone = booking.client_timezone || profile.timezone;
-  const t = await getTranslator(locale, "emails.reminder");
-  const start = booking.starts_at ? new Date(booking.starts_at) : null;
-  // The coach's own words, with this booking's client, offer and time in them.
-  const personal = renderReminderMessage(profile.reminder_message, {
-    client: firstName(booking.client_name),
-    offer: booking.offer_title,
-    time: start ? formatDateTime(start, timezone, locale) : "",
-  });
+  const locale = toLocale(request.locale);
+  const t = await getTranslator(locale, "emails.requestAcknowledgement");
 
   return sendEmail({
-    to: booking.client_email,
+    to: request.clientEmail,
     replyTo: profile.contact_email,
-    subject: t("subject", { offer: booking.offer_title }),
-    attachments: icsAttachment(booking, profile),
-    react: BookingNoticeEmail({
-      preview: start ? formatDateTime(start, timezone, locale) : booking.offer_title,
-      heading: t("heading"),
-      intro: t("intro", { pro: profile.display_name }),
-      rows: await bookingRows(booking, timezone, locale, "client", profile.currency),
-      message: personal,
-      messageLabel: t("messageLabel", { pro: profile.display_name }),
-      cta: { href: manageUrl(booking), label: t("cta") },
-      note: t("note"),
-      footerNote: t("footer", { pro: profile.display_name }),
-    }),
-  });
-}
-
-/** Sent when the pro confirms or cancels a pending request. */
-export async function sendBookingStatusUpdate({
-  booking,
-  profile,
-}: {
-  booking: Booking;
-  profile: ProfileForEmail;
-}) {
-  const locale = toLocale(booking.locale);
-  const timezone = booking.client_timezone || profile.timezone;
-  const status = booking.status === "cancelled" ? "cancelled" : "confirmed";
-  const t = await getTranslator(locale, `emails.statusUpdate.${status}`);
-
-  return sendEmail({
-    to: booking.client_email,
-    replyTo: profile.contact_email,
-    subject: t("subject", { offer: booking.offer_title }),
-    attachments:
-      status === "confirmed"
-        ? icsAttachment(booking, profile)
-        : icsAttachment(booking, profile, true),
-    react: BookingNoticeEmail({
+    subject: t("subject", { pro: profile.display_name }),
+    react: NoticeEmail({
       preview: t("preview", { pro: profile.display_name }),
       heading: t("heading"),
       intro: t("intro", { pro: profile.display_name }),
-      rows: await bookingRows(booking, timezone, locale, "client", profile.currency),
-      cta:
-        status === "confirmed"
-          ? { href: manageUrl(booking), label: t("cta") }
-          : { href: absoluteUrl(`/${profile.slug}`, siteUrl), label: t("cta") },
+      rows: await requestRows(request, locale, "client"),
+      message: request.message,
+      messageLabel: t("yourMessage"),
+      note: t("note"),
       footerNote: t("footer", { pro: profile.display_name }),
-    }),
-  });
-}
-
-/** Sent to the pro when a client cancels from their manage link. */
-export async function sendClientCancellationToPro({
-  booking,
-  profile,
-  to,
-}: {
-  booking: Booking;
-  profile: ProfileForEmail;
-  to: string;
-}) {
-  const locale = toLocale(profile.locale);
-  const t = await getTranslator(locale, "emails.clientCancellation");
-
-  return sendEmail({
-    to,
-    subject: t("subject", { client: booking.client_name }),
-    react: BookingNoticeEmail({
-      preview: t("preview", { client: booking.client_name }),
-      heading: t("heading"),
-      intro: t("intro", { client: booking.client_name }),
-      rows: await bookingRows(booking, profile.timezone, locale, "pro", profile.currency),
-      cta: { href: absoluteUrl("/dashboard/bookings", siteUrl), label: t("cta") },
-      footerNote: t("footer"),
     }),
   });
 }
@@ -454,7 +237,7 @@ export async function sendAccountDeletionWarning({
   return sendEmail({
     to,
     subject: t("subject", { count: daysLeft }),
-    react: BookingNoticeEmail({
+    react: NoticeEmail({
       preview: t("preview", { date }),
       heading: t("heading", { count: daysLeft }),
       intro: t("intro"),
@@ -471,45 +254,54 @@ export async function sendAccountDeletionWarning({
   });
 }
 
-/** A freed place, offered to the first person on the waitlist. */
-export async function sendWaitlistOffer({
-  entry,
-  offerTitle,
-  profile,
-  start,
-  expires,
+export type AccessEmailKind = "trial_ending" | "grace_started" | "offline_soon" | "offline";
+
+const ACCESS_EMAIL_KEYS = {
+  trial_ending: "trialEnding",
+  grace_started: "graceStarted",
+  offline_soon: "offlineSoon",
+  offline: "offline",
+} as const;
+
+/**
+ * The end-of-trial emails: the trial ends in 3 days, it has ended (the page
+ * stays online 7 days), the page goes offline in 2 days, it went offline.
+ * Short, factual, one button to the subscription screen. `date` is the date
+ * the email is about (end of trial, or the page going offline); `daysLeft`
+ * counts down to it.
+ */
+export async function sendAccessEmail({
+  to,
+  locale,
+  kind,
+  date,
+  daysLeft,
+  price,
+  subscribeUrl,
 }: {
-  entry: Tables<"waitlist_entries">;
-  offerTitle: string;
-  profile: ProfileForEmail;
-  start: Date;
-  expires: Date;
+  to: string;
+  locale: Locale;
+  kind: AccessEmailKind;
+  date: Date;
+  daysLeft: number;
+  price: number;
+  subscribeUrl: string;
 }) {
-  const locale = toLocale(entry.locale);
-  const timezone = entry.client_timezone || profile.timezone;
-  const t = await getTranslator(locale, "emails.waitlist");
-  const fields = await getTranslator(locale, "emails.fields");
+  const t = await getTranslator(locale, "emails.access");
+  const key = ACCESS_EMAIL_KEYS[kind];
+  const day = formatDateOnly(date, "UTC", locale);
+  const values = { date: day, count: daysLeft, price };
 
   return sendEmail({
-    to: entry.client_email,
-    replyTo: profile.contact_email,
-    subject: t("subject", { offer: offerTitle }),
-    react: BookingNoticeEmail({
-      preview: t("preview", { pro: profile.display_name }),
-      heading: t("heading"),
-      intro: t("intro", { pro: profile.display_name }),
-      rows: [
-        { label: fields("offer"), value: offerTitle },
-        { label: fields("when"), value: formatDateTime(start, timezone, locale) },
-      ],
-      cta: { href: absoluteUrl(`/waitlist/${entry.token}`, siteUrl), label: t("cta") },
-      note: t("note", {
-        until: new Intl.DateTimeFormat(localeTag(locale), {
-          timeStyle: "short",
-          timeZone: timezone,
-        }).format(expires),
-      }),
-      footerNote: t("footer", { pro: profile.display_name }),
+    to,
+    subject: t(`${key}.subject`, values),
+    react: NoticeEmail({
+      preview: t(`${key}.preview`, values),
+      heading: t(`${key}.heading`, values),
+      intro: t(`${key}.intro`, values),
+      rows: [],
+      cta: { href: subscribeUrl, label: t("cta", values) },
+      footerNote: t("footer"),
     }),
   });
 }
